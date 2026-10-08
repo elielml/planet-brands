@@ -277,7 +277,7 @@
         </div>
         <div>
           <span class="text-[10px] uppercase text-emerald-300 block font-semibold">Total Recolección</span>
-          <span class="text-base font-black" id="resumenGananciaEmpresa">RD$ 0</span>
+          <span class="text-base font-black text-emerald-400" id="resumenGananciaEmpresa">RD$ 0</span>
         </div>
       </div>
 
@@ -1040,11 +1040,17 @@
       const s2 = document.getElementById('filtroRuta');
       const s3 = document.getElementById('selectRutaParaCliente');
 
+      const valorPrevioS1 = s1.value;
+      const valorPrevioS3 = s3.value;
+
       const opcionesIndividuales = rutasApp.map(r => `<option value="${r}">${r}</option>`).join('');
 
       s1.innerHTML = opcionesIndividuales;
       s3.innerHTML = opcionesIndividuales;
       s2.innerHTML = `<option value="TODAS">TODAS LAS RUTAS (CONSOLIDADO)</option>` + opcionesIndividuales;
+
+      if (rutasApp.includes(valorPrevioS1)) s1.value = valorPrevioS1;
+      if (rutasApp.includes(valorPrevioS3)) s3.value = valorPrevioS3;
     }
 
     function actualizarClientesSegunRuta() {
@@ -1829,7 +1835,7 @@
     }
 
     // ==========================================
-    // ADMINISTRACIÓN DE RUTAS Y CLIENTES
+    // ADMINISTRACIÓN DE RUTAS Y CLIENTES (CORREGIDO)
     // ==========================================
     async function agregarRuta() {
       const input = document.getElementById('nuevaRutaNombre');
@@ -1840,8 +1846,15 @@
         rutasApp.push(nombre);
         await guardarDatosEnNube(false);
         poblarSelectoresRuta();
+
+        // Mantiene seleccionada la nueva ruta creada
+        document.getElementById('selectRutaParaCliente').value = nombre;
+        document.getElementById('selectRutaForm').value = nombre;
+        renderizarListaClientesConfig();
+        actualizarClientesSegunRuta();
+
         input.value = '';
-        alert("✅ Ruta creada exitosamente.");
+        alert("✅ Ruta creada exitosamente: " + nombre);
       } else {
         alert("Esa ruta ya existe.");
       }
@@ -1854,7 +1867,18 @@
       const concepto = document.getElementById('nuevoClienteConcepto').value;
       const porcentaje = Number(document.getElementById('nuevoClientePorcentaje').value) || 25;
 
-      const existe = catalogoClientes.some(c => c.ruta === ruta && c.nombre.toLowerCase() === clienteNombre.toLowerCase() && c.concepto === concepto);
+      if (!nombre) {
+        alert("Debes escribir el nombre del cliente.");
+        return;
+      }
+
+      // Verificación corregida con la variable 'nombre'
+      const existe = catalogoClientes.some(c => 
+        c.ruta === ruta && 
+        c.nombre.trim().toLowerCase() === nombre.toLowerCase() && 
+        c.concepto === concepto
+      );
+
       if (existe) {
         alert("Este cliente ya tiene asignada esa máquina en esta ruta.");
         return;
@@ -1871,6 +1895,7 @@
       await guardarDatosEnNube(false);
       document.getElementById('nuevoClienteNombre').value = '';
       document.getElementById('nuevoClientePorcentaje').value = '25';
+
       renderizarListaClientesConfig();
       actualizarClientesSegunRuta();
       alert("✅ Cliente guardado en catálogo.");
