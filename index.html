@@ -1,14 +1,1914 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/planet-brands/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>planet-brands</title>
-    <script type="module" crossorigin src="/planet-brands/assets/index-CiOqgNZZ.js"></script>
-    <link rel="stylesheet" crossorigin href="/planet-brands/assets/index-ECLrZ_p7.css">
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planet Brands - Control de Rutas</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="logo.png">
+  <meta name="theme-color" content="#1e3a8a">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Supabase JS Library -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    .seccion-oculta { display: none !important; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen pb-12">
+
+  <!-- MODAL DE ACCESO / LOGIN -->
+  <div id="modalAuth" class="hidden fixed inset-0 bg-slate-900/90 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+    <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 border border-slate-200">
+      <div class="text-center mb-6">
+        <h2 class="text-xl font-black text-slate-900 tracking-wide">PLANET BRANDS</h2>
+        <p class="text-xs text-slate-500 font-semibold uppercase mt-0.5">Control de Rutas y Arqueos</p>
+      </div>
+
+      <form id="formAuth" onsubmit="procesarAuth(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Correo Electrónico</label>
+          <input type="email" id="authEmail" placeholder="tu_correo@ejemplo.com" required autocomplete="email" class="w-full p-3 border rounded-xl text-sm font-bold bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-600 outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Contraseña</label>
+          <input type="password" id="authPassword" placeholder="••••••••" required autocomplete="current-password" class="w-full p-3 border rounded-xl text-sm font-bold bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-600 outline-none">
+        </div>
+
+        <button type="submit" id="btnAuthSubmit" class="w-full py-3 bg-blue-900 hover:bg-blue-800 text-white font-black rounded-xl shadow-md transition text-xs uppercase tracking-wider">
+          Iniciar Sesión
+        </button>
+      </form>
+
+      <div class="mt-4 pt-4 border-t border-slate-100 text-center">
+        <button type="button" onclick="alternarModoAuth()" id="btnModoAuth" class="text-xs font-bold text-blue-700 hover:underline">
+          ¿No tienes cuenta? Regístrate aquí
+        </button>
+      </div>
+      <p id="authError" class="text-xs font-semibold text-center mt-3 hidden"></p>
+    </div>
+  </div>
+
+  <!-- ENCABEZADO -->
+  <header class="bg-blue-900 text-white shadow-md sticky top-0 z-40">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <img src="logo.png" alt="Logo" class="w-10 h-10 rounded-lg bg-white p-0.5 object-contain shadow-inner" onerror="this.style.display='none'">
+        <div>
+          <h1 class="font-black text-lg tracking-wide leading-tight">PLANET BRANDS</h1>
+          <p class="text-[11px] text-blue-200 uppercase font-semibold tracking-wider flex items-center gap-1.5">
+            <span id="labelUsuarioActivo">Cargando...</span>
+            <span id="badgeRol" class="px-1.5 py-0.2 bg-blue-700 text-[9px] rounded font-bold uppercase"></span>
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="cerrarSesionManual()" title="Cerrar sesión" class="text-xs bg-blue-800 hover:bg-rose-700 px-2.5 py-1.5 rounded-lg border border-blue-700 transition font-bold">
+          Salir 🚪
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- PESTAÑAS DE NAVEGACIÓN -->
+  <nav class="max-w-4xl mx-auto px-4 mt-3">
+    <div class="grid grid-cols-4 gap-1.5 bg-slate-200/80 p-1.5 rounded-xl text-xs font-bold text-center">
+      <button type="button" id="tabCuadre" onclick="cambiarPestana('cuadre')" class="py-2.5 rounded-lg bg-blue-900 text-white shadow transition text-[11px] sm:text-xs">
+        📝 Liquidar
+      </button>
+      <button type="button" id="tabHistorial" onclick="cambiarPestana('historial')" class="py-2.5 rounded-lg text-slate-600 hover:text-slate-900 transition text-[11px] sm:text-xs">
+        📊 Registros
+      </button>
+      <button type="button" id="tabDeposito" onclick="cambiarPestana('deposito')" class="py-2.5 rounded-lg text-slate-600 hover:text-slate-900 transition text-[11px] sm:text-xs">
+        🏦 Depósito
+      </button>
+      <button type="button" id="tabRutas" onclick="cambiarPestana('rutas')" class="py-2.5 rounded-lg text-slate-600 hover:text-slate-900 transition text-[11px] sm:text-xs">
+        ⚙️ Rutas/Nube
+      </button>
+    </div>
+  </nav>
+
+  <main class="max-w-4xl mx-auto px-4 mt-3 space-y-4">
+
+    <!-- PANEL EXCLUSIVO ADMIN -->
+    <div id="panelAdmin" class="hidden bg-amber-500/10 border border-amber-300 p-3 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <span class="text-amber-800 font-bold text-xs uppercase tracking-wide">👑 Administrador:</span>
+        <select id="selectUsuarioAdmin" onchange="cambiarVistaUsuarioAdmin()" class="p-1.5 border rounded-lg text-xs font-bold bg-white border-amber-300 outline-none">
+        </select>
+      </div>
+      <span class="text-[11px] text-amber-800 font-medium">Viendo catálogo del usuario seleccionado</span>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VISTA 1: LIQUIDAR                          -->
+    <!-- ========================================== -->
+    <section id="vistaCuadre" class="space-y-4">
+      <form id="formCuadre" onsubmit="guardarCuadre(event)" class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Ruta Actual</label>
+            <select id="selectRutaForm" onchange="actualizarClientesSegunRuta()" class="w-full p-2.5 border rounded-xl text-sm font-semibold bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-600 outline-none">
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Fecha</label>
+            <input type="date" id="fechaCuadre" required class="w-full p-2.5 border rounded-xl text-sm font-semibold bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-600 outline-none">
+          </div>
+        </div>
+
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <label class="block text-xs font-bold uppercase text-slate-500">Cliente / Negocio</label>
+            <span id="badgeVariasMaquinas" class="hidden text-[11px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md border border-amber-300">
+              Múltiples Máquinas
+            </span>
+          </div>
+          <input list="listaClientesDatalist" id="inputCliente" oninput="alCambiarCliente()" placeholder="Escribe o selecciona el cliente..." required autocomplete="off" class="w-full p-3 border rounded-xl text-sm font-bold bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-600 outline-none">
+          <datalist id="listaClientesDatalist"></datalist>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Concepto / Máquina</label>
+            <select id="concepto" onchange="alCambiarConceptoManual()" class="w-full p-2.5 border rounded-xl text-sm font-bold bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-600 outline-none">
+              <option value="Dulces">Dulces</option>
+              <option value="Peluches">Peluches</option>
+              <option value="General">General / Otra</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">% Comisión del Cliente</label>
+            <div class="relative">
+              <input type="number" id="porcentajeComision" min="0" max="100" step="1" value="25" oninput="calcularTodo()" required class="w-full p-2.5 border rounded-xl text-sm font-bold bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-600 outline-none pr-8">
+              <span class="absolute right-3 top-2.5 text-sm font-bold text-slate-400">%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONTEO DE MONEDAS -->
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xs font-black uppercase tracking-wider text-slate-600">Arqueo de Monedas</h2>
+            <span class="text-blue-900 font-bold text-xs" id="totalMonedasLabel">0 Monedas</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+              <label class="text-xs font-black text-slate-700 block mb-1">Monedas RD$ 25</label>
+              <input type="number" id="cant25" min="0" placeholder="0" oninput="calcularTodo()" class="w-full text-lg font-black p-2 border rounded-lg border-slate-300 text-center outline-none focus:border-blue-600 bg-slate-50 focus:bg-white mb-2">
+              <div class="bg-blue-50/70 p-2 rounded-lg border border-blue-100 text-right">
+                <span class="text-[10px] uppercase font-bold text-blue-800/70 block">Subtotal:</span>
+                <p class="text-lg font-black text-blue-950 leading-tight" id="sub25">RD$ 0.00</p>
+              </div>
+            </div>
+
+            <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+              <label class="text-xs font-black text-slate-700 block mb-1">Monedas RD$ 10</label>
+              <input type="number" id="cant10" min="0" placeholder="0" oninput="calcularTodo()" class="w-full text-lg font-black p-2 border rounded-lg border-slate-300 text-center outline-none focus:border-blue-600 bg-slate-50 focus:bg-white mb-2">
+              <div class="bg-blue-50/70 p-2 rounded-lg border border-blue-100 text-right">
+                <span class="text-[10px] uppercase font-bold text-blue-800/70 block">Subtotal:</span>
+                <p class="text-lg font-black text-blue-950 leading-tight" id="sub10">RD$ 0.00</p>
+              </div>
+            </div>
+
+            <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+              <label class="text-xs font-black text-slate-700 block mb-1">Monedas RD$ 5</label>
+              <input type="number" id="cant5" min="0" placeholder="0" oninput="calcularTodo()" class="w-full text-lg font-black p-2 border rounded-lg border-slate-300 text-center outline-none focus:border-blue-600 bg-slate-50 focus:bg-white mb-2">
+              <div class="bg-blue-50/70 p-2 rounded-lg border border-blue-100 text-right">
+                <span class="text-[10px] uppercase font-bold text-blue-800/70 block">Subtotal:</span>
+                <p class="text-lg font-black text-blue-950 leading-tight" id="sub5">RD$ 0.00</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TOTALES -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-900 text-white p-4 rounded-xl">
+          <div>
+            <span class="block text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Total Bruto</span>
+            <p class="text-lg font-black" id="totalBrutoCard">RD$ 0.00</p>
+          </div>
+          <div>
+            <span class="block text-[11px] uppercase tracking-wider text-rose-300 font-semibold" id="labelComisionCliente">Comisión Cliente (25%)</span>
+            <p class="text-lg font-black text-rose-400" id="totalComisionCard">RD$ 0.00</p>
+          </div>
+          <div class="sm:border-l sm:border-slate-800 sm:pl-3">
+            <span class="block text-[11px] uppercase tracking-wider text-emerald-300 font-semibold">Ganancia Empresa</span>
+            <p class="text-xl font-black text-emerald-400" id="totalEmpresaCard">RD$ 0.00</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+          <button type="button" onclick="limpiarFormulario()" class="py-3.5 bg-rose-50 hover:bg-rose-100 active:bg-rose-200 text-rose-700 font-bold rounded-xl border border-rose-200 shadow-sm transition text-sm uppercase tracking-wider">
+            🗑 Borrar Campos
+          </button>
+          <button type="submit" class="py-3.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-black rounded-xl shadow-md transition text-sm uppercase tracking-wider">
+            💾 Guardar
+          </button>
+        </div>
+
+      </form>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- VISTA 2: HISTORIAL Y REPORTES              -->
+    <!-- ========================================== -->
+    <section id="vistaHistorial" class="seccion-oculta space-y-4">
+      
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Ruta</label>
+            <select id="filtroRuta" onchange="renderizarHistorial()" class="w-full p-2 border rounded-lg text-xs font-bold bg-slate-50 border-slate-300 outline-none">
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Período de Exportación</label>
+            <select id="filtroTipoPeriodo" onchange="alternarFiltroFecha()" class="w-full p-2 border rounded-lg text-xs font-bold bg-slate-50 border-slate-300 outline-none">
+              <option value="todos">Todos los registros guardados</option>
+              <option value="dia">Un solo día específico</option>
+              <option value="semana">Semana completa (Rango de fechas)</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="contenedorFiltroDia" class="hidden pt-1">
+          <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Seleccionar Día</label>
+          <input type="date" id="filtroFechaDia" onchange="renderizarHistorial()" class="w-full sm:w-1/2 p-2 border rounded-lg text-xs font-bold bg-slate-50 border-slate-300 outline-none">
+        </div>
+
+        <div id="contenedorFiltroSemana" class="hidden pt-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Desde (Inicio de semana)</label>
+            <input type="date" id="filtroFechaDesde" onchange="renderizarHistorial()" class="w-full p-2 border rounded-lg text-xs font-bold bg-slate-50 border-slate-300 outline-none">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Hasta (Fin de semana)</label>
+            <input type="date" id="filtroFechaHasta" onchange="renderizarHistorial()" class="w-full p-2 border rounded-lg text-xs font-bold bg-slate-50 border-slate-300 outline-none">
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-2 pt-2 border-t border-slate-100">
+          <button type="button" onclick="exportarExcel()" class="bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white px-4 py-2.5 rounded-lg text-xs font-bold uppercase shadow transition flex items-center gap-2">
+            <span>📊 Exportar a Excel</span>
+          </button>
+          <button type="button" onclick="exportarWord()" class="bg-blue-700 hover:bg-blue-800 active:bg-blue-900 text-white px-4 py-2.5 rounded-lg text-xs font-bold uppercase shadow transition flex items-center gap-2">
+            <span>📄 Exportar a Word</span>
+          </button>
+          <button type="button" onclick="borrarHistorialRutaActual()" class="bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 px-3 py-2 rounded-lg text-xs font-semibold ml-auto transition">
+            Limpiar Vista
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-900 text-white p-4 rounded-xl text-center">
+        <div>
+          <span class="text-[10px] uppercase text-slate-400 block font-semibold">Registros</span>
+          <span class="text-base font-black" id="resumenCantRegistros">0</span>
+        </div>
+        <div>
+          <span class="text-[10px] uppercase text-slate-400 block font-semibold">Total Monedas</span>
+          <span class="text-base font-black" id="resumenTotalMonedas">0</span>
+        </div>
+        <div>
+          <span class="text-[10px] uppercase text-rose-300 block font-semibold">Comisión Clientes</span>
+          <span class="text-base font-black text-rose-400" id="resumenComisiones">RD$ 0</span>
+        </div>
+        <div>
+          <span class="text-[10px] uppercase text-emerald-300 block font-semibold">Total Recolección</span>
+          <span class="text-base font-black" id="resumenGananciaEmpresa">RD$ 0</span>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
+              <tr>
+                <th class="p-3">Cliente / Máquina</th>
+                <th class="p-3 text-center">Ruta</th>
+                <th class="p-3 text-center">Fecha</th>
+                <th class="p-3 text-center">Monedas (25/10/5)</th>
+                <th class="p-3 text-right">Bruto</th>
+                <th class="p-3 text-right">Ganancia</th>
+                <th class="p-3 text-center">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="cuerpoHistorial" class="divide-y divide-slate-100 text-slate-700">
+            </tbody>
+          </table>
+        </div>
+        <p id="mensajeHistorialVacio" class="text-center py-8 text-xs text-slate-400 font-medium hidden">
+          No hay liquidaciones registradas en este período y ruta.
+        </p>
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- VISTA 3: CIERRE SEMANAL, DEPÓSITO Y ARQUEO -->
+    <!-- ========================================== -->
+    <section id="vistaDeposito" class="seccion-oculta space-y-4">
+      
+      <!-- Selector de semana para depósito -->
+      <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div>
+            <h2 class="text-sm font-black text-slate-800 uppercase tracking-wide">Semana de Recolección</h2>
+            <p class="text-xs text-slate-500">Selecciona el rango de lunes a viernes para cuadrar el depósito</p>
+          </div>
+          <button type="button" onclick="fijarEstaSemanaDeposito()" class="bg-blue-100 hover:bg-blue-200 text-blue-900 text-xs font-bold px-3 py-1.5 rounded-lg transition">
+            📅 Esta Semana
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Desde (Lunes)</label>
+            <input type="date" id="depositoFechaDesde" onchange="calcularDepositoSemanal()" class="w-full p-2.5 border rounded-xl text-xs font-bold bg-slate-50 border-slate-300 outline-none">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Hasta (Viernes/Domingo)</label>
+            <input type="date" id="depositoFechaHasta" onchange="calcularDepositoSemanal()" class="w-full p-2.5 border rounded-xl text-xs font-bold bg-slate-50 border-slate-300 outline-none">
+          </div>
+        </div>
+      </div>
+
+      <!-- DESGLOSE POR RUTAS DE LA SEMANA -->
+      <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+        <div class="flex justify-between items-center">
+          <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">1. Rutas Trabajadas en esta Semana</h2>
+          <span class="text-xs font-bold text-slate-400" id="totalRutasSemanaLabel">0 rutas</span>
+        </div>
+
+        <div class="border border-slate-100 rounded-xl overflow-hidden">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
+              <tr>
+                <th class="p-3">Nombre de la Ruta</th>
+                <th class="p-3 text-center">Liquidaciones</th>
+                <th class="p-3 text-right">Subtotal Recolectado</th>
+              </tr>
+            </thead>
+            <tbody id="cuerpoRutasSemana" class="divide-y divide-slate-100 text-slate-700">
+            </tbody>
+          </table>
+          <p id="sinRutasSemanaMsg" class="text-center py-5 text-xs text-slate-400 hidden">
+            No se realizaron liquidaciones en el rango de fechas seleccionado.
+          </p>
+        </div>
+
+        <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-200 font-bold text-xs">
+          <span class="text-slate-600 uppercase">Subtotal Recolección Semanal:</span>
+          <span class="text-blue-900 text-sm font-black" id="subtotalRecoleccionSemanaCard">RD$ 0.00</span>
+        </div>
+      </div>
+
+      <!-- GASTOS EN EFECTIVO -->
+      <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+        <div class="flex justify-between items-center">
+          <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">2. Gastos en Efectivo de la Semana</h2>
+          <span class="text-[11px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">Se resta del depósito</span>
+        </div>
+
+        <form onsubmit="agregarGasto(event)" class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-3">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Concepto del Gasto</label>
+              <input type="text" id="gastoConcepto" placeholder="Ej: Combustible, Peajes, Dieta..." required class="w-full p-2.5 border rounded-lg text-xs font-bold bg-white border-slate-300 outline-none">
+            </div>
+            <div>
+              <label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Fecha</label>
+              <input type="date" id="gastoFecha" required class="w-full p-2.5 border rounded-lg text-xs font-bold bg-white border-slate-300 outline-none">
+            </div>
+            <div>
+              <label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Monto en Efectivo (RD$)</label>
+              <input type="number" id="gastoMonto" min="1" step="any" placeholder="0.00" required class="w-full p-2.5 border rounded-lg text-xs font-bold bg-white border-slate-300 outline-none">
+            </div>
+          </div>
+          <button type="submit" class="w-full py-2 bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold uppercase rounded-lg shadow transition">
+            - Registrar Gasto en Efectivo
+          </button>
+        </form>
+
+        <div class="border border-slate-100 rounded-xl overflow-hidden">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
+              <tr>
+                <th class="p-3">Concepto</th>
+                <th class="p-3 text-center">Fecha</th>
+                <th class="p-3 text-right">Monto</th>
+                <th class="p-3 text-center">Quitar</th>
+              </tr>
+            </thead>
+            <tbody id="cuerpoGastosSemana" class="divide-y divide-slate-100 text-slate-700">
+            </tbody>
+          </table>
+          <p id="sinGastosSemanaMsg" class="text-center py-4 text-xs text-slate-400">
+            No hay gastos registrados en esta semana.
+          </p>
+        </div>
+
+        <div class="flex justify-between items-center bg-rose-50 p-3 rounded-xl border border-rose-200 font-bold text-xs">
+          <span class="text-rose-800 uppercase">Total Gastos Restados:</span>
+          <span class="text-rose-700 text-sm font-black" id="totalGastosSemanaCard">- RD$ 0.00</span>
+        </div>
+      </div>
+
+      <!-- ARQUEO FÍSICO EN MANO (BILLETES Y MONEDAS) -->
+      <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">3. Arqueo Físico en Mano (Bolsa de Efectivo)</h2>
+            <p class="text-[11px] text-slate-500">Cuenta tus papeletas y monedas para validar contra el depósito</p>
+          </div>
+          <button type="button" onclick="limpiarArqueoFisico()" class="text-xs text-slate-400 hover:text-rose-600 underline font-semibold">
+            Reiniciar Conteo
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- TABLA DE BILLETES -->
+          <div class="border border-slate-200 rounded-xl overflow-hidden bg-slate-50/50">
+            <div class="bg-blue-900 text-white px-3 py-2 text-xs font-black uppercase tracking-wide flex justify-between">
+              <span>💵 Papeletas / Billetes</span>
+              <span id="labelTotalPapeletasContadas">0 Billetes</span>
+            </div>
+            <table class="w-full text-xs text-left">
+              <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
+                <tr>
+                  <th class="p-2.5">Denominación</th>
+                  <th class="p-2.5 text-center w-24">Cantidad</th>
+                  <th class="p-2.5 text-right">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 bg-white">
+                <tr>
+                  <td class="p-2 font-bold text-slate-700">RD$ 2,000</td>
+                  <td class="p-1.5"><input type="number" min="0" placeholder="0" id="b2000" oninput="calcularArqueoFisico()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none focus:border-blue-600 focus:bg-white"></td>
+                  <td class="p-2 text-right font-black text-slate-800" id="subB2000">RD$ 0.00</td>
+                </tr>
+                <tr>
+                  <td class="p-2 font-bold text-slate-700">RD$ 1,000</td>
+                  <td class="p-1.5"><input type="number" min="0" placeholder="0" id="b1000" oninput="calcularArqueoFisico()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none focus:border-blue-600 focus:bg-white"></td>
+                  <td class="p-2 text-right font-black text-slate-800" id="subB1000">RD$ 0.00</td>
+                </tr>
+                <tr>
+                  <td class="p-2 font-bold text-slate-700">RD$ 500</td>
+                  <td class="p-1.5"><input type="number" min="0" placeholder="0" id="b500" oninput="calcularArqueoFisico()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none focus:border-blue-600 focus:bg-white"></td>
+                  <td class="p-2 text-right font-black text-slate-800" id="subB500">RD$ 0.00</td>
+                </tr>
+                <tr>
+                  <td class="p-2 font-bold text-slate-700">RD$ 200</td>
+                  <td class="p-1.5"><input type="number" min="0" placeholder="0" id="b200" oninput="calcularArqueoFisico()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none focus:border-blue-600 focus:bg-white"></td>
+                  <td class="p-2 text-right font-black text-slate-800" id="subB200">RD$ 0.00</td>
+                </tr>
+                <tr>
+                  <td class="p-2 font-bold text-slate-700">RD$ 100</td>
+                  <td class="p-1.5"><input type="number" min="0" placeholder="0" id="b100" oninput="calcularArqueoFisico()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none focus:border-blue-600 focus:bg-white"></td>
+                  <td class="p-2 text-right font-black text-slate-800" id="subB100">RD$ 0.00</td>
+                </tr>
+                <tr>
+                  <td class="p-2 font-bold text-slate-700">RD$ 50</td>
+                  <td class="p-1.5"><input type="number" min="0" placeholder="0" id="b50" oninput="calcularArqueoFisico()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none focus:border-blue-600 focus:bg-white"></td>
+                  <td class="p-2 text-right font-black text-slate-800" id="subB50">RD$ 0.00</td>
+                </tr>
+              </tbody>
+              <tfoot class="bg-blue-50 border-t border-blue-200">
+                <tr>
+                  <td colspan="2" class="p-2.5 font-black text-blue-900 uppercase text-[11px]">Total Papeletas:</td>
+                  <td class="p-2.5 text-right font-black text-blue-950 text-sm" id="totalBilletesCard">RD$ 0.00</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <!-- TABLA DE MONEDAS -->
+          <div class="border border-slate-200 rounded-xl overflow-hidden bg-slate-50/50 flex flex-col justify-between">
+            <div>
+              <div class="bg-amber-600 text-white px-3 py-2 text-xs font-black uppercase tracking-wide flex justify-between">
+                <span>🪙 Monedas Físicas</span>
+                <span id="labelTotalMonedasContadas">0 Monedas</span>
+              </div>
+              <table class="w-full text-xs text-left">
+                <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
+                  <tr>
+                    <th class="p-2.5">Denominación</th>
+                    <th class="p-2.5 text-center w-24">Cantidad</th>
+                    <th class="p-2.5 text-right">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 bg-white">
+                  <tr>
+                    <td class="p-2 font-bold text-slate-700">RD$ 25</td>
+                    <td class="p-1.5"><input type="number" min="0" placeholder="0" id="m25" oninput="calcularArqueoFisico()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none focus:border-amber-600 focus:bg-white"></td>
+                    <td class="p-2 text-right font-black text-slate-800" id="subM25">RD$ 0.00</td>
+                  </tr>
+                  <tr>
+                    <td class="p-2 font-bold text-slate-700">RD$ 10</td>
+                    <td class="p-1.5"><input type="number" min="0" placeholder="0" id="m10" oninput="calcularArqueoFisico()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none focus:border-amber-600 focus:bg-white"></td>
+                    <td class="p-2 text-right font-black text-slate-800" id="subM10">RD$ 0.00</td>
+                  </tr>
+                  <tr>
+                    <td class="p-2 font-bold text-slate-700">RD$ 5</td>
+                    <td class="p-1.5"><input type="number" min="0" placeholder="0" id="m5" oninput="calcularArqueoFisico()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none focus:border-amber-600 focus:bg-white"></td>
+                    <td class="p-2 text-right font-black text-slate-800" id="subM5">RD$ 0.00</td>
+                  </tr>
+                  <tr>
+                    <td class="p-2 font-bold text-slate-700">RD$ 1</td>
+                    <td class="p-1.5"><input type="number" min="0" placeholder="0" id="m1" oninput="calcularArqueoFisico()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none focus:border-amber-600 focus:bg-white"></td>
+                    <td class="p-2 text-right font-black text-slate-800" id="subM1">RD$ 0.00</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="bg-amber-50 border-t border-amber-200 p-2.5 flex justify-between items-center">
+              <span class="font-black text-amber-900 uppercase text-[11px]">Total Monedas:</span>
+              <span class="font-black text-amber-950 text-sm" id="totalMonedasFisicasCard">RD$ 0.00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TOTAL EN MANO -->
+        <div class="bg-slate-100 p-3.5 rounded-xl border border-slate-200 flex justify-between items-center font-bold text-xs">
+          <span class="text-slate-700 uppercase">Total Dinero Físico en Mano (Papeletas + Monedas):</span>
+          <span class="text-slate-900 text-base font-black" id="totalFisicoEnManoCard">RD$ 0.00</span>
+        </div>
+      </div>
+
+      <!-- COMPARADOR DE AUDITORÍA -->
+      <div id="contenedorAuditoria" class="p-5 rounded-2xl shadow-lg border space-y-3 bg-slate-900 text-white border-slate-800">
+        <div class="flex justify-between items-center">
+          <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold block">Auditoría de Cuadre</span>
+          <span id="badgeEstadoCuadre" class="px-2.5 py-0.5 rounded-full text-xs font-black uppercase bg-slate-800 text-slate-300">
+            Pendiente conteo
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 border-t border-slate-800">
+          <div>
+            <span class="text-[11px] uppercase text-slate-400 block font-semibold">Total a Depositar (Sistema)</span>
+            <p class="text-lg font-black text-blue-300" id="auditoriaTotalSistema">RD$ 0.00</p>
+          </div>
+          <div>
+            <span class="text-[11px] uppercase text-slate-400 block font-semibold">Efectivo Físico Contado</span>
+            <p class="text-lg font-black text-slate-100" id="auditoriaTotalContado">RD$ 0.00</p>
+          </div>
+          <div class="sm:border-l sm:border-slate-800 sm:pl-3">
+            <span class="text-[11px] uppercase text-slate-400 block font-semibold">Diferencia de Cuadre</span>
+            <p class="text-2xl font-black text-slate-300" id="auditoriaDiferencia">RD$ 0.00</p>
+          </div>
+        </div>
+
+        <p id="mensajeAuditoria" class="text-xs font-bold text-center pt-2 text-slate-400"></p>
+
+        <div class="flex flex-wrap gap-2 pt-2 border-t border-slate-800">
+          <button type="button" onclick="exportarDepositoWord()" class="flex-1 py-3 bg-blue-700 hover:bg-blue-800 active:bg-blue-900 text-white font-bold rounded-xl text-xs uppercase shadow transition flex items-center justify-center gap-2">
+            <span>📄 Exportar Comprobante de Depósito (Word)</span>
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- VISTA 4: GESTIÓN DE RUTAS Y CLIENTES       -->
+    <!-- ========================================== -->
+    <section id="vistaRutas" class="seccion-oculta space-y-4">
+
+      <div class="w-full bg-slate-900 text-white p-4 sm:p-5 rounded-xl shadow border border-slate-800 space-y-3 box-border overflow-hidden">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div>
+            <h2 class="text-sm font-bold flex items-center gap-2">
+              <span>☁️</span> Respaldo y Sincronización
+            </h2>
+            <p class="text-xs text-slate-300 mt-0.5">
+              Guarda tus rutas y clientes en la nube o descarga un archivo físico en tu teléfono.
+            </p>
+          </div>
+          <span id="badgeNube" class="px-3 py-1 bg-white/10 text-white text-[11px] font-semibold rounded-full border border-white/20">
+            Sincronizado
+          </span>
+        </div>
+
+        <div class="flex flex-wrap gap-2 pt-1">
+          <button type="button" onclick="guardarDatosEnNube(true)" class="bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase shadow transition flex items-center gap-1.5">
+            <span>☁️ Subir a la Nube</span>
+          </button>
+          <button type="button" onclick="descargarDatosDeNube(true)" class="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase shadow transition flex items-center gap-1.5">
+            <span>🔄 Descargar de la Nube</span>
+          </button>
+          <button type="button" onclick="descargarCopiaSeguridad()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-lg text-xs font-bold shadow border border-slate-700 flex items-center gap-1">
+            <span>📥 Archivo Respaldo</span>
+          </button>
+          <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-lg text-xs font-bold shadow border border-slate-700 inline-flex items-center gap-1">
+            <span>📤 Restaurar Archivo</span>
+            <input type="file" accept=".json" onchange="restaurarCopiaSeguridad(this)" class="hidden">
+          </label>
+        </div>
+      </div>
+
+      <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+        <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">Crear Nueva Ruta</h2>
+        <div class="flex gap-2">
+          <input type="text" id="nuevaRutaNombre" placeholder="Ej: RUTA AZUA, RUTA LA VEGA..." class="flex-1 p-2.5 border rounded-xl text-sm font-bold bg-slate-50 border-slate-300 focus:bg-white outline-none">
+          <button type="button" onclick="agregarRuta()" class="bg-blue-900 text-white px-4 py-2.5 rounded-xl text-xs font-bold uppercase hover:bg-blue-800 transition">
+            Crear
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+        <div class="flex justify-between items-center">
+          <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">Agregar Cliente a la Ruta</h2>
+          <select id="selectRutaParaCliente" onchange="renderizarListaClientesConfig()" class="p-2 border rounded-lg text-xs font-bold bg-slate-50 border-slate-300 outline-none">
+          </select>
+        </div>
+
+        <form onsubmit="agregarClienteCatalogo(event)" class="space-y-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+          <div>
+            <label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Nombre del Negocio / Cliente</label>
+            <input type="text" id="nuevoClienteNombre" placeholder="Ej: Colmado El Progreso" required class="w-full p-2.5 border rounded-lg text-sm font-bold bg-white border-slate-300 outline-none">
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Concepto / Máquina</label>
+              <select id="nuevoClienteConcepto" class="w-full p-2.5 border rounded-lg text-sm font-bold bg-white border-slate-300 outline-none">
+                <option value="Dulces">Dulces</option>
+                <option value="Peluches">Peluches</option>
+                <option value="General">General / Otra</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">% Comisión Acordado</label>
+              <input type="number" id="nuevoClientePorcentaje" min="0" max="100" value="25" required class="w-full p-2.5 border rounded-lg text-sm font-bold bg-white border-slate-300 outline-none">
+            </div>
+          </div>
+          <button type="submit" class="w-full py-2.5 bg-blue-900 hover:bg-blue-800 text-white text-xs font-bold uppercase rounded-lg shadow transition">
+            + Guardar Cliente en Catálogo
+          </button>
+        </form>
+
+        <div class="pt-2">
+          <h3 class="text-xs font-bold text-slate-600 mb-2 uppercase">Clientes en esta Ruta:</h3>
+          <ul id="listaClientesConfig" class="divide-y divide-slate-100 text-xs font-medium border border-slate-100 rounded-xl overflow-hidden bg-white">
+          </ul>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script>
+    // ==========================================
+    // CONFIGURACIÓN DE SUPABASE (CREDENCIALES ACTIVAS)
+    // ==========================================
+    const SUPABASE_URL = "https://nfgnyvdjolpowdpybuvw.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mZ255dmRqb2xwb3dkcHlidXZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4MTE5MzEsImV4cCI6MjEwNDM4NzkzMX0.bnNuDhGmIx04GoSEbmgHi_EJPv7Q4XixiCel-3owKSo";
+
+    const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // ==========================================
+    // ESTADO GLOBAL Y CONTROL DE 24 HORAS
+    // ==========================================
+    let usuarioActual = null;
+    let perfilActual = null;
+    let modoRegistro = false;
+
+    const RUTAS_BASE = ["RUTA SANTO DOMINGO OESTE", "RUTA SANTO DOMINGO ESTE", "RUTA SANTIAGO", "RUTA SUR"];
+    let rutasApp = [];
+    let catalogoClientes = [];
+    let liquidacionesGuardadas = [];
+    let gastosGuardados = [];
+
+    let totalNetoDepositoCalculado = 0;
+
+    function registrarActividad() {
+      localStorage.setItem('pb_ultima_actividad', Date.now().toString());
+    }
+
+    function expiroLimite24Horas() {
+      const ultima = localStorage.getItem('pb_ultima_actividad');
+      if (!ultima) return false;
+      const horasTranscurridas = (Date.now() - parseInt(ultima, 10)) / (1000 * 60 * 60);
+      return horasTranscurridas >= 24;
+    }
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      const hoy = new Date().toISOString().split('T')[0];
+      document.getElementById('fechaCuadre').value = hoy;
+      document.getElementById('filtroFechaDia').value = hoy;
+      document.getElementById('filtroFechaDesde').value = hoy;
+      document.getElementById('filtroFechaHasta').value = hoy;
+      document.getElementById('gastoFecha').value = hoy;
+
+      fijarEstaSemanaDeposito();
+
+      if (expiroLimite24Horas()) {
+        localStorage.removeItem('pb_ultima_actividad');
+        await sbClient.auth.signOut();
+        document.getElementById('modalAuth').classList.remove('hidden');
+        return;
+      }
+
+      const { data: { session } } = await sbClient.auth.getSession();
+      if (session) {
+        usuarioActual = session.user;
+        registrarActividad();
+        await iniciarAplicacionConUsuario();
+      } else {
+        document.getElementById('modalAuth').classList.remove('hidden');
+      }
+    });
+
+    // ==========================================
+    // AUTENTICACIÓN
+    // ==========================================
+    function alternarModoAuth() {
+      modoRegistro = !modoRegistro;
+      const btnSubmit = document.getElementById('btnAuthSubmit');
+      const btnModo = document.getElementById('btnModoAuth');
+      const err = document.getElementById('authError');
+      err.classList.add('hidden');
+
+      if (modoRegistro) {
+        btnSubmit.textContent = "Crear Cuenta Nueva";
+        btnModo.textContent = "¿Ya tienes cuenta? Inicia sesión";
+      } else {
+        btnSubmit.textContent = "Iniciar Sesión";
+        btnModo.textContent = "¿No tienes cuenta? Regístrate aquí";
+      }
+    }
+
+    async function procesarAuth(e) {
+      e.preventDefault();
+      const email = document.getElementById('authEmail').value.trim().toLowerCase();
+      const password = document.getElementById('authPassword').value;
+      const err = document.getElementById('authError');
+      err.classList.add('hidden');
+
+      if (modoRegistro) {
+        const { data, error } = await sbClient.auth.signUp({
+          email: email,
+          password: password
+        });
+
+        if (error) {
+          err.className = "text-xs font-semibold text-center mt-3 text-rose-600 block";
+          err.textContent = "Error al crear cuenta: " + error.message;
+          return;
+        }
+
+        if (data?.user && (!data.session || data.user.identities?.length === 0)) {
+          err.className = "text-xs font-semibold text-center mt-3 text-amber-700 bg-amber-50 p-2.5 rounded-lg border border-amber-200 block";
+          err.innerHTML = "✉️ Hemos enviado un correo de confirmación a <strong>" + email + "</strong>. Confírmalo e inicia sesión.";
+          return;
+        }
+
+        usuarioActual = data.user;
+        const rolAsignado = (email === 'elieldejesusml@gmail.com') ? 'admin' : 'colector';
+
+        await sbClient.from('pb_usuarios_data').insert({
+          user_id: usuarioActual.id,
+          email: email,
+          rol: rolAsignado,
+          rutas: RUTAS_BASE,
+          clientes: [],
+          liquidaciones: [],
+          gastos: []
+        });
+
+        registrarActividad();
+        await iniciarAplicacionConUsuario();
+
+      } else {
+        const { data, error } = await sbClient.auth.signInWithPassword({
+          email: email,
+          password: password
+        });
+
+        if (error) {
+          err.className = "text-xs font-semibold text-center mt-3 text-rose-600 block";
+          err.textContent = "Correo o contraseña incorrectos.";
+          return;
+        }
+
+        usuarioActual = data.user;
+        registrarActividad();
+        await iniciarAplicacionConUsuario();
+      }
+    }
+
+    async function iniciarAplicacionConUsuario() {
+      document.getElementById('modalAuth').classList.add('hidden');
+
+      const { data } = await sbClient
+        .from('pb_usuarios_data')
+        .select('*')
+        .eq('user_id', usuarioActual.id)
+        .single();
+
+      if (data) {
+        perfilActual = data;
+      } else {
+        perfilActual = {
+          user_id: usuarioActual.id,
+          email: usuarioActual.email,
+          rol: (usuarioActual.email === 'elieldejesusml@gmail.com') ? 'admin' : 'colector',
+          rutas: RUTAS_BASE,
+          clientes: [],
+          liquidaciones: [],
+          gastos: []
+        };
+      }
+
+      document.getElementById('labelUsuarioActivo').textContent = perfilActual.email;
+      const badgeRol = document.getElementById('badgeRol');
+      badgeRol.textContent = perfilActual.rol;
+      badgeRol.className = perfilActual.rol === 'admin' 
+        ? "px-1.5 py-0.5 bg-amber-400 text-slate-900 rounded font-black text-[9px] uppercase" 
+        : "px-1.5 py-0.5 bg-blue-700 text-white rounded font-bold text-[9px] uppercase";
+
+      rutasApp = perfilActual.rutas || RUTAS_BASE;
+      catalogoClientes = perfilActual.clientes || [];
+      liquidacionesGuardadas = perfilActual.liquidaciones || [];
+      gastosGuardados = perfilActual.gastos || [];
+
+      if (perfilActual.rol === 'admin') {
+        configurarPanelAdmin();
+      } else {
+        document.getElementById('panelAdmin').classList.add('hidden');
+      }
+
+      poblarSelectoresRuta();
+      actualizarClientesSegunRuta();
+      renderizarHistorial();
+      renderizarListaClientesConfig();
+      calcularDepositoSemanal();
+    }
+
+    // ==========================================
+    // PANEL ADMINISTRADOR
+    // ==========================================
+    async function configurarPanelAdmin() {
+      const panel = document.getElementById('panelAdmin');
+      panel.classList.remove('hidden');
+
+      const select = document.getElementById('selectUsuarioAdmin');
+      select.innerHTML = '';
+
+      const { data: usuarios } = await sbClient.from('pb_usuarios_data').select('user_id, email, rol');
+      if (usuarios) {
+        usuarios.forEach(u => {
+          const opt = document.createElement('option');
+          opt.value = u.user_id;
+          opt.textContent = `${u.email} (${u.rol})`;
+          if (u.user_id === perfilActual.user_id) opt.selected = true;
+          select.appendChild(opt);
+        });
+      }
+    }
+
+    async function cambiarVistaUsuarioAdmin() {
+      const idSeleccionado = document.getElementById('selectUsuarioAdmin').value;
+      const { data } = await sbClient.from('pb_usuarios_data').select('*').eq('user_id', idSeleccionado).single();
+      if (data) {
+        rutasApp = data.rutas || RUTAS_BASE;
+        catalogoClientes = data.clientes || [];
+        liquidacionesGuardadas = data.liquidaciones || [];
+        gastosGuardados = data.gastos || [];
+
+        poblarSelectoresRuta();
+        actualizarClientesSegunRuta();
+        renderizarHistorial();
+        renderizarListaClientesConfig();
+        calcularDepositoSemanal();
+      }
+    }
+
+    async function cerrarSesionManual() {
+      localStorage.removeItem('pb_ultima_actividad');
+      await sbClient.auth.signOut();
+      location.reload();
+    }
+
+    // ==========================================
+    // NUBE SUPABASE
+    // ==========================================
+    async function guardarDatosEnNube(conAlerta = false) {
+      if (!usuarioActual) return;
+      registrarActividad();
+      const targetUserId = document.getElementById('selectUsuarioAdmin')?.value || usuarioActual.id;
+
+      const { error } = await sbClient.from('pb_usuarios_data').update({
+        rutas: rutasApp,
+        clientes: catalogoClientes,
+        liquidaciones: liquidacionesGuardadas,
+        gastos: gastosGuardados,
+        updated_at: new Date().toISOString()
+      }).eq('user_id', targetUserId);
+
+      if (!error && conAlerta) {
+        alert("✅ Datos respaldados en la nube con éxito.");
+      }
+    }
+
+    async function descargarDatosDeNube(conAlerta = false) {
+      if (!usuarioActual) return;
+      registrarActividad();
+      const targetUserId = document.getElementById('selectUsuarioAdmin')?.value || usuarioActual.id;
+
+      const { data } = await sbClient.from('pb_usuarios_data').select('*').eq('user_id', targetUserId).single();
+      if (data) {
+        rutasApp = data.rutas || RUTAS_BASE;
+        catalogoClientes = data.clientes || [];
+        liquidacionesGuardadas = data.liquidaciones || [];
+        gastosGuardados = data.gastos || [];
+
+        poblarSelectoresRuta();
+        actualizarClientesSegunRuta();
+        renderizarHistorial();
+        renderizarListaClientesConfig();
+        calcularDepositoSemanal();
+        if (conAlerta) alert("✅ Datos actualizados desde la nube.");
+      }
+    }
+
+    // ==========================================
+    // RESPALDO LOCAL (.JSON)
+    // ==========================================
+    function descargarCopiaSeguridad() {
+      registrarActividad();
+      const backup = {
+        usuario: perfilActual ? perfilActual.email : "local",
+        rutas: rutasApp,
+        clientes: catalogoClientes,
+        liquidaciones: liquidacionesGuardadas,
+        gastos: gastosGuardados,
+        fecha: new Date().toISOString()
+      };
+
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const fechaHoy = new Date().toISOString().split('T')[0];
+      
+      a.href = url;
+      a.download = `Respaldo_PlanetBrands_${fechaHoy}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function restaurarCopiaSeguridad(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (data.rutas && data.clientes) {
+            rutasApp = data.rutas;
+            catalogoClientes = data.clientes;
+            if (data.liquidaciones) liquidacionesGuardadas = data.liquidaciones;
+            if (data.gastos) gastosGuardados = data.gastos;
+
+            poblarSelectoresRuta();
+            actualizarClientesSegunRuta();
+            renderizarHistorial();
+            renderizarListaClientesConfig();
+            calcularDepositoSemanal();
+
+            await guardarDatosEnNube(false);
+            alert("✅ Archivo de respaldo restaurado y sincronizado con éxito.");
+          } else {
+            alert("El archivo no tiene el formato de respaldo correcto.");
+          }
+        } catch (err) {
+          alert("Error al leer el archivo de respaldo.");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // ==========================================
+    // PESTAÑAS
+    // ==========================================
+    function cambiarPestana(p) {
+      registrarActividad();
+      document.getElementById('vistaCuadre').classList.add('seccion-oculta');
+      document.getElementById('vistaHistorial').classList.add('seccion-oculta');
+      document.getElementById('vistaDeposito').classList.add('seccion-oculta');
+      document.getElementById('vistaRutas').classList.add('seccion-oculta');
+
+      const clasesInactiva = "py-2.5 rounded-lg text-slate-600 hover:text-slate-900 transition text-[11px] sm:text-xs";
+      const clasesActiva = "py-2.5 rounded-lg bg-blue-900 text-white shadow transition text-[11px] sm:text-xs";
+
+      document.getElementById('tabCuadre').className = clasesInactiva;
+      document.getElementById('tabHistorial').className = clasesInactiva;
+      document.getElementById('tabDeposito').className = clasesInactiva;
+      document.getElementById('tabRutas').className = clasesInactiva;
+
+      if (p === 'cuadre') {
+        document.getElementById('vistaCuadre').classList.remove('seccion-oculta');
+        document.getElementById('tabCuadre').className = clasesActiva;
+      } else if (p === 'historial') {
+        document.getElementById('vistaHistorial').classList.remove('seccion-oculta');
+        document.getElementById('tabHistorial').className = clasesActiva;
+        renderizarHistorial();
+      } else if (p === 'deposito') {
+        document.getElementById('vistaDeposito').classList.remove('seccion-oculta');
+        document.getElementById('tabDeposito').className = clasesActiva;
+        calcularDepositoSemanal();
+      } else if (p === 'rutas') {
+        document.getElementById('vistaRutas').classList.remove('seccion-oculta');
+        document.getElementById('tabRutas').className = clasesActiva;
+        renderizarListaClientesConfig();
+      }
+    }
+
+    // ==========================================
+    // GESTIÓN DE RUTAS Y CLIENTES
+    // ==========================================
+    function poblarSelectoresRuta() {
+      const s1 = document.getElementById('selectRutaForm');
+      const s2 = document.getElementById('filtroRuta');
+      const s3 = document.getElementById('selectRutaParaCliente');
+
+      const opcionesIndividuales = rutasApp.map(r => `<option value="${r}">${r}</option>`).join('');
+
+      s1.innerHTML = opcionesIndividuales;
+      s3.innerHTML = opcionesIndividuales;
+      s2.innerHTML = `<option value="TODAS">TODAS LAS RUTAS (CONSOLIDADO)</option>` + opcionesIndividuales;
+    }
+
+    function actualizarClientesSegunRuta() {
+      const ruta = document.getElementById('selectRutaForm').value;
+      const datalist = document.getElementById('listaClientesDatalist');
+      const filtrados = catalogoClientes.filter(c => c.ruta === ruta);
+      const unicos = [...new Set(filtrados.map(c => c.nombre))];
+      datalist.innerHTML = unicos.map(nombre => `<option value="${nombre}">`).join('');
+      limpiarFormulario();
+    }
+
+    function alCambiarCliente() {
+      const ruta = document.getElementById('selectRutaForm').value;
+      const nombre = document.getElementById('inputCliente').value.trim().toLowerCase();
+      const coincidencias = catalogoClientes.filter(c => c.ruta === ruta && c.nombre.trim().toLowerCase() === nombre);
+
+      const badge = document.getElementById('badgeVariasMaquinas');
+      const selectConcepto = document.getElementById('concepto');
+
+      if (coincidencias.length > 1) {
+        badge.classList.remove('hidden');
+        selectConcepto.className = "w-full p-2.5 border-2 border-amber-500 rounded-xl text-sm font-bold bg-amber-50 outline-none";
+        selectConcepto.value = coincidencias[0].concepto;
+        document.getElementById('porcentajeComision').value = coincidencias[0].porcentaje;
+      } else if (coincidencias.length === 1) {
+        badge.classList.add('hidden');
+        selectConcepto.className = "w-full p-2.5 border rounded-xl text-sm font-bold bg-slate-50 border-slate-300 outline-none";
+        selectConcepto.value = coincidencias[0].concepto;
+        document.getElementById('porcentajeComision').value = coincidencias[0].porcentaje;
+      } else {
+        badge.classList.add('hidden');
+        selectConcepto.className = "w-full p-2.5 border rounded-xl text-sm font-bold bg-slate-50 border-slate-300 outline-none";
+        document.getElementById('porcentajeComision').value = "25";
+      }
+
+      calcularTodo();
+    }
+
+    function alCambiarConceptoManual() {
+      const ruta = document.getElementById('selectRutaForm').value;
+      const nombre = document.getElementById('inputCliente').value.trim().toLowerCase();
+      const concepto = document.getElementById('concepto').value;
+
+      const encontrado = catalogoClientes.find(c => c.ruta === ruta && c.nombre.trim().toLowerCase() === nombre && c.concepto === concepto);
+      if (encontrado) {
+        document.getElementById('porcentajeComision').value = encontrado.porcentaje;
+      } else {
+        document.getElementById('porcentajeComision').value = "25";
+      }
+      calcularTodo();
+    }
+
+    // ==========================================
+    // CÁLCULOS DE CUADRE INDIVIDUAL
+    // ==========================================
+    function calcularTodo() {
+      const c25 = Number(document.getElementById('cant25').value) || 0;
+      const c10 = Number(document.getElementById('cant10').value) || 0;
+      const c5 = Number(document.getElementById('cant5').value) || 0;
+
+      const sub25 = c25 * 25;
+      const sub10 = c10 * 10;
+      const sub5 = c5 * 5;
+
+      document.getElementById('sub25').textContent = `RD$ ${sub25.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      document.getElementById('sub10').textContent = `RD$ ${sub10.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      document.getElementById('sub5').textContent = `RD$ ${sub5.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+
+      const totalMonedas = c25 + c10 + c5;
+      document.getElementById('totalMonedasLabel').textContent = `${totalMonedas} Monedas`;
+
+      const totalBruto = sub25 + sub10 + sub5;
+      const porc = Number(document.getElementById('porcentajeComision').value) || 0;
+
+      const totalComision = (totalBruto * porc) / 100;
+      const totalEmpresa = totalBruto - totalComision;
+
+      document.getElementById('labelComisionCliente').textContent = `Comisión Cliente (${porc}%)`;
+      document.getElementById('totalBrutoCard').textContent = `RD$ ${totalBruto.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      document.getElementById('totalComisionCard').textContent = `RD$ ${totalComision.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      document.getElementById('totalEmpresaCard').textContent = `RD$ ${totalEmpresa.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+    }
+
+    function limpiarFormulario() {
+      document.getElementById('inputCliente').value = '';
+      document.getElementById('cant25').value = '';
+      document.getElementById('cant10').value = '';
+      document.getElementById('cant5').value = '';
+      document.getElementById('porcentajeComision').value = '25';
+      document.getElementById('badgeVariasMaquinas').classList.add('hidden');
+      document.getElementById('concepto').className = "w-full p-2.5 border rounded-xl text-sm font-bold bg-slate-50 border-slate-300 outline-none";
+      calcularTodo();
+    }
+
+    async function guardarCuadre(e) {
+      e.preventDefault();
+      registrarActividad();
+
+      const c25 = Number(document.getElementById('cant25').value) || 0;
+      const c10 = Number(document.getElementById('cant10').value) || 0;
+      const c5 = Number(document.getElementById('cant5').value) || 0;
+      const bruto = (c25 * 25) + (c10 * 10) + (c5 * 5);
+
+      if (bruto <= 0) {
+        alert("Debe ingresar al menos una moneda para guardar.");
+        return;
+      }
+
+      const clienteNombre = document.getElementById('inputCliente').value.trim();
+      const rutaActual = document.getElementById('selectRutaForm').value;
+      const conceptoActual = document.getElementById('concepto').value;
+      const porc = Number(document.getElementById('porcentajeComision').value) || 25;
+
+      const comision = (bruto * porc) / 100;
+      const gananciaEmpresa = bruto - comision;
+
+      const nuevoRegistro = {
+        id: Date.now(),
+        fecha: document.getElementById('fechaCuadre').value,
+        ruta: rutaActual,
+        cliente: clienteNombre,
+        concepto: conceptoActual,
+        porcentaje: porc,
+        cant25: c25,
+        cant10: c10,
+        cant5: c5,
+        totalMonedas: c25 + c10 + c5,
+        bruto: bruto,
+        comision: comision,
+        gananciaEmpresa: gananciaEmpresa
+      };
+
+      liquidacionesGuardadas.unshift(nuevoRegistro);
+
+      const existe = catalogoClientes.some(c => c.ruta === rutaActual && c.nombre.toLowerCase() === clienteNombre.toLowerCase() && c.concepto === conceptoActual);
+      if (!existe) {
+        catalogoClientes.push({
+          id: Date.now() + 1,
+          ruta: rutaActual,
+          nombre: clienteNombre,
+          concepto: conceptoActual,
+          porcentaje: porc
+        });
+      }
+
+      await guardarDatosEnNube(false);
+
+      limpiarFormulario();
+      alert("✅ Liquidación guardada con éxito.");
+    }
+
+    // ==========================================
+    // HISTORIAL GENERAL (REGISTROS)
+    // ==========================================
+    function alternarFiltroFecha() {
+      const tipo = document.getElementById('filtroTipoPeriodo').value;
+      const cDia = document.getElementById('contenedorFiltroDia');
+      const cSemana = document.getElementById('contenedorFiltroSemana');
+
+      cDia.classList.add('hidden');
+      cSemana.classList.add('hidden');
+
+      if (tipo === 'dia') {
+        cDia.classList.remove('hidden');
+      } else if (tipo === 'semana') {
+        cSemana.classList.remove('hidden');
+      }
+
+      renderizarHistorial();
+    }
+
+    function filtrarLiquidaciones() {
+      const ruta = document.getElementById('filtroRuta').value;
+      const tipo = document.getElementById('filtroTipoPeriodo').value;
+
+      return liquidacionesGuardadas.filter(item => {
+        if (ruta !== "TODAS" && item.ruta !== ruta) return false;
+
+        if (tipo === 'dia') {
+          const diaSel = document.getElementById('filtroFechaDia').value;
+          return item.fecha === diaSel;
+        } else if (tipo === 'semana') {
+          const desde = document.getElementById('filtroFechaDesde').value;
+          const hasta = document.getElementById('filtroFechaHasta').value;
+          if (desde && hasta) {
+            return item.fecha >= desde && item.fecha <= hasta;
+          }
+        }
+        return true;
+      });
+    }
+
+    function renderizarHistorial() {
+      const lista = filtrarLiquidaciones();
+      const cuerpo = document.getElementById('cuerpoHistorial');
+      const mensajeVacio = document.getElementById('mensajeHistorialVacio');
+
+      cuerpo.innerHTML = '';
+      let totalMonedas = 0;
+      let totalComisiones = 0;
+      let totalEmpresa = 0;
+
+      if (lista.length === 0) {
+        mensajeVacio.classList.remove('hidden');
+      } else {
+        mensajeVacio.classList.add('hidden');
+        lista.forEach(item => {
+          totalMonedas += item.totalMonedas;
+          totalComisiones += item.comision;
+          totalEmpresa += item.gananciaEmpresa;
+
+          const fila = document.createElement('tr');
+          fila.className = "hover:bg-slate-50 transition border-b border-slate-100";
+          fila.innerHTML = `
+            <td class="p-3">
+              <span class="font-bold text-slate-800 block text-xs">${item.cliente}</span>
+              <span class="text-[10px] text-slate-400 font-semibold uppercase">${item.concepto} (${item.porcentaje}%)</span>
+            </td>
+            <td class="p-3 text-center text-slate-500 font-semibold text-[10px] uppercase">
+              ${item.ruta}
+            </td>
+            <td class="p-3 text-center text-slate-500 font-medium text-[11px] whitespace-nowrap">
+              ${item.fecha || '--'}
+            </td>
+            <td class="p-3 text-center font-mono font-medium text-slate-600">
+              ${item.cant25} / ${item.cant10} / ${item.cant5}
+            </td>
+            <td class="p-3 text-right font-medium text-slate-600">
+              RD$ ${item.bruto.toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+            </td>
+            <td class="p-3 text-right font-black text-emerald-700">
+              RD$ ${item.gananciaEmpresa.toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+            </td>
+            <td class="p-3 text-center">
+              <button onclick="eliminarRegistro(${item.id})" class="text-rose-500 hover:text-rose-700 font-bold text-sm px-2 py-1">✕</button>
+            </td>
+          `;
+          cuerpo.appendChild(fila);
+        });
+      }
+
+      document.getElementById('resumenCantRegistros').textContent = lista.length;
+      document.getElementById('resumenTotalMonedas').textContent = totalMonedas;
+      document.getElementById('resumenComisiones').textContent = `RD$ ${totalComisiones.toLocaleString('es-DO', { minimumFractionDigits: 0 })}`;
+      document.getElementById('resumenGananciaEmpresa').textContent = `RD$ ${totalEmpresa.toLocaleString('es-DO', { minimumFractionDigits: 0 })}`;
+    }
+
+    async function eliminarRegistro(id) {
+      if (confirm("¿Deseas eliminar este registro de la lista?")) {
+        liquidacionesGuardadas = liquidacionesGuardadas.filter(item => item.id !== id);
+        await guardarDatosEnNube(false);
+        renderizarHistorial();
+        calcularDepositoSemanal();
+      }
+    }
+
+    async function borrarHistorialRutaActual() {
+      const ruta = document.getElementById('filtroRuta').value;
+      const aviso = ruta === "TODAS" 
+        ? "¿Seguro que deseas borrar TODAS las liquidaciones de todas las rutas?" 
+        : `¿Seguro que deseas borrar las liquidaciones de "${ruta}"?`;
+
+      if (confirm(aviso)) {
+        if (ruta === "TODAS") {
+          liquidacionesGuardadas = [];
+        } else {
+          liquidacionesGuardadas = liquidacionesGuardadas.filter(item => item.ruta !== ruta);
+        }
+        await guardarDatosEnNube(false);
+        renderizarHistorial();
+        calcularDepositoSemanal();
+      }
+    }
+
+    // ==========================================
+    // EXPORTACIÓN A EXCEL Y WORD DE REGISTROS
+    // ==========================================
+    function obtenerTextoPeriodo() {
+      const tipo = document.getElementById('filtroTipoPeriodo').value;
+      if (tipo === 'dia') {
+        return `Día: ${document.getElementById('filtroFechaDia').value}`;
+      } else if (tipo === 'semana') {
+        return `Semana: ${document.getElementById('filtroFechaDesde').value} al ${document.getElementById('filtroFechaHasta').value}`;
+      }
+      return `Histórico Completo`;
+    }
+
+    function exportarExcel() {
+      const rutaActual = document.getElementById('filtroRuta').value;
+      const lista = filtrarLiquidaciones();
+
+      if (lista.length === 0) {
+        alert("No hay registros en el período y ruta seleccionados para exportar.");
+        return;
+      }
+
+      let csv = "Cliente / Concepto;Ganancia Empresa\r\n";
+      let granTotalGanancia = 0;
+
+      lista.forEach(item => {
+        const ganancia = Number(item.gananciaEmpresa) || 0;
+        granTotalGanancia += ganancia;
+
+        const conceptoLimpio = item.concepto ? ` (${item.concepto})` : "";
+        const etiquetaCliente = `- ${item.cliente}${conceptoLimpio}:`;
+        const valorMoneda = `RD$ ${ganancia.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+        csv += `"${etiquetaCliente}";"${valorMoneda}"\r\n`;
+      });
+
+      const totalFormateado = `RD$ ${granTotalGanancia.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      csv += `"- Total de recolección:";"${totalFormateado}"\r\n`;
+
+      const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      
+      const fechaHoy = new Date().toISOString().split('T')[0];
+      const nombreArchivoRuta = rutaActual === "TODAS" ? "CONSOLIDADO_GENERAL" : rutaActual.replace(/\s+/g, '_');
+      link.setAttribute("href", url);
+      link.setAttribute("download", `Liquidacion_${nombreArchivoRuta}_${fechaHoy}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    function exportarWord() {
+      const rutaActual = document.getElementById('filtroRuta').value;
+      const lista = filtrarLiquidaciones();
+
+      if (lista.length === 0) {
+        alert("No hay registros en el período y ruta seleccionados para exportar.");
+        return;
+      }
+
+      const textoPeriodo = obtenerTextoPeriodo();
+      const textoRuta = rutaActual === "TODAS" ? "TODAS LAS RUTAS (CONSOLIDADO)" : rutaActual;
+      let granTotalGanancia = 0;
+
+      let filasHtml = "";
+      lista.forEach(item => {
+        const ganancia = Number(item.gananciaEmpresa) || 0;
+        granTotalGanancia += ganancia;
+
+        const conceptoLimpio = item.concepto ? ` (${item.concepto})` : "";
+        const etiquetaCliente = `- ${item.cliente}${conceptoLimpio}:`;
+        const valorMoneda = `RD$ ${ganancia.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+        filasHtml += `
+          <tr>
+            <td style="padding: 6px 12px; font-size: 13px; color: #1e293b;">${etiquetaCliente}</td>
+            <td style="padding: 6px 12px; font-size: 13px; text-align: right; font-weight: bold; color: #0f172a;">${valorMoneda}</td>
+          </tr>
+        `;
+      });
+
+      const totalFormateado = `RD$ ${granTotalGanancia.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+      const contenidoDoc = `
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+        <head>
+          <meta charset='utf-8'>
+          <title>Liquidación de Ruta</title>
+          <style>
+            body { font-family: Calibri, Arial, sans-serif; margin: 24px; color: #0f172a; }
+            h2 { margin-bottom: 4px; font-size: 18px; color: #1e3a8a; }
+            p.subtitulo { font-size: 12px; color: #64748b; margin-top: 0; margin-bottom: 16px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+            tr.total-row { border-top: 2px solid #0f172a; background-color: #f8fafc; }
+          </style>
+        </head>
+        <body>
+          <h2>PLANET BRANDS - CONTROL DE RUTAS</h2>
+          <p class="subtitulo">Ruta: <strong>${textoRuta}</strong> | Período: <strong>${textoPeriodo}</strong></p>
+          <table>
+            <tbody>
+              ${filasHtml}
+              <tr class="total-row">
+                <td style="padding: 10px 12px; font-size: 14px; font-weight: bold; color: #0f172a;">- Total de recolección:</td>
+                <td style="padding: 10px 12px; font-size: 14px; font-weight: bold; text-align: right; color: #1e3a8a;">${totalFormateado}</td>
+              </tr>
+            </tbody>
+          </table>
+        </body>
+        </html>
+      `;
+
+      const blob = new Blob(['\uFEFF' + contenidoDoc], { type: 'application/msword;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+
+      const fechaHoy = new Date().toISOString().split('T')[0];
+      const nombreArchivoRuta = rutaActual === "TODAS" ? "CONSOLIDADO_GENERAL" : rutaActual.replace(/\s+/g, '_');
+      link.href = url;
+      link.download = `Liquidacion_${nombreArchivoRuta}_${fechaHoy}.doc`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    // ==========================================
+    // SECCIÓN DEPÓSITO SEMANAL, GASTOS Y ARQUEO
+    // ==========================================
+    function fijarEstaSemanaDeposito() {
+      const ahora = new Date();
+      const diaSemana = ahora.getDay();
+      
+      const distanciaLunes = (diaSemana === 0 ? -6 : 1) - diaSemana;
+      const lunes = new Date(ahora);
+      lunes.setDate(ahora.getDate() + distanciaLunes);
+
+      const viernes = new Date(lunes);
+      viernes.setDate(lunes.getDate() + 4);
+
+      document.getElementById('depositoFechaDesde').value = lunes.toISOString().split('T')[0];
+      document.getElementById('depositoFechaHasta').value = viernes.toISOString().split('T')[0];
+
+      calcularDepositoSemanal();
+    }
+
+    function calcularDepositoSemanal() {
+      const desde = document.getElementById('depositoFechaDesde').value;
+      const hasta = document.getElementById('depositoFechaHasta').value;
+
+      if (!desde || !hasta) return;
+
+      const liquidacionesSemana = liquidacionesGuardadas.filter(item => item.fecha >= desde && item.fecha <= hasta);
+
+      const resumenPorRuta = {};
+      let totalRecoleccionSemana = 0;
+
+      liquidacionesSemana.forEach(item => {
+        const ganancia = Number(item.gananciaEmpresa) || 0;
+        totalRecoleccionSemana += ganancia;
+
+        if (!resumenPorRuta[item.ruta]) {
+          resumenPorRuta[item.ruta] = { total: 0, cantidad: 0 };
+        }
+        resumenPorRuta[item.ruta].total += ganancia;
+        resumenPorRuta[item.ruta].cantidad += 1;
+      });
+
+      const cuerpoRutas = document.getElementById('cuerpoRutasSemana');
+      const msgSinRutas = document.getElementById('sinRutasSemanaMsg');
+      cuerpoRutas.innerHTML = '';
+
+      const nombresRutas = Object.keys(resumenPorRuta);
+      document.getElementById('totalRutasSemanaLabel').textContent = `${nombresRutas.length} rutas trabajadas`;
+
+      if (nombresRutas.length === 0) {
+        msgSinRutas.classList.remove('hidden');
+      } else {
+        msgSinRutas.classList.add('hidden');
+        nombresRutas.forEach(ruta => {
+          const info = resumenPorRuta[ruta];
+          const fila = document.createElement('tr');
+          fila.className = "hover:bg-slate-50 transition border-b border-slate-100";
+          fila.innerHTML = `
+            <td class="p-3 font-bold text-slate-800 uppercase text-xs">${ruta}</td>
+            <td class="p-3 text-center text-slate-500 font-medium">${info.cantidad} clientes</td>
+            <td class="p-3 text-right font-black text-blue-950">RD$ ${info.total.toLocaleString('es-DO', { minimumFractionDigits: 2 })}</td>
+          `;
+          cuerpoRutas.appendChild(fila);
+        });
+      }
+
+      document.getElementById('subtotalRecoleccionSemanaCard').textContent = `RD$ ${totalRecoleccionSemana.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+
+      // Gastos en efectivo
+      const gastosSemana = gastosGuardados.filter(g => g.fecha >= desde && g.fecha <= hasta);
+      const cuerpoGastos = document.getElementById('cuerpoGastosSemana');
+      const msgSinGastos = document.getElementById('sinGastosSemanaMsg');
+      cuerpoGastos.innerHTML = '';
+
+      let totalGastosSemana = 0;
+
+      if (gastosSemana.length === 0) {
+        msgSinGastos.classList.remove('hidden');
+      } else {
+        msgSinGastos.classList.add('hidden');
+        gastosSemana.forEach(gasto => {
+          totalGastosSemana += Number(gasto.monto) || 0;
+          const fila = document.createElement('tr');
+          fila.className = "hover:bg-slate-50 transition border-b border-slate-100";
+          fila.innerHTML = `
+            <td class="p-3 font-bold text-slate-800 text-xs">${gasto.concepto}</td>
+            <td class="p-3 text-center text-slate-500 font-medium">${gasto.fecha}</td>
+            <td class="p-3 text-right font-black text-rose-600">- RD$ ${Number(gasto.monto).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</td>
+            <td class="p-3 text-center">
+              <button onclick="eliminarGasto(${gasto.id})" class="text-rose-500 hover:text-rose-700 font-bold text-sm px-2 py-1">✕</button>
+            </td>
+          `;
+          cuerpoGastos.appendChild(fila);
+        });
+      }
+
+      document.getElementById('totalGastosSemanaCard').textContent = `- RD$ ${totalGastosSemana.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+
+      totalNetoDepositoCalculado = Math.max(0, totalRecoleccionSemana - totalGastosSemana);
+      document.getElementById('auditoriaTotalSistema').textContent = `RD$ ${totalNetoDepositoCalculado.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+
+      calcularArqueoFisico();
+    }
+
+    async function agregarGasto(e) {
+      e.preventDefault();
+      registrarActividad();
+
+      const concepto = document.getElementById('gastoConcepto').value.trim();
+      const fecha = document.getElementById('gastoFecha').value;
+      const monto = Number(document.getElementById('gastoMonto').value) || 0;
+
+      if (!concepto || monto <= 0) {
+        alert("Ingresa un concepto y un monto válido.");
+        return;
+      }
+
+      const nuevoGasto = {
+        id: Date.now(),
+        concepto: concepto,
+        fecha: fecha,
+        monto: monto
+      };
+
+      gastosGuardados.unshift(nuevoGasto);
+      await guardarDatosEnNube(false);
+
+      document.getElementById('gastoConcepto').value = '';
+      document.getElementById('gastoMonto').value = '';
+
+      calcularDepositoSemanal();
+      alert("✅ Gasto en efectivo registrado.");
+    }
+
+    async function eliminarGasto(id) {
+      if (confirm("¿Deseas eliminar este gasto?")) {
+        gastosGuardados = gastosGuardados.filter(g => g.id !== id);
+        await guardarDatosEnNube(false);
+        calcularDepositoSemanal();
+      }
+    }
+
+    // ==========================================
+    // CÁLCULOS DEL ARQUEO FÍSICO Y AUDITORÍA
+    // ==========================================
+    function calcularArqueoFisico() {
+      // 1. Papeletas
+      const b2000 = Number(document.getElementById('b2000').value) || 0;
+      const b1000 = Number(document.getElementById('b1000').value) || 0;
+      const b500 = Number(document.getElementById('b500').value) || 0;
+      const b200 = Number(document.getElementById('b200').value) || 0;
+      const b100 = Number(document.getElementById('b100').value) || 0;
+      const b50 = Number(document.getElementById('b50').value) || 0;
+
+      const sub2000 = b2000 * 2000;
+      const sub1000 = b1000 * 1000;
+      const sub500 = b500 * 500;
+      const sub200 = b200 * 200;
+      const sub100 = b100 * 100;
+      const sub50 = b50 * 50;
+
+      document.getElementById('subB2000').textContent = `RD$ ${sub2000.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      document.getElementById('subB1000').textContent = `RD$ ${sub1000.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      document.getElementById('subB500').textContent = `RD$ ${sub500.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      document.getElementById('subB200').textContent = `RD$ ${sub200.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      document.getElementById('subB100').textContent = `RD$ ${sub100.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      document.getElementById('subB50').textContent = `RD$ ${sub50.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+
+      const totalBilletes = sub2000 + sub1000 + sub500 + sub200 + sub100 + sub50;
+      const cantBilletes = b2000 + b1000 + b500 + b200 + b100 + b50;
+      document.getElementById('labelTotalPapeletasContadas').textContent = `${cantBilletes} Billetes`;
+      document.getElementById('totalBilletesCard').textContent = `RD$ ${totalBilletes.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+
+      // 2. Monedas Físicas
+      const m25 = Number(document.getElementById('m25').value) || 0;
+      const m10 = Number(document.getElementById('m10').value) || 0;
+      const m5 = Number(document.getElementById('m5').value) || 0;
+      const m1 = Number(document.getElementById('m1').value) || 0;
+
+      const subM25 = m25 * 25;
+      const subM10 = m10 * 10;
+      const subM5 = m5 * 5;
+      const subM1 = m1 * 1;
+
+      document.getElementById('subM25').textContent = `RD$ ${subM25.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      document.getElementById('subM10').textContent = `RD$ ${subM10.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      document.getElementById('subM5').textContent = `RD$ ${subM5.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      document.getElementById('subM1').textContent = `RD$ ${subM1.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+
+      const totalMonedas = subM25 + subM10 + subM5 + subM1;
+      const cantMonedas = m25 + m10 + m5 + m1;
+      document.getElementById('labelTotalMonedasContadas').textContent = `${cantMonedas} Monedas`;
+      document.getElementById('totalMonedasFisicasCard').textContent = `RD$ ${totalMonedas.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+
+      // 3. Total Dinero Físico en Mano
+      const totalFisicoEnMano = totalBilletes + totalMonedas;
+      document.getElementById('totalFisicoEnManoCard').textContent = `RD$ ${totalFisicoEnMano.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      document.getElementById('auditoriaTotalContado').textContent = `RD$ ${totalFisicoEnMano.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+
+      // 4. Comparación con el depósito del sistema
+      const diferencia = totalFisicoEnMano - totalNetoDepositoCalculado;
+      const difElemento = document.getElementById('auditoriaDiferencia');
+      const badgeEstado = document.getElementById('badgeEstadoCuadre');
+      const msgAuditoria = document.getElementById('mensajeAuditoria');
+      const contenedor = document.getElementById('contenedorAuditoria');
+
+      if (totalFisicoEnMano === 0 && totalNetoDepositoCalculado === 0) {
+        difElemento.textContent = `RD$ 0.00`;
+        badgeEstado.className = "px-2.5 py-0.5 rounded-full text-xs font-black uppercase bg-slate-800 text-slate-300";
+        badgeEstado.textContent = "Sin movimientos";
+        msgAuditoria.textContent = "No hay datos para comparar.";
+        contenedor.className = "p-5 rounded-2xl shadow-lg border space-y-3 bg-slate-900 text-white border-slate-800";
+      } else if (totalFisicoEnMano === 0) {
+        difElemento.textContent = `- RD$ ${totalNetoDepositoCalculado.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+        badgeEstado.className = "px-2.5 py-0.5 rounded-full text-xs font-black uppercase bg-slate-800 text-slate-300";
+        badgeEstado.textContent = "Pendiente conteo físico";
+        msgAuditoria.textContent = "Ingresa las papeletas y monedas para verificar si cuadra con el depósito.";
+        contenedor.className = "p-5 rounded-2xl shadow-lg border space-y-3 bg-slate-900 text-white border-slate-800";
+      } else if (diferencia === 0) {
+        difElemento.textContent = `RD$ 0.00`;
+        difElemento.className = "text-2xl font-black text-emerald-400";
+        badgeEstado.className = "px-2.5 py-0.5 rounded-full text-xs font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+        badgeEstado.textContent = "✅ ¡Caja Cuadrada Exacta!";
+        msgAuditoria.textContent = "El dinero contado en mano coincide exactamente con el monto a depositar.";
+        contenedor.className = "p-5 rounded-2xl shadow-lg border space-y-3 bg-slate-900 text-white border-emerald-600/50";
+      } else if (diferencia < 0) {
+        const faltante = Math.abs(diferencia);
+        difElemento.textContent = `- RD$ ${faltante.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+        difElemento.className = "text-2xl font-black text-rose-400";
+        badgeEstado.className = "px-2.5 py-0.5 rounded-full text-xs font-black uppercase bg-rose-500/20 text-rose-300 border border-rose-500/30";
+        badgeEstado.textContent = "⚠️ Faltante de Dinero";
+        msgAuditoria.textContent = `Faltan RD$ ${faltante.toLocaleString('es-DO', { minimumFractionDigits: 2 })} en el conteo para alcanzar el total del sistema.`;
+        contenedor.className = "p-5 rounded-2xl shadow-lg border space-y-3 bg-slate-900 text-white border-rose-600/50";
+      } else {
+        difElemento.textContent = `+ RD$ ${diferencia.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+        difElemento.className = "text-2xl font-black text-amber-400";
+        badgeEstado.className = "px-2.5 py-0.5 rounded-full text-xs font-black uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30";
+        badgeEstado.textContent = "ℹ️ Sobrante de Efectivo";
+        msgAuditoria.textContent = `Tienes RD$ ${diferencia.toLocaleString('es-DO', { minimumFractionDigits: 2 })} de más en físico respecto a lo liquidado en el sistema.`;
+        contenedor.className = "p-5 rounded-2xl shadow-lg border space-y-3 bg-slate-900 text-white border-amber-600/50";
+      }
+    }
+
+    function limpiarArqueoFisico() {
+      ['b2000', 'b1000', 'b500', 'b200', 'b100', 'b50', 'm25', 'm10', 'm5', 'm1'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      calcularArqueoFisico();
+    }
+
+    function exportarDepositoWord() {
+      const desde = document.getElementById('depositoFechaDesde').value;
+      const hasta = document.getElementById('depositoFechaHasta').value;
+
+      const liquidacionesSemana = liquidacionesGuardadas.filter(item => item.fecha >= desde && item.fecha <= hasta);
+      const gastosSemana = gastosGuardados.filter(g => g.fecha >= desde && g.fecha <= hasta);
+
+      const resumenPorRuta = {};
+      let totalRecoleccion = 0;
+
+      liquidacionesSemana.forEach(item => {
+        const ganancia = Number(item.gananciaEmpresa) || 0;
+        totalRecoleccion += ganancia;
+        if (!resumenPorRuta[item.ruta]) resumenPorRuta[item.ruta] = 0;
+        resumenPorRuta[item.ruta] += ganancia;
+      });
+
+      let totalGastos = 0;
+      let filasGastosHtml = "";
+      gastosSemana.forEach(g => {
+        totalGastos += Number(g.monto) || 0;
+        filasGastosHtml += `
+          <tr>
+            <td style="padding: 6px 12px; font-size: 13px; color: #475569;">- ${g.concepto} (${g.fecha}):</td>
+            <td style="padding: 6px 12px; font-size: 13px; text-align: right; color: #dc2626; font-weight: bold;">- RD$ ${Number(g.monto).toLocaleString('es-DO', { minimumFractionDigits: 2 })}</td>
+          </tr>
+        `;
+      });
+
+      let filasRutasHtml = "";
+      for (const ruta in resumenPorRuta) {
+        filasRutasHtml += `
+          <tr>
+            <td style="padding: 6px 12px; font-size: 13px; color: #1e293b;">- ${ruta}:</td>
+            <td style="padding: 6px 12px; font-size: 13px; text-align: right; font-weight: bold; color: #0f172a;">RD$ ${resumenPorRuta[ruta].toLocaleString('es-DO', { minimumFractionDigits: 2 })}</td>
+          </tr>
+        `;
+      }
+
+      const totalNetoADepositar = Math.max(0, totalRecoleccion - totalGastos);
+
+      const b2000 = Number(document.getElementById('b2000').value) || 0;
+      const b1000 = Number(document.getElementById('b1000').value) || 0;
+      const b500 = Number(document.getElementById('b500').value) || 0;
+      const b200 = Number(document.getElementById('b200').value) || 0;
+      const b100 = Number(document.getElementById('b100').value) || 0;
+      const b50 = Number(document.getElementById('b50').value) || 0;
+
+      const m25 = Number(document.getElementById('m25').value) || 0;
+      const m10 = Number(document.getElementById('m10').value) || 0;
+      const m5 = Number(document.getElementById('m5').value) || 0;
+      const m1 = Number(document.getElementById('m1').value) || 0;
+
+      const totalFisico = (b2000*2000)+(b1000*1000)+(b500*500)+(b200*200)+(b100*100)+(b50*50)+(m25*25)+(m10*10)+(m5*5)+(m1*1);
+      const dif = totalFisico - totalNetoADepositar;
+
+      const contenidoDoc = `
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+        <head>
+          <meta charset='utf-8'>
+          <title>Comprobante de Depósito Semanal</title>
+          <style>
+            body { font-family: Calibri, Arial, sans-serif; margin: 24px; color: #0f172a; }
+            h2 { margin-bottom: 4px; font-size: 18px; color: #1e3a8a; }
+            h3 { font-size: 14px; margin-top: 16px; margin-bottom: 6px; color: #334155; text-transform: uppercase; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; }
+            p.subtitulo { font-size: 12px; color: #64748b; margin-top: 0; margin-bottom: 16px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+            tr.total-row { border-top: 2px solid #0f172a; background-color: #f8fafc; }
+          </style>
+        </head>
+        <body>
+          <h2>PLANET BRANDS - CIERRE Y DEPÓSITO SEMANAL</h2>
+          <p class="subtitulo">Período de recolección: <strong>Del ${desde} al ${hasta}</strong></p>
+
+          <h3>1. Resumen de Rutas Trabajadas</h3>
+          <table>
+            <tbody>
+              ${filasRutasHtml || "<tr><td colspan='2' style='padding:6px 12px;'>No hay rutas en este período</td></tr>"}
+              <tr style="border-top: 1px solid #cbd5e1;">
+                <td style="padding: 8px 12px; font-weight: bold;">Subtotal Recolección:</td>
+                <td style="padding: 8px 12px; text-align: right; font-weight: bold; color: #1e3a8a;">RD$ ${totalRecoleccion.toLocaleString('es-DO', { minimumFractionDigits: 2 })}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>2. Gastos en Efectivo Deducidos</h3>
+          <table>
+            <tbody>
+              ${filasGastosHtml || "<tr><td colspan='2' style='padding:6px 12px;'>Sin gastos registrados</td></tr>"}
+              <tr style="border-top: 1px solid #cbd5e1;">
+                <td style="padding: 8px 12px; font-weight: bold; color: #dc2626;">Total Gastos:</td>
+                <td style="padding: 8px 12px; text-align: right; font-weight: bold; color: #dc2626;">- RD$ ${totalGastos.toLocaleString('es-DO', { minimumFractionDigits: 2 })}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <br/>
+          <table>
+            <tbody>
+              <tr class="total-row">
+                <td style="padding: 12px; font-size: 15px; font-weight: bold; color: #0f172a;">TOTAL SISTEMA A DEPOSITAR:</td>
+                <td style="padding: 12px; font-size: 16px; font-weight: bold; text-align: right; color: #1e3a8a;">RD$ ${totalNetoADepositar.toLocaleString('es-DO', { minimumFractionDigits: 2 })}</td>
+              </tr>
+              <tr style="background-color: #f1f5f9;">
+                <td style="padding: 8px 12px; font-size: 13px; font-weight: bold;">Efectivo Físico Contado en Bolsa:</td>
+                <td style="padding: 8px 12px; font-size: 14px; font-weight: bold; text-align: right;">RD$ ${totalFisico.toLocaleString('es-DO', { minimumFractionDigits: 2 })}</td>
+              </tr>
+              <tr style="border-top: 1px solid #94a3b8;">
+                <td style="padding: 8px 12px; font-size: 13px; font-weight: bold;">Diferencia de Cuadre:</td>
+                <td style="padding: 8px 12px; font-size: 14px; font-weight: bold; text-align: right; color: ${dif === 0 ? '#047857' : (dif < 0 ? '#dc2626' : '#d97706')};">
+                  ${dif === 0 ? 'CUADRADO EXACTO' : (dif < 0 ? '- RD$ ' + Math.abs(dif).toLocaleString('es-DO', { minimumFractionDigits: 2 }) : '+ RD$ ' + dif.toLocaleString('es-DO', { minimumFractionDigits: 2 }))}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </body>
+        </html>
+      `;
+
+      const blob = new Blob(['\uFEFF' + contenidoDoc], { type: 'application/msword;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = `Deposito_Semanal_${desde}_al_${hasta}.doc`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    // ==========================================
+    // ADMINISTRACIÓN DE RUTAS Y CLIENTES
+    // ==========================================
+    async function agregarRuta() {
+      const input = document.getElementById('nuevaRutaNombre');
+      const nombre = input.value.trim().toUpperCase();
+      if (!nombre) return;
+
+      if (!rutasApp.includes(nombre)) {
+        rutasApp.push(nombre);
+        await guardarDatosEnNube(false);
+        poblarSelectoresRuta();
+        input.value = '';
+        alert("✅ Ruta creada exitosamente.");
+      } else {
+        alert("Esa ruta ya existe.");
+      }
+    }
+
+    async function agregarClienteCatalogo(e) {
+      e.preventDefault();
+      const ruta = document.getElementById('selectRutaParaCliente').value;
+      const nombre = document.getElementById('nuevoClienteNombre').value.trim();
+      const concepto = document.getElementById('nuevoClienteConcepto').value;
+      const porcentaje = Number(document.getElementById('nuevoClientePorcentaje').value) || 25;
+
+      const existe = catalogoClientes.some(c => c.ruta === ruta && c.nombre.toLowerCase() === clienteNombre.toLowerCase() && c.concepto === concepto);
+      if (existe) {
+        alert("Este cliente ya tiene asignada esa máquina en esta ruta.");
+        return;
+      }
+
+      catalogoClientes.push({
+        id: Date.now(),
+        ruta: ruta,
+        nombre: nombre,
+        concepto: concepto,
+        porcentaje: porcentaje
+      });
+
+      await guardarDatosEnNube(false);
+      document.getElementById('nuevoClienteNombre').value = '';
+      document.getElementById('nuevoClientePorcentaje').value = '25';
+      renderizarListaClientesConfig();
+      actualizarClientesSegunRuta();
+      alert("✅ Cliente guardado en catálogo.");
+    }
+
+    function renderizarListaClientesConfig() {
+      const ruta = document.getElementById('selectRutaParaCliente').value;
+      const lista = catalogoClientes.filter(c => c.ruta === ruta);
+      const contenedor = document.getElementById('listaClientesConfig');
+
+      contenedor.innerHTML = '';
+      if (lista.length === 0) {
+        contenedor.innerHTML = '<li class="p-3 text-slate-400 text-center">No hay clientes configurados en esta ruta.</li>';
+        return;
+      }
+
+      lista.forEach(c => {
+        const li = document.createElement('li');
+        li.className = "p-3 flex justify-between items-center hover:bg-slate-50";
+        li.innerHTML = `
+          <div>
+            <strong class="text-slate-800 text-xs block">${c.nombre}</strong>
+            <span class="text-[11px] text-slate-500 font-semibold">${c.concepto} - Comisión: ${c.porcentaje}%</span>
+          </div>
+          <button onclick="eliminarClienteCatalogo(${c.id})" class="text-rose-500 hover:text-rose-700 font-bold text-xs p-1">Eliminar</button>
+        `;
+        contenedor.appendChild(li);
+      });
+    }
+
+    async function eliminarClienteCatalogo(id) {
+      if (confirm("¿Deseas eliminar este cliente del catálogo?")) {
+        catalogoClientes = catalogoClientes.filter(c => c.id !== id);
+        await guardarDatosEnNube(false);
+        renderizarListaClientesConfig();
+        actualizarClientesSegunRuta();
+      }
+    }
+  </script>
+</body>
 </html>
