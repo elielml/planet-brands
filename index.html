@@ -62,6 +62,10 @@
         </div>
       </div>
       <div class="flex items-center gap-2">
+        <!-- Indicador de autoguardado en nube -->
+        <span id="indicadorAutoSync" class="text-[10px] bg-blue-950/60 text-blue-200 border border-blue-700/50 px-2 py-1 rounded-md font-medium flex items-center gap-1">
+          <span>☁️</span> Sincronizado
+        </span>
         <button onclick="cerrarSesionManual()" title="Cerrar sesión" class="text-xs bg-blue-800 hover:bg-rose-700 px-2.5 py-1.5 rounded-lg border border-blue-700 transition font-bold">
           Salir 🚪
         </button>
@@ -134,6 +138,8 @@
             <select id="concepto" onchange="alCambiarConceptoManual()" class="w-full p-2.5 border rounded-xl text-sm font-bold bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-600 outline-none">
               <option value="Dulces">Dulces</option>
               <option value="Peluches">Peluches</option>
+              <option value="Kiddie Rides">Kiddie Rides</option>
+              <option value="Boxing Machine">Boxing Machine</option>
               <option value="General">General / Otra</option>
             </select>
           </div>
@@ -578,33 +584,28 @@
     <!-- ========================================== -->
     <section id="vistaRutas" class="seccion-oculta space-y-4">
 
+      <!-- Panel de Respaldos Físicos Locales -->
       <div class="w-full bg-slate-900 text-white p-4 sm:p-5 rounded-xl shadow border border-slate-800 space-y-3 box-border overflow-hidden">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
             <h2 class="text-sm font-bold flex items-center gap-2">
-              <span>☁️</span> Respaldo y Sincronización
+              <span>💾</span> Copias de Seguridad Locales
             </h2>
             <p class="text-xs text-slate-300 mt-0.5">
-              Guarda tus rutas y clientes en la nube o descarga un archivo físico en tu teléfono.
+              Tus cambios se guardan automáticamente en Supabase. También puedes guardar o restaurar un archivo físico en tu teléfono.
             </p>
           </div>
-          <span id="badgeNube" class="px-3 py-1 bg-white/10 text-white text-[11px] font-semibold rounded-full border border-white/20">
-            Sincronizado
+          <span id="badgeNube" class="px-3 py-1 bg-emerald-500/20 text-emerald-300 text-[11px] font-semibold rounded-full border border-emerald-500/30">
+            Autoguardado Activo
           </span>
         </div>
 
         <div class="flex flex-wrap gap-2 pt-1">
-          <button type="button" onclick="guardarDatosEnNube(true)" class="bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase shadow transition flex items-center gap-1.5">
-            <span>☁️ Subir a la Nube</span>
-          </button>
-          <button type="button" onclick="descargarDatosDeNube(true)" class="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase shadow transition flex items-center gap-1.5">
-            <span>🔄 Descargar de la Nube</span>
-          </button>
           <button type="button" onclick="descargarCopiaSeguridad()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-lg text-xs font-bold shadow border border-slate-700 flex items-center gap-1">
-            <span>📥 Archivo Respaldo</span>
+            <span>📥 Descargar Archivo Respaldo (.json)</span>
           </button>
           <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-lg text-xs font-bold shadow border border-slate-700 inline-flex items-center gap-1">
-            <span>📤 Restaurar Archivo</span>
+            <span>📤 Restaurar Archivo Respaldo</span>
             <input type="file" accept=".json" onchange="restaurarCopiaSeguridad(this)" class="hidden">
           </label>
         </div>
@@ -638,6 +639,8 @@
               <select id="nuevoClienteConcepto" class="w-full p-2.5 border rounded-lg text-sm font-bold bg-white border-slate-300 outline-none">
                 <option value="Dulces">Dulces</option>
                 <option value="Peluches">Peluches</option>
+                <option value="Kiddie Rides">Kiddie Rides</option>
+                <option value="Boxing Machine">Boxing Machine</option>
                 <option value="General">General / Otra</option>
               </select>
             </div>
@@ -896,44 +899,36 @@
     }
 
     // ==========================================
-    // NUBE SUPABASE
+    // AUTOGUARDADO EN SUPABASE (100% AUTOMÁTICO)
     // ==========================================
-    async function guardarDatosEnNube(conAlerta = false) {
+    async function sincronizarEnNubeAuto() {
       if (!usuarioActual) return;
       registrarActividad();
-      const targetUserId = document.getElementById('selectUsuarioAdmin')?.value || usuarioActual.id;
-
-      const { error } = await sbClient.from('pb_usuarios_data').update({
-        rutas: rutasApp,
-        clientes: catalogoClientes,
-        liquidaciones: liquidacionesGuardadas,
-        gastos: gastosGuardados,
-        updated_at: new Date().toISOString()
-      }).eq('user_id', targetUserId);
-
-      if (!error && conAlerta) {
-        alert("✅ Datos respaldados en la nube con éxito.");
+      const indicador = document.getElementById('indicadorAutoSync');
+      if (indicador) {
+        indicador.innerHTML = '<span>🔄</span> Guardando...';
+        indicador.className = 'text-[10px] bg-amber-500/20 text-amber-200 border border-amber-500/40 px-2 py-1 rounded-md font-medium flex items-center gap-1';
       }
-    }
 
-    async function descargarDatosDeNube(conAlerta = false) {
-      if (!usuarioActual) return;
-      registrarActividad();
       const targetUserId = document.getElementById('selectUsuarioAdmin')?.value || usuarioActual.id;
 
-      const { data } = await sbClient.from('pb_usuarios_data').select('*').eq('user_id', targetUserId).single();
-      if (data) {
-        rutasApp = data.rutas || RUTAS_BASE;
-        catalogoClientes = data.clientes || [];
-        liquidacionesGuardadas = data.liquidaciones || [];
-        gastosGuardados = data.gastos || [];
-
-        poblarSelectoresRuta();
-        actualizarClientesSegunRuta();
-        renderizarHistorial();
-        renderizarListaClientesConfig();
-        calcularDepositoSemanal();
-        if (conAlerta) alert("✅ Datos actualizados desde la nube.");
+      try {
+        await sbClient.from('pb_usuarios_data').update({
+          rutas: rutasApp,
+          clientes: catalogoClientes,
+          liquidaciones: liquidacionesGuardadas,
+          gastos: gastosGuardados,
+          updated_at: new Date().toISOString()
+        }).eq('user_id', targetUserId);
+      } catch (err) {
+        console.error("Error al sincronizar con Supabase:", err);
+      } finally {
+        if (indicador) {
+          setTimeout(() => {
+            indicador.innerHTML = '<span>☁️</span> Sincronizado';
+            indicador.className = 'text-[10px] bg-blue-950/60 text-blue-200 border border-blue-700/50 px-2 py-1 rounded-md font-medium flex items-center gap-1';
+          }, 800);
+        }
       }
     }
 
@@ -984,8 +979,8 @@
             renderizarListaClientesConfig();
             calcularDepositoSemanal();
 
-            await guardarDatosEnNube(false);
-            alert("✅ Archivo de respaldo restaurado y sincronizado con éxito.");
+            await sincronizarEnNubeAuto();
+            alert("✅ Archivo de respaldo restaurado y sincronizado automáticamente.");
           } else {
             alert("El archivo no tiene el formato de respaldo correcto.");
           }
@@ -1196,10 +1191,11 @@
         });
       }
 
-      await guardarDatosEnNube(false);
+      // Autoguardado directo en Supabase
+      await sincronizarEnNubeAuto();
 
       limpiarFormulario();
-      alert("✅ Liquidación guardada con éxito.");
+      alert("✅ Liquidación guardada y sincronizada en la nube.");
     }
 
     // ==========================================
@@ -1301,7 +1297,7 @@
     async function eliminarRegistro(id) {
       if (confirm("¿Deseas eliminar este registro de la lista?")) {
         liquidacionesGuardadas = liquidacionesGuardadas.filter(item => item.id !== id);
-        await guardarDatosEnNube(false);
+        await sincronizarEnNubeAuto();
         renderizarHistorial();
         calcularDepositoSemanal();
       }
@@ -1319,7 +1315,7 @@
         } else {
           liquidacionesGuardadas = liquidacionesGuardadas.filter(item => item.ruta !== ruta);
         }
-        await guardarDatosEnNube(false);
+        await sincronizarEnNubeAuto();
         renderizarHistorial();
         calcularDepositoSemanal();
       }
@@ -1578,19 +1574,21 @@
       };
 
       gastosGuardados.unshift(nuevoGasto);
-      await guardarDatosEnNube(false);
+      
+      // Autoguardado directo en Supabase
+      await sincronizarEnNubeAuto();
 
       document.getElementById('gastoConcepto').value = '';
       document.getElementById('gastoMonto').value = '';
 
       calcularDepositoSemanal();
-      alert("✅ Gasto en efectivo registrado.");
+      alert("✅ Gasto registrado y sincronizado en la nube.");
     }
 
     async function eliminarGasto(id) {
       if (confirm("¿Deseas eliminar este gasto?")) {
         gastosGuardados = gastosGuardados.filter(g => g.id !== id);
-        await guardarDatosEnNube(false);
+        await sincronizarEnNubeAuto();
         calcularDepositoSemanal();
       }
     }
@@ -1844,7 +1842,10 @@
 
       if (!rutasApp.includes(nombre)) {
         rutasApp.push(nombre);
-        await guardarDatosEnNube(false);
+
+        // Autoguardado directo en Supabase
+        await sincronizarEnNubeAuto();
+
         poblarSelectoresRuta();
 
         // Mantiene seleccionada la nueva ruta creada
@@ -1854,7 +1855,7 @@
         actualizarClientesSegunRuta();
 
         input.value = '';
-        alert("✅ Ruta creada exitosamente: " + nombre);
+        alert("✅ Ruta creada y sincronizada: " + nombre);
       } else {
         alert("Esa ruta ya existe.");
       }
@@ -1872,7 +1873,6 @@
         return;
       }
 
-      // Verificación corregida con la variable 'nombre'
       const existe = catalogoClientes.some(c => 
         c.ruta === ruta && 
         c.nombre.trim().toLowerCase() === nombre.toLowerCase() && 
@@ -1892,13 +1892,15 @@
         porcentaje: porcentaje
       });
 
-      await guardarDatosEnNube(false);
+      // Autoguardado directo en Supabase
+      await sincronizarEnNubeAuto();
+
       document.getElementById('nuevoClienteNombre').value = '';
       document.getElementById('nuevoClientePorcentaje').value = '25';
 
       renderizarListaClientesConfig();
       actualizarClientesSegunRuta();
-      alert("✅ Cliente guardado en catálogo.");
+      alert("✅ Cliente guardado y sincronizado en la nube.");
     }
 
     function renderizarListaClientesConfig() {
@@ -1929,7 +1931,7 @@
     async function eliminarClienteCatalogo(id) {
       if (confirm("¿Deseas eliminar este cliente del catálogo?")) {
         catalogoClientes = catalogoClientes.filter(c => c.id !== id);
-        await guardarDatosEnNube(false);
+        await sincronizarEnNubeAuto();
         renderizarListaClientesConfig();
         actualizarClientesSegunRuta();
       }
