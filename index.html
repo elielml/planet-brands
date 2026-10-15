@@ -700,7 +700,17 @@
       return horasTranscurridas >= 24;
     }
 
-    window.addEventListener('DOMContentLoaded', async () => {
+   window.addEventListener('DOMContentLoaded', async () => {
+      // REGISTRO DEL SERVICE WORKER (SOPORTE OFFLINE)
+      if ('serviceWorker' in navigator) {
+        try {
+          await navigator.serviceWorker.register('./sw.js');
+          console.log("Service Worker registrado con éxito.");
+        } catch (err) {
+          console.warn("Fallo al registrar Service Worker:", err);
+        }
+      }
+
       const hoy = new Date().toISOString().split('T')[0];
       document.getElementById('fechaCuadre').value = hoy;
       document.getElementById('filtroFechaDia').value = hoy;
