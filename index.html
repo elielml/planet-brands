@@ -57,7 +57,6 @@
           <h1 class="font-black text-lg tracking-wide leading-tight">PLANET BRANDS</h1>
           <p class="text-[11px] text-blue-200 uppercase font-semibold tracking-wider flex items-center gap-1.5">
             <span id="labelUsuarioActivo">Cargando...</span>
-            <span id="badgeRol" class="px-1.5 py-0.2 bg-blue-700 text-[9px] rounded font-bold uppercase"></span>
           </p>
         </div>
       </div>
@@ -72,34 +71,35 @@
     </div>
   </header>
 
-  <!-- SELECTOR DE ZONA DINÁMICO (VISIBLE SI TIENE ACCESO A MÁS DE UNA ZONA O ES DUEÑO/ADMIN) -->
+  <!-- SELECTOR DE ZONA DISCRETO (CIBAO / SUR / RESUMEN GENERAL) -->
   <div id="barraSelectorZona" class="max-w-5xl mx-auto px-4 mt-2">
-    <div class="bg-blue-950 text-white p-2 rounded-xl flex flex-wrap items-center justify-between gap-2 text-xs">
+    <div class="bg-blue-950 text-white p-2.5 rounded-xl flex items-center justify-between text-xs">
       <div class="flex items-center gap-2">
-        <span class="text-blue-300 font-bold uppercase text-[11px]">📍 Zona Activa:</span>
-        <select id="selectZonaActiva" onchange="cambiarZonaOperativa()" class="bg-blue-900 border border-blue-700 text-white font-bold px-2.5 py-1 rounded-lg outline-none">
+        <span class="text-blue-300 font-bold uppercase text-[11px]">📍 Zona:</span>
+        <select id="selectZonaActiva" onchange="cambiarZonaOperativa()" class="bg-blue-900 border border-blue-700 text-white font-bold px-3 py-1.5 rounded-lg outline-none cursor-pointer">
           <option value="cibao">Zona Cibao</option>
           <option value="sur">Zona Sur</option>
           <option value="todas">🌐 Resumen General Consolidado</option>
         </select>
       </div>
-      <span id="textoPermisoZona" class="text-[10px] text-blue-300 font-medium bg-blue-900/60 px-2 py-0.5 rounded border border-blue-800"></span>
     </div>
   </div>
 
-  <!-- AVISO DE USUARIO SIN ZONAS (CUENTAS NUEVAS AISLADAS) -->
-  <div id="avisoSinZonas" class="hidden max-w-5xl mx-auto px-4 mt-4">
-    <div class="bg-amber-50 border-2 border-amber-300 p-6 rounded-2xl text-center space-y-2">
-      <h2 class="text-base font-black text-amber-900 uppercase">🔒 Cuenta Creada Exitosamente</h2>
-      <p class="text-xs text-amber-800 max-w-md mx-auto">
-        Tu cuenta está activa, pero aún no tienes zonas asignadas. Tus datos están completamente aislados hasta que el administrador principal autorice tu acceso a la <strong>Zona Cibao</strong> o <strong>Zona Sur</strong>.
+  <!-- AVISO DE ESPERA PARA USUARIOS RECIÉN REGISTRADOS (SIN ASIGNAR) -->
+  <div id="avisoSinZonas" class="hidden max-w-5xl mx-auto px-4 mt-6">
+    <div class="bg-white border-2 border-slate-200 p-8 rounded-2xl shadow-sm text-center space-y-3">
+      <div class="text-4xl">🕒</div>
+      <h2 class="text-base font-black text-slate-800 uppercase">Cuenta Creada Exitosamente</h2>
+      <p class="text-xs text-slate-600 max-w-md mx-auto leading-relaxed">
+        Tu registro se completó correctamente. Para comenzar a ver o gestionar información, el administrador debe autorizar tu cuenta y asignarte tu zona de trabajo.
       </p>
     </div>
   </div>
 
   <!-- NAVEGACIÓN PRINCIPAL -->
   <nav id="navegacionApp" class="max-w-5xl mx-auto px-4 mt-3">
-    <div class="grid grid-cols-2 sm:grid-cols-5 gap-1.5 bg-slate-200/80 p-1.5 rounded-xl text-xs font-bold text-center">
+    <div id="contenedorGridPestanas" class="grid grid-cols-3 sm:grid-cols-4 gap-1.5 bg-slate-200/80 p-1.5 rounded-xl text-xs font-bold text-center">
+      <!-- Pestaña Liquidar (Oculta para el perfil Dueño) -->
       <button type="button" id="tabCuadre" onclick="cambiarPestana('cuadre')" class="py-2.5 rounded-lg bg-blue-900 text-white shadow transition text-[11px] sm:text-xs">
         📝 Liquidar
       </button>
@@ -112,9 +112,9 @@
       <button type="button" id="tabRutas" onclick="cambiarPestana('rutas')" class="py-2.5 rounded-lg text-slate-600 hover:text-slate-900 transition text-[11px] sm:text-xs">
         ⚙️ Rutas/Nube
       </button>
-      <!-- Pestaña exclusiva del superadmin maestro -->
-      <button type="button" id="tabAdminMaster" onclick="cambiarPestana('adminMaster')" class="hidden col-span-2 sm:col-span-1 py-2.5 rounded-lg text-amber-800 bg-amber-100 hover:bg-amber-200 border border-amber-300 transition text-[11px] sm:text-xs">
-        👑 Usuarios / Papelera
+      <!-- Pestaña exclusiva Superadmin -->
+      <button type="button" id="tabAdminMaster" onclick="cambiarPestana('adminMaster')" class="hidden col-span-3 sm:col-span-1 py-2.5 rounded-lg text-amber-950 bg-amber-300 hover:bg-amber-400 border border-amber-400 font-black transition text-[11px] sm:text-xs">
+        👑 Permisos / Papelera
       </button>
     </div>
   </nav>
@@ -125,14 +125,6 @@
     <!-- VISTA 1: LIQUIDAR                          -->
     <!-- ========================================== -->
     <section id="vistaCuadre" class="space-y-4">
-      
-      <!-- Aviso si el usuario es Solo Lectura (Ej: Modo Dueño) -->
-      <div id="avisoSoloLecturaCuadre" class="hidden bg-blue-50 border border-blue-200 p-4 rounded-2xl text-center">
-        <p class="text-xs font-bold text-blue-900">
-          👓 Modo Consulta: Tu usuario tiene permisos de solo lectura para esta zona. Consulta los datos en la pestaña de <strong>Registros</strong> o <strong>Depósito</strong>.
-        </p>
-      </div>
-
       <form id="formCuadre" onsubmit="guardarCuadre(event)" class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -161,7 +153,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Concepto / Máquina</label>
-            <select id="concepto" onchange="alCambiarConceptoManual()" class="w-full p-2.5 border rounded-xl text-sm font-bold bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-600 outline-none">
+            <select id="concepto" class="w-full p-2.5 border rounded-xl text-sm font-bold bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-600 outline-none">
               <option value="Dulces">Dulces</option>
               <option value="Peluches">Peluches</option>
               <option value="Kiddie Rides">Kiddie Rides</option>
@@ -231,7 +223,7 @@
           </div>
         </div>
 
-        <div id="botonesFormCuadre" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
           <button type="button" onclick="limpiarFormulario()" class="py-3.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-xl border border-rose-200 transition text-sm uppercase">
             🗑 Borrar Campos
           </button>
@@ -258,9 +250,9 @@
           <div>
             <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Período</label>
             <select id="filtroTipoPeriodo" onchange="alternarFiltroFecha()" class="w-full p-2 border rounded-lg text-xs font-bold bg-slate-50 border-slate-300 outline-none">
-              <option value="todos">Todos los registros</option>
-              <option value="dia">Un solo día</option>
-              <option value="semana">Semana completa</option>
+              <option value="todos">Todos los registros guardados</option>
+              <option value="dia">Un solo día específico</option>
+              <option value="semana">Semana completa (Rango)</option>
             </select>
           </div>
         </div>
@@ -286,7 +278,7 @@
             <span>📊 Exportar a Excel</span>
           </button>
           <button type="button" onclick="exportarDocumento()" class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2.5 rounded-lg text-xs font-bold uppercase shadow transition flex items-center gap-2">
-            <span>📄 Exportar Documento</span>
+            <span>📄 Exportar Documento (Móvil)</span>
           </button>
         </div>
       </div>
@@ -316,7 +308,7 @@
             <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
               <tr>
                 <th class="p-3">Cliente / Máquina</th>
-                <th class="p-3 text-center">Ruta / Zona</th>
+                <th class="p-3 text-center">Ruta</th>
                 <th class="p-3 text-center">Fecha</th>
                 <th class="p-3 text-center">Monedas (25/10/5)</th>
                 <th class="p-3 text-right">Bruto</th>
@@ -340,12 +332,11 @@
     <!-- ========================================== -->
     <section id="vistaDeposito" class="seccion-oculta space-y-4">
       
-      <!-- Selector de semana -->
       <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
             <h2 class="text-sm font-black text-slate-800 uppercase tracking-wide">Semana de Recolección</h2>
-            <p class="text-xs text-slate-500">Cuadre de depósito y deducciones de gastos</p>
+            <p class="text-xs text-slate-500">Resumen para depósito bancario y control de gastos</p>
           </div>
           <button type="button" onclick="fijarEstaSemanaDeposito()" class="bg-blue-100 hover:bg-blue-200 text-blue-900 text-xs font-bold px-3 py-1.5 rounded-lg transition">
             📅 Esta Semana
@@ -445,7 +436,7 @@
         </div>
       </div>
 
-      <!-- ARQUEO FÍSICO EN MANO -->
+      <!-- ARQUEO FÍSICO EN MANO (SOLO VISIBLE SI PUEDE CREAR/EDITAR) -->
       <div id="seccionArqueoFisico" class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div class="flex justify-between items-center">
           <div>
@@ -569,6 +560,32 @@
     <!-- ========================================== -->
     <section id="vistaRutas" class="seccion-oculta space-y-4">
 
+      <div class="w-full bg-slate-900 text-white p-4 sm:p-5 rounded-xl shadow border border-slate-800 space-y-3 box-border overflow-hidden">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div>
+            <h2 class="text-sm font-bold flex items-center gap-2">
+              <span>💾</span> Copias de Seguridad Locales
+            </h2>
+            <p class="text-xs text-slate-300 mt-0.5">
+              Tus cambios se guardan automáticamente en la nube. También puedes descargar o restaurar un archivo físico en tu teléfono.
+            </p>
+          </div>
+          <span id="badgeNube" class="px-3 py-1 bg-emerald-500/20 text-emerald-300 text-[11px] font-semibold rounded-full border border-emerald-500/30">
+            Autoguardado Activo
+          </span>
+        </div>
+
+        <div class="flex flex-wrap gap-2 pt-1">
+          <button type="button" onclick="descargarCopiaSeguridad()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-lg text-xs font-bold shadow border border-slate-700 flex items-center gap-1">
+            <span>📥 Descargar Archivo Respaldo (.json)</span>
+          </button>
+          <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-lg text-xs font-bold shadow border border-slate-700 inline-flex items-center gap-1">
+            <span>📤 Restaurar Archivo Respaldo</span>
+            <input type="file" accept=".json" onchange="restaurarCopiaSeguridad(this)" class="hidden">
+          </label>
+        </div>
+      </div>
+
       <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
         <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">Crear Nueva Ruta en esta Zona</h2>
         <div class="flex gap-2">
@@ -622,37 +639,122 @@
     </section>
 
     <!-- ======================================================== -->
-    <!-- VISTA 5: USUARIOS, PERMISOS RÁPIDOS Y PAPELERA (MASTER) -->
+    <!-- VISTA 5: USUARIOS REGISTRADOS Y PERMISOS (SUPERADMIN)    -->
     <!-- ======================================================== -->
     <section id="vistaAdminMaster" class="seccion-oculta space-y-4">
       
-      <!-- ASIGNACIÓN RÁPIDA DE PERFILES Y MODO DUEÑO -->
-      <div class="bg-white p-5 rounded-2xl shadow-sm border border-amber-300 space-y-4">
-        <div class="border-b border-slate-100 pb-3">
-          <h2 class="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-2">
-            <span>👑</span> Gestión de Usuarios y Permisos
-          </h2>
-          <p class="text-xs text-slate-500">Asigna zonas y roles instantáneamente por correo</p>
+      <!-- TABLA DE USUARIOS REGISTRADOS -->
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-amber-300 space-y-3">
+        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+          <div>
+            <h2 class="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-2">
+              <span>👥</span> Usuarios Registrados
+            </h2>
+            <p class="text-xs text-slate-500">Selecciona un usuario de la lista para otorgarle acceso y permisos</p>
+          </div>
+          <button type="button" onclick="cargarListaUsuariosRegistrados()" class="text-xs font-bold text-blue-700 hover:underline">
+            🔄 Refrescar Lista
+          </button>
         </div>
 
-        <div class="bg-amber-50/70 p-4 rounded-xl border border-amber-200 space-y-3">
+        <div class="border border-slate-100 rounded-xl overflow-hidden">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
+              <tr>
+                <th class="p-2.5">Correo Electrónico</th>
+                <th class="p-2.5 text-center">Fecha Registro</th>
+                <th class="p-2.5 text-center">Zonas Activas</th>
+                <th class="p-2.5 text-center">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="cuerpoTablaUsuarios" class="divide-y divide-slate-100 text-slate-700">
+            </tbody>
+          </table>
+          <p id="mensajeSinUsuarios" class="text-center py-6 text-xs text-slate-400 hidden">
+            No hay usuarios registrados aún.
+          </p>
+        </div>
+      </div>
+
+      <!-- FORMULARIO DE ASIGNACIÓN INDEPENDIENTE POR ZONA -->
+      <div id="panelFormularioPermisos" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+        <div class="border-b border-slate-100 pb-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
-            <label class="block text-xs font-bold text-amber-900 uppercase mb-1">Correo del Usuario a Configurar</label>
-            <input type="email" id="inputEmailAsignar" placeholder="ejemplo@correo.com" class="w-full p-2.5 border rounded-xl text-xs font-bold bg-white border-amber-300 outline-none">
+            <h3 class="text-xs font-black text-slate-900 uppercase tracking-wide">
+              Configurando permisos para: <span id="labelUsuarioSeleccionado" class="text-blue-900 font-bold normal-case">Ninguno seleccionado</span>
+            </h3>
+            <p class="text-[11px] text-slate-500">Activa zonas y permisos independientes para este usuario</p>
+          </div>
+          <button type="button" onclick="marcarModoDuenoRapido()" class="bg-amber-100 hover:bg-amber-200 text-amber-900 px-3 py-1.5 rounded-lg text-xs font-bold transition">
+            👔 Atajo: Modo Dueño
+          </button>
+        </div>
+
+        <input type="hidden" id="inputUserIdSeleccionado">
+
+        <div class="space-y-4">
+          <!-- BLOQUE ZONA CIBAO -->
+          <div class="p-4 rounded-xl border border-blue-200 bg-blue-50/50 space-y-3">
+            <div class="flex items-center justify-between border-b border-blue-200 pb-2">
+              <label class="flex items-center gap-2 font-black text-xs text-blue-950 uppercase cursor-pointer">
+                <input type="checkbox" id="chkCibaoActivo" onchange="alternarBloqueZona('cibao')" class="w-4 h-4 text-blue-600 rounded">
+                <span>Acceso a Zona Cibao</span>
+              </label>
+              <span class="text-[10px] text-blue-700 font-semibold uppercase">Provincias Norte</span>
+            </div>
+
+            <div id="permisosCibaoContainer" class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 opacity-50 pointer-events-none">
+              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer">
+                <input type="checkbox" id="chkCibaoLeer" checked class="w-4 h-4 text-blue-600 rounded">
+                <span>Lectura</span>
+              </label>
+              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer">
+                <input type="checkbox" id="chkCibaoCrear" class="w-4 h-4 text-blue-600 rounded">
+                <span>Crear</span>
+              </label>
+              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer">
+                <input type="checkbox" id="chkCibaoEditar" class="w-4 h-4 text-blue-600 rounded">
+                <span>Editar</span>
+              </label>
+              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer">
+                <input type="checkbox" id="chkCibaoEliminar" class="w-4 h-4 text-rose-600 rounded">
+                <span>Eliminar</span>
+              </label>
+            </div>
           </div>
 
-          <div>
-            <label class="block text-xs font-bold text-amber-900 uppercase mb-1">Perfil / Rol a Aplicar</label>
-            <select id="selectPerfilRapido" class="w-full p-2.5 border rounded-xl text-xs font-bold bg-white border-amber-300 outline-none">
-              <option value="dueno">👔 Modo Dueño (Solo Lectura: Zona Cibao + Zona Sur + Resumen)</option>
-              <option value="colector_cibao">🚚 Colector Zona Cibao (Lectura y Creación en Cibao)</option>
-              <option value="colector_sur">🚚 Colector Zona Sur (Lectura y Creación en Sur)</option>
-              <option value="bloqueado">🚫 Bloquear / Revocar Todos los Accesos</option>
-            </select>
+          <!-- BLOQUE ZONA SUR -->
+          <div class="p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 space-y-3">
+            <div class="flex items-center justify-between border-b border-emerald-200 pb-2">
+              <label class="flex items-center gap-2 font-black text-xs text-emerald-950 uppercase cursor-pointer">
+                <input type="checkbox" id="chkSurActivo" onchange="alternarBloqueZona('sur')" class="w-4 h-4 text-emerald-600 rounded">
+                <span>Acceso a Zona Sur</span>
+              </label>
+              <span class="text-[10px] text-emerald-700 font-semibold uppercase">Provincias Sur / SD Oeste</span>
+            </div>
+
+            <div id="permisosSurContainer" class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 opacity-50 pointer-events-none">
+              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer">
+                <input type="checkbox" id="chkSurLeer" checked class="w-4 h-4 text-emerald-600 rounded">
+                <span>Lectura</span>
+              </label>
+              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer">
+                <input type="checkbox" id="chkSurCrear" class="w-4 h-4 text-emerald-600 rounded">
+                <span>Crear</span>
+              </label>
+              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer">
+                <input type="checkbox" id="chkSurEditar" class="w-4 h-4 text-emerald-600 rounded">
+                <span>Editar</span>
+              </label>
+              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer">
+                <input type="checkbox" id="chkSurEliminar" class="w-4 h-4 text-rose-600 rounded">
+                <span>Eliminar</span>
+              </label>
+            </div>
           </div>
 
-          <button type="button" onclick="aplicarPerfilUsuario()" class="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white font-black rounded-xl text-xs uppercase shadow transition">
-            ⚡ Aplicar Rol Automáticamente
+          <button type="button" onclick="guardarPermisosGranulares()" class="w-full py-3.5 bg-blue-900 hover:bg-blue-800 text-white font-black rounded-xl text-xs uppercase tracking-wider shadow transition">
+            💾 Guardar Permisos de este Usuario
           </button>
         </div>
       </div>
@@ -664,7 +766,7 @@
             <h2 class="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-2">
               <span>🗑️</span> Papelera de Registros Eliminados
             </h2>
-            <p class="text-xs text-slate-500">Restaura liquidaciones o clientes eliminados por los usuarios</p>
+            <p class="text-xs text-slate-500">Restaura liquidaciones que los usuarios hayan borrado</p>
           </div>
           <button type="button" onclick="cargarPapelera()" class="text-xs font-bold text-blue-700 hover:underline">
             🔄 Refrescar
@@ -675,7 +777,7 @@
           <table class="w-full text-left text-xs border-collapse">
             <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
               <tr>
-                <th class="p-2.5">Tipo / Detalle</th>
+                <th class="p-2.5">Detalle / Cliente</th>
                 <th class="p-2.5 text-center">Zona</th>
                 <th class="p-2.5 text-center">Fecha Borrado</th>
                 <th class="p-2.5 text-right">Monto</th>
@@ -686,12 +788,12 @@
             </tbody>
           </table>
           <p id="mensajePapeleraVacia" class="text-center py-6 text-xs text-slate-400">
-            La papelera está vacía. No hay registros eliminados pendientes.
+            La papelera está vacía. No hay registros pendientes.
           </p>
         </div>
       </div>
 
-      <!-- HISTORIAL DE AUDITORÍA -->
+      <!-- BITÁCORA DE AUDITORÍA -->
       <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
         <div class="flex justify-between items-center border-b border-slate-100 pb-2">
           <h2 class="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-2">
@@ -725,8 +827,8 @@
     // ==========================================
     let usuarioActual = null;
     let esSuperAdmin = false;
-    let permisosUsuario = []; // Lista de zonas autorizadas
-    let zonaActiva = 'cibao'; // 'cibao', 'sur' o 'todas'
+    let permisosUsuario = [];
+    let zonaActiva = 'cibao';
 
     let rutasApp = [];
     let catalogoClientes = [];
@@ -833,7 +935,6 @@
         usuarioActual = data.user;
         const soySuperAdmin = (email === 'elieldejesusml@gmail.com');
 
-        // Registrar perfil
         await sbClient.from('pb_perfiles').insert({
           id: usuarioActual.id,
           email: email,
@@ -859,7 +960,6 @@
     async function iniciarAplicacionConUsuario() {
       document.getElementById('modalAuth').classList.add('hidden');
 
-      // 1. Validar si es el superadministrador principal
       esSuperAdmin = (usuarioActual.email.toLowerCase() === 'elieldejesusml@gmail.com');
 
       const { data: perfil } = await sbClient.from('pb_perfiles').select('*').eq('id', usuarioActual.id).single();
@@ -868,13 +968,7 @@
       }
 
       document.getElementById('labelUsuarioActivo').textContent = usuarioActual.email;
-      const badgeRol = document.getElementById('badgeRol');
-      badgeRol.textContent = esSuperAdmin ? "SUPERADMIN" : "USUARIO";
-      badgeRol.className = esSuperAdmin 
-        ? "px-1.5 py-0.5 bg-amber-400 text-slate-900 rounded font-black text-[9px] uppercase" 
-        : "px-1.5 py-0.5 bg-blue-700 text-white rounded font-bold text-[9px] uppercase";
 
-      // 2. Cargar permisos de zona
       if (esSuperAdmin) {
         permisosUsuario = [
           { zona_id: 'cibao', puede_leer: true, puede_crear: true, puede_editar: true, puede_eliminar: true },
@@ -887,7 +981,7 @@
         document.getElementById('tabAdminMaster').classList.add('hidden');
       }
 
-      // 3. Evaluar si la cuenta no tiene zonas asignadas
+      // Si no tiene zonas asignadas todavía
       if (permisosUsuario.length === 0 && !esSuperAdmin) {
         document.getElementById('barraSelectorZona').classList.add('hidden');
         document.getElementById('navegacionApp').classList.add('hidden');
@@ -900,6 +994,18 @@
       document.getElementById('navegacionApp').classList.remove('hidden');
       document.getElementById('contenedorPrincipal').classList.remove('hidden');
       document.getElementById('avisoSinZonas').classList.add('hidden');
+
+      // Evaluamos si el usuario no tiene permisos de crear (Modo Dueño limpio)
+      const puedeCrearEnAlguna = permisosUsuario.some(p => p.puede_crear === true);
+      const tabCuadre = document.getElementById('tabCuadre');
+
+      if (!puedeCrearEnAlguna && !esSuperAdmin) {
+        // Al dueño le quitamos la pestaña de registrar monedas silenciosamente
+        tabCuadre.classList.add('hidden');
+        cambiarPestana('historial');
+      } else {
+        tabCuadre.classList.remove('hidden');
+      }
 
       poblarSelectorZonas();
       await cargarDatosZonaActiva();
@@ -915,7 +1021,6 @@
       if (tieneCibao) select.innerHTML += `<option value="cibao">Zona Cibao</option>`;
       if (tieneSur) select.innerHTML += `<option value="sur">Zona Sur</option>`;
 
-      // Si tiene acceso a ambas o es superadmin, se habilita el Resumen General
       if ((tieneCibao && tieneSur) || esSuperAdmin) {
         select.innerHTML += `<option value="todas">🌐 Resumen General Consolidado</option>`;
       }
@@ -942,31 +1047,20 @@
       const permisoActual = permisosUsuario.find(p => p.zona_id === zonaActiva) || { puede_leer: esSuperAdmin, puede_crear: esSuperAdmin, puede_eliminar: esSuperAdmin };
       const esModoConsulta = !permisoActual.puede_crear || zonaActiva === 'todas';
 
-      // Ajuste visual para Modo Dueño / Consulta
-      const avisoConsulta = document.getElementById('avisoSoloLecturaCuadre');
-      const formCuadre = document.getElementById('formCuadre');
-      const botonesCuadre = document.getElementById('botonesFormCuadre');
       const formGasto = document.getElementById('formGastoEfectivo');
+      const seccionArqueo = document.getElementById('seccionArqueoFisico');
       const btnGuardarArqueo = document.getElementById('btnGuardarArqueoMaster');
-      const textoPermiso = document.getElementById('textoPermisoZona');
 
       if (esModoConsulta) {
-        avisoConsulta.classList.remove('hidden');
-        botonesCuadre.classList.add('hidden');
         if (formGasto) formGasto.classList.add('hidden');
+        if (seccionArqueo) seccionArqueo.classList.add('hidden');
         if (btnGuardarArqueo) btnGuardarArqueo.classList.add('hidden');
-        textoPermiso.textContent = "Modo Dueño: Solo Lectura";
-        textoPermiso.className = "text-[10px] text-amber-300 font-bold bg-amber-950/60 px-2 py-0.5 rounded border border-amber-800";
       } else {
-        avisoConsulta.classList.add('hidden');
-        botonesCuadre.classList.remove('hidden');
         if (formGasto) formGasto.classList.remove('hidden');
+        if (seccionArqueo) seccionArqueo.classList.remove('hidden');
         if (btnGuardarArqueo) btnGuardarArqueo.classList.remove('hidden');
-        textoPermiso.textContent = "Permisos de Operación Activos";
-        textoPermiso.className = "text-[10px] text-emerald-300 font-bold bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800";
       }
 
-      // Ocultar columnas de eliminar si no tiene permiso
       document.querySelectorAll('.accion-eliminar-col').forEach(el => {
         if (!permisoActual.puede_eliminar && !esSuperAdmin) {
           el.style.display = 'none';
@@ -975,7 +1069,6 @@
         }
       });
 
-      // Cargar rutas, clientes, liquidaciones y gastos de Supabase
       let qRutas = sbClient.from('pb_rutas').select('*').eq('eliminado', false);
       let qClientes = sbClient.from('pb_clientes').select('*').eq('eliminado', false);
       let qLiq = sbClient.from('pb_liquidaciones').select('*').eq('eliminado', false).order('fecha', { ascending: false });
@@ -1023,32 +1116,150 @@
     }
 
     // ==========================================
-    // ASIGNACIÓN RÁPIDA DE PERFILES (SUPERADMIN)
+    // LISTA DE USUARIOS Y GESTIÓN DE PERMISOS
     // ==========================================
-    async function aplicarPerfilUsuario() {
-      const email = document.getElementById('inputEmailAsignar').value.trim();
-      const perfil = document.getElementById('selectPerfilRapido').value;
+    async function cargarListaUsuariosRegistrados() {
+      if (!esSuperAdmin) return;
+      const cuerpo = document.getElementById('cuerpoTablaUsuarios');
+      const msgVacio = document.getElementById('mensajeSinUsuarios');
+      cuerpo.innerHTML = '';
 
-      if (!email) {
-        alert("Ingresa el correo electrónico del usuario.");
+      const { data: usuarios, error } = await sbClient.rpc('listar_usuarios_registrados');
+
+      if (error || !usuarios || usuarios.length === 0) {
+        msgVacio.classList.remove('hidden');
         return;
       }
 
+      msgVacio.classList.add('hidden');
+      usuarios.forEach(u => {
+        let zonasEtiqueta = [];
+        if (u.tiene_cibao) zonasEtiqueta.push('<span class="bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded text-[10px] font-bold">Cibao</span>');
+        if (u.tiene_sur) zonasEtiqueta.push('<span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded text-[10px] font-bold">Sur</span>');
+        if (zonasEtiqueta.length === 0) zonasEtiqueta.push('<span class="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded text-[10px]">Sin acceso</span>');
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 border-b border-slate-100";
+        tr.innerHTML = `
+          <td class="p-2.5 font-bold text-slate-800">${u.email}</td>
+          <td class="p-2.5 text-center text-slate-500">${u.creado_en ? u.creado_en.split('T')[0] : '--'}</td>
+          <td class="p-2.5 text-center space-x-1">${zonasEtiqueta.join(' ')}</td>
+          <td class="p-2.5 text-center">
+            <button onclick="seleccionarUsuarioParaPermisos('${u.id}', '${u.email}')" class="bg-blue-900 hover:bg-blue-800 text-white px-2.5 py-1 rounded-lg text-[11px] font-bold transition">
+              Configurar
+            </button>
+          </td>
+        `;
+        cuerpo.appendChild(tr);
+      });
+    }
+
+    async function seleccionarUsuarioParaPermisos(userId, email) {
+      document.getElementById('inputUserIdSeleccionado').value = userId;
+      document.getElementById('labelUsuarioSeleccionado').textContent = email;
+
+      const { data: perms } = await sbClient.from('pb_permisos_zona').select('*').eq('user_id', userId);
+
+      document.getElementById('chkCibaoActivo').checked = false;
+      document.getElementById('chkSurActivo').checked = false;
+      alternarBloqueZona('cibao');
+      alternarBloqueZona('sur');
+
+      if (perms) {
+        perms.forEach(p => {
+          if (p.zona_id === 'cibao') {
+            document.getElementById('chkCibaoActivo').checked = true;
+            document.getElementById('chkCibaoLeer').checked = p.puede_leer;
+            document.getElementById('chkCibaoCrear').checked = p.puede_crear;
+            document.getElementById('chkCibaoEditar').checked = p.puede_editar;
+            document.getElementById('chkCibaoEliminar').checked = p.puede_eliminar;
+            alternarBloqueZona('cibao');
+          } else if (p.zona_id === 'sur') {
+            document.getElementById('chkSurActivo').checked = true;
+            document.getElementById('chkSurLeer').checked = p.puede_leer;
+            document.getElementById('chkSurCrear').checked = p.puede_crear;
+            document.getElementById('chkSurEditar').checked = p.puede_editar;
+            document.getElementById('chkSurEliminar').checked = p.puede_eliminar;
+            alternarBloqueZona('sur');
+          }
+        });
+      }
+
+      document.getElementById('panelFormularioPermisos').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function alternarBloqueZona(zona) {
+      const activo = document.getElementById(zona === 'cibao' ? 'chkCibaoActivo' : 'chkSurActivo').checked;
+      const cont = document.getElementById(zona === 'cibao' ? 'permisosCibaoContainer' : 'permisosSurContainer');
+
+      if (activo) {
+        cont.classList.remove('opacity-50', 'pointer-events-none');
+      } else {
+        cont.classList.add('opacity-50', 'pointer-events-none');
+        document.getElementById(zona === 'cibao' ? 'chkCibaoCrear' : 'chkSurCrear').checked = false;
+        document.getElementById(zona === 'cibao' ? 'chkCibaoEditar' : 'chkSurEditar').checked = false;
+        document.getElementById(zona === 'cibao' ? 'chkCibaoEliminar' : 'chkSurEliminar').checked = false;
+      }
+    }
+
+    function marcarModoDuenoRapido() {
+      const userId = document.getElementById('inputUserIdSeleccionado').value;
+      if (!userId) {
+        alert("Primero haz clic en 'Configurar' al lado de un usuario de la lista.");
+        return;
+      }
+
+      document.getElementById('chkCibaoActivo').checked = true;
+      document.getElementById('chkCibaoLeer').checked = true;
+      document.getElementById('chkCibaoCrear').checked = false;
+      document.getElementById('chkCibaoEditar').checked = false;
+      document.getElementById('chkCibaoEliminar').checked = false;
+      alternarBloqueZona('cibao');
+
+      document.getElementById('chkSurActivo').checked = true;
+      document.getElementById('chkSurLeer').checked = true;
+      document.getElementById('chkSurCrear').checked = false;
+      document.getElementById('chkSurEditar').checked = false;
+      document.getElementById('chkSurEliminar').checked = false;
+      alternarBloqueZona('sur');
+    }
+
+    async function guardarPermisosGranulares() {
+      const userId = document.getElementById('inputUserIdSeleccionado').value;
+      const email = document.getElementById('labelUsuarioSeleccionado').textContent;
+
+      if (!userId) {
+        alert("Selecciona un usuario de la lista.");
+        return;
+      }
+
+      const cibaoActivo = document.getElementById('chkCibaoActivo').checked;
+      const surActivo = document.getElementById('chkSurActivo').checked;
+
       try {
-        const { error } = await sbClient.rpc('asignar_perfil_rapido', {
-          p_target_email: email,
-          p_perfil: perfil
+        const { error } = await sbClient.rpc('guardar_permisos_usuario_granular', {
+          p_user_id: userId,
+          p_cibao_activo: cibaoActivo,
+          p_cibao_leer: document.getElementById('chkCibaoLeer').checked,
+          p_cibao_crear: document.getElementById('chkCibaoCrear').checked,
+          p_cibao_editar: document.getElementById('chkCibaoEditar').checked,
+          p_cibao_eliminar: document.getElementById('chkCibaoEliminar').checked,
+          p_sur_activo: surActivo,
+          p_sur_leer: document.getElementById('chkSurLeer').checked,
+          p_sur_crear: document.getElementById('chkSurCrear').checked,
+          p_sur_editar: document.getElementById('chkSurEditar').checked,
+          p_sur_eliminar: document.getElementById('chkSurEliminar').checked
         });
 
         if (error) {
           alert("Error: " + error.message);
         } else {
-          alert(`✅ Perfil [${perfil.toUpperCase()}] aplicado correctamente a ${email}.`);
-          document.getElementById('inputEmailAsignar').value = '';
+          alert(`✅ Permisos actualizados para ${email}.`);
+          cargarListaUsuariosRegistrados();
           cargarAuditoria();
         }
       } catch (err) {
-        alert("Fallo al conectar con el servidor.");
+        alert("Fallo al conectar con la base de datos.");
       }
     }
 
@@ -1127,7 +1338,7 @@
     }
 
     // ==========================================
-    // HISTORIAL DE AUDITORÍA
+    // BITÁCORA DE AUDITORÍA
     // ==========================================
     async function cargarAuditoria() {
       if (!esSuperAdmin) return;
@@ -1190,10 +1401,6 @@
         document.getElementById('concepto').value = c.concepto;
         document.getElementById('porcentajeComision').value = c.porcentaje;
       }
-      calcularTodo();
-    }
-
-    function alCambiarConceptoManual() {
       calcularTodo();
     }
 
@@ -1276,7 +1483,6 @@
         return;
       }
 
-      // Registrar auditoría
       await sbClient.from('pb_auditoria').insert({
         tabla: 'pb_liquidaciones',
         registro_id: nuevaLiq.id,
@@ -1291,7 +1497,6 @@
       alert("✅ Guardado correctamente.");
     }
 
-    // Soft-Delete (Mandar a papelera)
     async function eliminarRegistro(id) {
       if (confirm("¿Deseas enviar esta liquidación a la papelera?")) {
         await sbClient.from('pb_liquidaciones').update({
@@ -1482,7 +1687,6 @@
       }
       document.getElementById('subtotalRecoleccionSemanaCard').textContent = formatearMontoLimpio(totalRecoleccion);
 
-      // Gastos
       const gastos = gastosGuardados.filter(g => g.fecha >= desde && g.fecha <= hasta);
       const cuerpoG = document.getElementById('cuerpoGastosSemana');
       cuerpoG.innerHTML = '';
@@ -1512,10 +1716,10 @@
       const monto = Number(document.getElementById('gastoMonto').value) || 0;
       if (!concepto || monto <= 0) return;
 
-      const { data, error } = await sbClient.from('pb_gastos').insert({
+      const { error } = await sbClient.from('pb_gastos').insert({
         zona_id: zonaActiva === 'todas' ? 'cibao' : zonaActiva,
         concepto, fecha, monto, creado_por: usuarioActual.id
-      }).select().single();
+      });
 
       if (error) { alert("Error: " + error.message); return; }
 
@@ -1618,6 +1822,64 @@
     }
 
     // ==========================================
+    // RESPALDOS FÍSICOS LOCALES (.JSON)
+    // ==========================================
+    function descargarCopiaSeguridad() {
+      registrarActividad();
+      const backup = {
+        usuario: usuarioActual ? usuarioActual.email : "local",
+        zona: zonaActiva,
+        rutas: rutasApp,
+        clientes: catalogoClientes,
+        liquidaciones: liquidacionesGuardadas,
+        gastos: gastosGuardados,
+        arqueos_semanales: arqueosSemanalesGuardados,
+        fecha: new Date().toISOString()
+      };
+
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `Respaldo_PlanetBrands_${zonaActiva.toUpperCase()}_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+    }
+
+    function restaurarCopiaSeguridad(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (data.rutas && data.clientes) {
+            rutasApp = data.rutas;
+            catalogoClientes = data.clientes;
+            if (data.liquidaciones) liquidacionesGuardadas = data.liquidaciones;
+            if (data.gastos) gastosGuardados = data.gastos;
+            if (data.arqueos_semanales) arqueosSemanalesGuardados = data.arqueos_semanales;
+
+            poblarSelectoresRuta();
+            actualizarClientesSegunRuta();
+            renderizarHistorial();
+            renderizarListaClientesConfig();
+            alCambiarRangoSemana();
+
+            alert("✅ Archivo de respaldo restaurado.");
+          } else {
+            alert("El archivo no tiene el formato de respaldo correcto.");
+          }
+        } catch (err) {
+          alert("Error al leer el archivo de respaldo.");
+        }
+      };
+      reader.readAsText(file, "UTF-8");
+    }
+
+    // ==========================================
     // RUTAS Y CLIENTES (CATÁLOGO)
     // ==========================================
     async function agregarRuta() {
@@ -1706,7 +1968,8 @@
         renderizarListaClientesConfig();
       } else if (p === 'adminMaster') {
         document.getElementById('vistaAdminMaster').classList.remove('seccion-oculta');
-        document.getElementById('tabAdminMaster').className = "py-2.5 rounded-lg bg-amber-500 text-slate-950 font-black shadow transition text-[11px] sm:text-xs";
+        document.getElementById('tabAdminMaster').className = "col-span-3 sm:col-span-1 py-2.5 rounded-lg bg-amber-400 text-slate-950 font-black shadow transition text-[11px] sm:text-xs";
+        cargarListaUsuariosRegistrados();
         cargarPapelera();
         cargarAuditoria();
       }
