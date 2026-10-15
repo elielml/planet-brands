@@ -87,7 +87,7 @@
 
   <!-- NAVEGACIÓN PRINCIPAL -->
   <nav id="navegacionApp" class="max-w-5xl mx-auto px-4 mt-3">
-    <div id="contenedorGridPestanas" class="grid grid-cols-3 sm:grid-cols-4 gap-1.5 bg-slate-200/80 p-1.5 rounded-xl text-xs font-bold text-center">
+    <div id="contenedorGridPestanas" class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 bg-slate-200/80 p-1.5 rounded-xl text-xs font-bold text-center">
       <button type="button" id="tabCuadre" onclick="cambiarPestana('cuadre')" class="py-2.5 rounded-lg bg-blue-900 text-white shadow transition text-[11px] sm:text-xs">
         📝 Liquidar
       </button>
@@ -100,7 +100,8 @@
       <button type="button" id="tabRutas" onclick="cambiarPestana('rutas')" class="py-2.5 rounded-lg text-slate-600 hover:text-slate-900 transition text-[11px] sm:text-xs">
         ⚙️ Rutas/Nube
       </button>
-      <button type="button" id="tabAdminMaster" onclick="cambiarPestana('adminMaster')" class="hidden col-span-3 sm:col-span-1 py-2.5 rounded-lg text-amber-950 bg-amber-300 hover:bg-amber-400 border border-amber-400 font-black transition text-[11px] sm:text-xs">
+      <!-- Pestaña exclusiva Superadmin -->
+      <button type="button" id="tabAdminMaster" onclick="cambiarPestana('adminMaster')" class="hidden col-span-2 sm:col-span-4 py-2.5 rounded-lg text-amber-950 bg-amber-400 hover:bg-amber-300 border border-amber-500 font-black transition text-xs shadow-sm">
         👑 Permisos / Papelera
       </button>
     </div>
@@ -210,7 +211,7 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+        <div id="botonesFormCuadre" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
           <button type="button" onclick="limpiarFormulario()" class="py-3.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-xl border border-rose-200 transition text-sm uppercase">
             🗑 Borrar Campos
           </button>
@@ -229,7 +230,6 @@
       
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <!-- Filtro de Colector (Para separar tus liquidaciones de las de tu jefe/compañero) -->
           <div>
             <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Registrado Por</label>
             <select id="filtroColector" onchange="renderizarHistorial()" class="w-full p-2 border rounded-lg text-xs font-bold bg-slate-50 border-slate-300 outline-none">
@@ -634,49 +634,39 @@
     </section>
 
     <!-- ======================================================== -->
-    <!-- VISTA 5: USUARIOS REGISTRADOS Y PERMISOS (SUPERADMIN)    -->
+    <!-- VISTA 5: USUARIOS REGISTRADOS Y PERMISOS (REDiseño MÓVIL)-->
     <!-- ======================================================== -->
     <section id="vistaAdminMaster" class="seccion-oculta space-y-4">
       
-      <!-- TABLA DE USUARIOS REGISTRADOS -->
-      <div class="bg-white p-5 rounded-2xl shadow-sm border border-amber-300 space-y-3">
+      <!-- LISTA DE USUARIOS EN TARJETAS ADAPTABLES AL CELULAR -->
+      <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-amber-300 space-y-3">
         <div class="flex justify-between items-center border-b border-slate-100 pb-2">
           <div>
-            <h2 class="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-2">
+            <h2 class="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-1.5">
               <span>👥</span> Usuarios Registrados
             </h2>
-            <p class="text-xs text-slate-500">Selecciona un usuario de la lista para otorgarle acceso y permisos</p>
+            <p class="text-xs text-slate-500">Toca "Configurar" en cualquier usuario para otorgarle acceso</p>
           </div>
           <button type="button" onclick="cargarListaUsuariosRegistrados()" class="text-xs font-bold text-blue-700 hover:underline">
-            🔄 Refrescar Lista
+            🔄 Refrescar
           </button>
         </div>
 
-        <div class="border border-slate-100 rounded-xl overflow-hidden">
-          <table class="w-full text-left text-xs border-collapse">
-            <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
-              <tr>
-                <th class="p-2.5">Correo Electrónico</th>
-                <th class="p-2.5 text-center">Fecha Registro</th>
-                <th class="p-2.5 text-center">Zonas Activas</th>
-                <th class="p-2.5 text-center">Acción</th>
-              </tr>
-            </thead>
-            <tbody id="cuerpoTablaUsuarios" class="divide-y divide-slate-100 text-slate-700">
-            </tbody>
-          </table>
-          <p id="mensajeSinUsuarios" class="text-center py-6 text-xs text-slate-400 hidden">
-            No hay usuarios registrados aún.
-          </p>
+        <!-- Contenedor de Tarjetas Móviles (Cards) para que nunca se corte el botón -->
+        <div id="listaTarjetasUsuarios" class="space-y-2.5 pt-1">
+          <p class="text-center py-4 text-xs text-slate-400">Cargando usuarios registrados...</p>
         </div>
+        <p id="mensajeSinUsuarios" class="text-center py-4 text-xs text-slate-400 hidden">
+          No hay otros usuarios registrados aún.
+        </p>
       </div>
 
       <!-- FORMULARIO DE ASIGNACIÓN INDEPENDIENTE POR ZONA -->
-      <div id="panelFormularioPermisos" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+      <div id="panelFormularioPermisos" class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div class="border-b border-slate-100 pb-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
             <h3 class="text-xs font-black text-slate-900 uppercase tracking-wide">
-              Configurando permisos para: <span id="labelUsuarioSeleccionado" class="text-blue-900 font-bold normal-case">Ninguno seleccionado</span>
+              Configurando a: <span id="labelUsuarioSeleccionado" class="text-blue-900 font-bold normal-case">Ninguno seleccionado</span>
             </h3>
             <p class="text-[11px] text-slate-500">Activa zonas y permisos independientes para este usuario</p>
           </div>
@@ -687,9 +677,9 @@
 
         <input type="hidden" id="inputUserIdSeleccionado">
 
-        <div class="space-y-4">
+        <div class="space-y-3">
           <!-- BLOQUE ZONA CIBAO -->
-          <div class="p-4 rounded-xl border border-blue-200 bg-blue-50/50 space-y-3">
+          <div class="p-3.5 rounded-xl border border-blue-200 bg-blue-50/50 space-y-2.5">
             <div class="flex items-center justify-between border-b border-blue-200 pb-2">
               <label class="flex items-center gap-2 font-black text-xs text-blue-950 uppercase cursor-pointer">
                 <input type="checkbox" id="chkCibaoActivo" onchange="alternarBloqueZona('cibao')" class="w-4 h-4 text-blue-600 rounded">
@@ -719,13 +709,13 @@
           </div>
 
           <!-- BLOQUE ZONA SUR -->
-          <div class="p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 space-y-3">
+          <div class="p-3.5 rounded-xl border border-emerald-200 bg-emerald-50/50 space-y-2.5">
             <div class="flex items-center justify-between border-b border-emerald-200 pb-2">
               <label class="flex items-center gap-2 font-black text-xs text-emerald-950 uppercase cursor-pointer">
                 <input type="checkbox" id="chkSurActivo" onchange="alternarBloqueZona('sur')" class="w-4 h-4 text-emerald-600 rounded">
                 <span>Acceso a Zona Sur</span>
               </label>
-              <span class="text-[10px] text-emerald-700 font-semibold uppercase">Provincias Sur / SD Oeste</span>
+              <span class="text-[10px] text-emerald-700 font-semibold uppercase">Sur / SD Oeste</span>
             </div>
 
             <div id="permisosSurContainer" class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 opacity-50 pointer-events-none">
@@ -749,16 +739,16 @@
           </div>
 
           <button type="button" onclick="guardarPermisosGranulares()" class="w-full py-3.5 bg-blue-900 hover:bg-blue-800 text-white font-black rounded-xl text-xs uppercase tracking-wider shadow transition">
-            💾 Guardar Permisos de este Usuario
+            💾 Guardar Permisos
           </button>
         </div>
       </div>
 
       <!-- PAPELERA DE RECICLAJE (SOFT-DELETE) -->
-      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+      <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
         <div class="flex justify-between items-center border-b border-slate-100 pb-2">
           <div>
-            <h2 class="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-2">
+            <h2 class="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-1.5">
               <span>🗑️</span> Papelera de Registros Eliminados
             </h2>
             <p class="text-xs text-slate-500">Restaura liquidaciones que los usuarios hayan borrado</p>
@@ -789,10 +779,10 @@
       </div>
 
       <!-- BITÁCORA DE AUDITORÍA -->
-      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+      <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
         <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-          <h2 class="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-2">
-            <span>📜</span> Bitácora de Operaciones (Auditoría Inalterable)
+          <h2 class="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-1.5">
+            <span>📜</span> Bitácora de Operaciones (Auditoría)
           </h2>
           <button type="button" onclick="cargarAuditoria()" class="text-xs font-bold text-blue-700 hover:underline">
             🔄 Refrescar
@@ -977,20 +967,16 @@
         document.getElementById('tabAdminMaster').classList.add('hidden');
       }
 
-      // Si no tiene permisos asignados todavía, entra a su espacio aislado en blanco sin letreros raros
       const tabCuadre = document.getElementById('tabCuadre');
       const puedeCrearEnAlguna = permisosUsuario.some(p => p.puede_crear === true);
 
       if (permisosUsuario.length === 0 && !esSuperAdmin) {
-        // Usuario nuevo: todo en blanco, puede registrar y ver su propio trabajo
         zonaActiva = 'personal';
         document.getElementById('barraSelectorZona').classList.add('hidden');
         tabCuadre.classList.remove('hidden');
       } else {
-        // Usuario con zonas empresariales
         document.getElementById('barraSelectorZona').classList.remove('hidden');
         if (!puedeCrearEnAlguna && !esSuperAdmin) {
-          // Dueño: solo lectura en Registros y Depósito
           tabCuadre.classList.add('hidden');
           cambiarPestana('historial');
         } else {
@@ -1066,7 +1052,6 @@
       let qGastos = sbClient.from('pb_gastos').select('*').eq('eliminado', false).order('fecha', { ascending: false });
 
       if (permisosUsuario.length === 0 && !esSuperAdmin) {
-        // Aislamiento total: solo ve lo que él mismo creó
         qRutas = qRutas.eq('creado_por', usuarioActual.id);
         qClientes = qClientes.eq('creado_por', usuarioActual.id);
         qLiq = qLiq.eq('creado_por', usuarioActual.id);
@@ -1117,7 +1102,6 @@
       alCambiarRangoSemana();
     }
 
-    // Filtro dinámico de colectores para separar tus liquidaciones de las de tu jefe/compañero
     function poblarFiltroColectores() {
       const select = document.getElementById('filtroColector');
       const valPrevio = select.value;
@@ -1126,7 +1110,6 @@
         <option value="MIO">Solo mis registros</option>
       `;
 
-      // Extraer correos únicos de los demás colectores
       const otrosEmails = [...new Set(liquidacionesGuardadas.filter(i => !i.esMio).map(i => i.creadoPorEmail))];
       otrosEmails.forEach(email => {
         select.innerHTML += `<option value="${email}">Solo de: ${email}</option>`;
@@ -1136,17 +1119,24 @@
     }
 
     // ==========================================
-    // LISTA DE USUARIOS Y GESTIÓN DE PERMISOS
+    // LISTA DE USUARIOS EN TARJETAS MÓVILES (NO SE CORTA NADA)
     // ==========================================
     async function cargarListaUsuariosRegistrados() {
       if (!esSuperAdmin) return;
-      const cuerpo = document.getElementById('cuerpoTablaUsuarios');
+      const cont = document.getElementById('listaTarjetasUsuarios');
       const msgVacio = document.getElementById('mensajeSinUsuarios');
-      cuerpo.innerHTML = '';
+      cont.innerHTML = '<p class="text-center py-4 text-xs text-slate-400">Buscando usuarios...</p>';
 
       const { data: usuarios, error } = await sbClient.rpc('listar_usuarios_registrados');
 
-      if (error || !usuarios || usuarios.length === 0) {
+      if (error) {
+        cont.innerHTML = `<p class="text-center py-4 text-xs text-rose-500 font-bold">Error: ${error.message}</p>`;
+        return;
+      }
+
+      cont.innerHTML = '';
+
+      if (!usuarios || usuarios.length === 0) {
         msgVacio.classList.remove('hidden');
         return;
       }
@@ -1156,21 +1146,25 @@
         let zonasEtiqueta = [];
         if (u.tiene_cibao) zonasEtiqueta.push('<span class="bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded text-[10px] font-bold">Cibao</span>');
         if (u.tiene_sur) zonasEtiqueta.push('<span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded text-[10px] font-bold">Sur</span>');
-        if (zonasEtiqueta.length === 0) zonasEtiqueta.push('<span class="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded text-[10px]">Sin acceso</span>');
+        if (zonasEtiqueta.length === 0) zonasEtiqueta.push('<span class="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded text-[10px] font-medium">Sin acceso</span>');
 
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50 border-b border-slate-100";
-        tr.innerHTML = `
-          <td class="p-2.5 font-bold text-slate-800">${u.email}</td>
-          <td class="p-2.5 text-center text-slate-500">${u.creado_en ? u.creado_en.split('T')[0] : '--'}</td>
-          <td class="p-2.5 text-center space-x-1">${zonasEtiqueta.join(' ')}</td>
-          <td class="p-2.5 text-center">
-            <button onclick="seleccionarUsuarioParaPermisos('${u.id}', '${u.email}')" class="bg-blue-900 hover:bg-blue-800 text-white px-2.5 py-1 rounded-lg text-[11px] font-bold transition">
-              Configurar
-            </button>
-          </td>
+        const card = document.createElement('div');
+        card.className = "bg-slate-50 p-3 rounded-xl border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2.5 shadow-sm";
+        card.innerHTML = `
+          <div class="space-y-1 w-full sm:w-auto">
+            <div class="flex items-center justify-between sm:justify-start gap-2">
+              <span class="font-bold text-slate-900 text-xs break-all">${u.email}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] text-slate-400">Reg: ${u.creado_en ? u.creado_en.split('T')[0] : '--'}</span>
+              <div class="flex items-center gap-1">${zonasEtiqueta.join(' ')}</div>
+            </div>
+          </div>
+          <button type="button" onclick="seleccionarUsuarioParaPermisos('${u.id}', '${u.email}')" class="w-full sm:w-auto bg-blue-900 hover:bg-blue-800 active:bg-blue-950 text-white px-3.5 py-2 rounded-lg text-xs font-bold uppercase transition flex items-center justify-center gap-1">
+            <span>⚙️ Configurar</span>
+          </button>
         `;
-        cuerpo.appendChild(tr);
+        cont.appendChild(card);
       });
     }
 
@@ -1225,7 +1219,7 @@
     function marcarModoDuenoRapido() {
       const userId = document.getElementById('inputUserIdSeleccionado').value;
       if (!userId) {
-        alert("Primero haz clic en 'Configurar' al lado de un usuario de la lista.");
+        alert("Primero toca 'Configurar' en un usuario de la lista.");
         return;
       }
 
@@ -1560,14 +1554,11 @@
       const tipo = document.getElementById('filtroTipoPeriodo').value;
 
       return liquidacionesGuardadas.filter(item => {
-        // Filtro por colector
         if (colector === "MIO" && !item.esMio) return false;
         if (colector !== "TODOS" && colector !== "MIO" && item.creadoPorEmail !== colector) return false;
 
-        // Filtro por ruta
         if (ruta !== "TODAS" && item.ruta !== ruta) return false;
 
-        // Filtro por fecha
         if (tipo === 'dia') return item.fecha === document.getElementById('filtroFechaDia').value;
         if (tipo === 'semana') {
           const d = document.getElementById('filtroFechaDesde').value;
@@ -1597,7 +1588,6 @@
           totalComisiones += item.comision;
           totalEmpresa += item.gananciaEmpresa;
 
-          // Etiqueta visual para distinguir si lo registraste tú o tu compañero
           const badgeColector = item.esMio 
             ? `<span class="text-[9px] bg-blue-100 text-blue-900 px-1.5 py-0.2 rounded font-bold">Mío</span>` 
             : `<span class="text-[9px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded font-bold">${item.creadoPorEmail.split('@')[0]}</span>`;
@@ -1698,7 +1688,6 @@
 
       const liqs = liquidacionesGuardadas.filter(i => i.fecha >= desde && i.fecha <= hasta);
       
-      // Agrupar por ruta y por colector
       const resumenPorColectorYRuta = {};
       let totalRecoleccion = 0;
 
@@ -1747,7 +1736,6 @@
       }
       document.getElementById('subtotalRecoleccionSemanaCard').textContent = formatearMontoLimpio(totalRecoleccion);
 
-      // Gastos
       const gastos = gastosGuardados.filter(g => g.fecha >= desde && g.fecha <= hasta);
       const cuerpoG = document.getElementById('cuerpoGastosSemana');
       cuerpoG.innerHTML = '';
@@ -2052,7 +2040,7 @@
         renderizarListaClientesConfig();
       } else if (p === 'adminMaster') {
         document.getElementById('vistaAdminMaster').classList.remove('seccion-oculta');
-        document.getElementById('tabAdminMaster').className = "col-span-3 sm:col-span-1 py-2.5 rounded-lg bg-amber-400 text-slate-950 font-black shadow transition text-[11px] sm:text-xs";
+        document.getElementById('tabAdminMaster').className = "col-span-2 sm:col-span-4 py-2.5 rounded-lg bg-amber-400 text-slate-950 font-black shadow transition text-xs";
         cargarListaUsuariosRegistrados();
         cargarPapelera();
         cargarAuditoria();
