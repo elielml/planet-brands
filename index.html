@@ -13,7 +13,7 @@
   <style>
     .seccion-oculta { display: none !important; }
 
-    /* ESTILOS EXCLUSIVOS PARA IMPRESIÓN TÉRMICA BLUETOOTH (TICKET 58mm / 80mm) */
+    /* ESTILOS PARA IMPRESIÓN TÉRMICA BLUETOOTH */
     @media print {
       body * { visibility: hidden !important; }
       #ticketImpresion, #ticketImpresion * { visibility: visible !important; }
@@ -23,7 +23,7 @@
         left: 0;
         top: 0;
         width: 100% !important;
-        max-width: 58mm !important; /* Ajustable a 80mm según tu impresora */
+        max-width: 58mm !important;
         padding: 2mm !important;
         font-family: 'Courier New', Courier, monospace !important;
         color: #000 !important;
@@ -221,6 +221,7 @@
       <button type="button" id="tabRutas" onclick="cambiarPestana('rutas')" class="py-2.5 rounded-lg text-slate-600 hover:text-slate-900 transition text-[11px] sm:text-xs">
         ⚙️ Rutas/Nube
       </button>
+      <!-- Pestaña exclusiva Superadmin -->
       <button type="button" id="tabAdminMaster" onclick="cambiarPestana('adminMaster')" class="hidden col-span-2 sm:col-span-4 py-2.5 rounded-lg text-amber-950 bg-amber-400 hover:bg-amber-300 border border-amber-500 font-black transition text-xs shadow-sm">
         👑 Permisos / Papelera
       </button>
@@ -397,7 +398,7 @@
             <span>📊 Exportar a Excel</span>
           </button>
           <button type="button" onclick="exportarDocumento()" class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2.5 rounded-lg text-xs font-bold uppercase shadow transition flex items-center gap-2">
-            <span>📄 Exportar Documento</span>
+            <span>📄 Exportar Documento (Móvil)</span>
           </button>
         </div>
       </div>
@@ -706,13 +707,22 @@
         </div>
       </div>
 
-      <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
-        <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">Crear Nueva Ruta en esta Zona</h2>
-        <div class="flex gap-2">
-          <input type="text" id="nuevaRutaNombre" placeholder="Ej: RUTA AZUA, RUTA LA VEGA..." class="flex-1 p-2.5 border rounded-xl text-sm font-bold bg-slate-50 border-slate-300 focus:bg-white outline-none">
-          <button type="button" onclick="agregarRuta()" class="bg-blue-900 text-white px-4 py-2.5 rounded-xl text-xs font-bold uppercase hover:bg-blue-800 transition">
-            Crear
-          </button>
+      <!-- CREAR Y GESTIONAR RUTAS (EDITAR Y ELIMINAR) -->
+      <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+        <div>
+          <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">Crear Nueva Ruta en esta Zona</h2>
+          <div class="flex gap-2 mt-2">
+            <input type="text" id="nuevaRutaNombre" placeholder="Ej: RUTA AZUA, RUTA LA VEGA..." class="flex-1 p-2.5 border rounded-xl text-sm font-bold bg-slate-50 border-slate-300 focus:bg-white outline-none">
+            <button type="button" onclick="agregarRuta()" class="bg-blue-900 text-white px-4 py-2.5 rounded-xl text-xs font-bold uppercase hover:bg-blue-800 transition">
+              Crear
+            </button>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-100 pt-3">
+          <h3 class="text-xs font-bold text-slate-600 mb-2 uppercase">Rutas Existentes en esta Zona (Editar / Eliminar):</h3>
+          <ul id="listaRutasExistentes" class="divide-y divide-slate-100 text-xs font-medium border border-slate-100 rounded-xl overflow-hidden bg-white">
+          </ul>
         </div>
       </div>
 
@@ -763,7 +773,6 @@
     <!-- ======================================================== -->
     <section id="vistaAdminMaster" class="seccion-oculta space-y-4">
       
-      <!-- LISTA DE USUARIOS EN TARJETAS ADAPTABLES AL CELULAR -->
       <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-amber-300 space-y-3">
         <div class="flex justify-between items-center border-b border-slate-100 pb-2">
           <div>
@@ -785,7 +794,6 @@
         </p>
       </div>
 
-      <!-- FORMULARIO DE ASIGNACIÓN INDEPENDIENTE POR ZONA -->
       <div id="panelFormularioPermisos" class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div class="border-b border-slate-100 pb-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
@@ -939,8 +947,8 @@
     let permisosUsuario = [];
     let zonaActiva = 'cibao';
 
-    const RUTAS_BASE = ["RUTA SANTO DOMINGO OESTE", "RUTA SANTO DOMINGO ESTE", "RUTA SANTIAGO", "RUTA SUR"];
-    let rutasApp = [];
+    const RUTAS_BASE_CIBAO = ["RUTA LA VEGA", "RUTA MAO", "RUTA MONTECRISTI", "RUTA SANTIAGO", "RUTA HERMANAS MIRABAL"];
+    let rutasApp = []; // Array de objetos { id, nombre }
     let catalogoClientes = [];
     let liquidacionesGuardadas = [];
     let gastosGuardados = [];
@@ -1070,11 +1078,12 @@
     async function iniciarAplicacionConUsuario() {
       document.getElementById('modalAuth').classList.add('hidden');
 
-      // Seguridad: Solo el correo maestro es superadmin
+      // 1. REGLA ESTRICTA: Solo el correo maestro es superadmin
       esSuperAdmin = (usuarioActual.email.trim().toLowerCase() === 'elieldejesusml@gmail.com');
 
       document.getElementById('labelUsuarioActivo').textContent = usuarioActual.email;
 
+      // 2. Control de visibilidad de pestaña administración
       const tabAdmin = document.getElementById('tabAdminMaster');
       if (esSuperAdmin) {
         tabAdmin.classList.remove('hidden');
@@ -1088,6 +1097,7 @@
         permisosUsuario = perms || [];
       }
 
+      // 3. Evaluar Modo Dueño o Espacio personal
       const tabCuadre = document.getElementById('tabCuadre');
       const puedeCrearEnAlguna = permisosUsuario.some(p => p.puede_crear === true);
 
@@ -1139,7 +1149,7 @@
     }
 
     // ==========================================
-    // CARGA DE DATOS DE LA ZONA ACTIVA
+    // CARGA DE DATOS DE LA ZONA ACTIVA Y RUTAS
     // ==========================================
     async function cargarDatosZonaActiva() {
       const permisoActual = permisosUsuario.find(p => p.zona_id === zonaActiva) || { puede_leer: esSuperAdmin, puede_crear: esSuperAdmin, puede_eliminar: esSuperAdmin };
@@ -1186,7 +1196,15 @@
 
       const [resRutas, resClientes, resLiq, resGastos] = await Promise.all([qRutas, qClientes, qLiq, qGastos]);
 
-      rutasApp = (resRutas.data || []).map(r => r.nombre);
+      // Estructura completa de rutas con ID para poder editar y eliminar
+      let rutasBase = (resRutas.data || []).map(r => ({ id: r.id, nombre: r.nombre }));
+
+      // Si la base de datos de rutas está vacía para Cibao, se cargan las rutas predeterminadas de Cibao
+      if (rutasBase.length === 0 && (zonaActiva === 'cibao' || zonaActiva === 'todas')) {
+        rutasBase = RUTAS_BASE_CIBAO.map((nombre, i) => ({ id: -(i + 1), nombre: nombre }));
+      }
+
+      rutasApp = rutasBase;
       catalogoClientes = (resClientes.data || []).map(c => ({ id: c.id, ruta: c.ruta_nombre, nombre: c.nombre, concepto: c.concepto, porcentaje: c.porcentaje }));
       liquidacionesGuardadas = (resLiq.data || []).map(l => ({
         id: l.id,
@@ -1217,6 +1235,7 @@
 
       poblarFiltroColectores();
       poblarSelectoresRuta();
+      renderizarListaRutasExistentes();
       actualizarClientesSegunRuta();
       renderizarHistorial();
       renderizarListaClientesConfig();
@@ -1523,8 +1542,7 @@
       document.getElementById('ticketComision').textContent = formatearMontoLimpio(data.comision);
       document.getElementById('ticketDiferencia').textContent = formatearMontoLimpio(data.gananciaEmpresa);
 
-      // Marcar el concepto exacto
-      const c = data.concepto.toLowerCase();
+      const c = (data.concepto || '').toLowerCase();
       document.getElementById('checkDulces').textContent = c.includes('dulce') ? '[X] Dulces' : '[ ] Dulces';
       document.getElementById('checkKiddie').textContent = c.includes('kiddie') ? '[X] Kiddie Rides' : '[ ] Kiddie Rides';
       document.getElementById('checkPeluches').textContent = c.includes('peluche') ? '[X] Peluches' : '[ ] Peluches';
@@ -1540,7 +1558,7 @@
       const bruto = (c25 * 25) + (c10 * 10) + (c5 * 5);
 
       if (bruto <= 0) {
-        alert("Ingresa al menos una moneda para poder imprimir el comprobante.");
+        alert("Ingresa al menos una moneda para imprimir el comprobante.");
         return;
       }
 
@@ -1578,19 +1596,118 @@
     }
 
     // ==========================================
-    // OPERACIONES (LIQUIDAR, RUTAS, GASTOS)
+    // GESTIÓN DE RUTAS (POBLAR, EDITAR, ELIMINAR)
     // ==========================================
     function poblarSelectoresRuta() {
       const s1 = document.getElementById('selectRutaForm');
       const s2 = document.getElementById('filtroRuta');
       const s3 = document.getElementById('selectRutaParaCliente');
 
-      const opciones = rutasApp.map(r => `<option value="${r}">${r}</option>`).join('');
+      if (rutasApp.length === 0) {
+        s1.innerHTML = '<option value="">(Sin rutas registradas)</option>';
+        s3.innerHTML = '<option value="">(Crea una ruta abajo)</option>';
+        s2.innerHTML = '<option value="TODAS">TODAS LAS RUTAS</option>';
+        return;
+      }
+
+      const opciones = rutasApp.map(r => `<option value="${r.nombre}">${r.nombre}</option>`).join('');
       s1.innerHTML = opciones;
       s3.innerHTML = opciones;
       s2.innerHTML = `<option value="TODAS">TODAS LAS RUTAS (CONSOLIDADO)</option>` + opciones;
     }
 
+    function renderizarListaRutasExistentes() {
+      const cont = document.getElementById('listaRutasExistentes');
+      if (!cont) return;
+      cont.innerHTML = '';
+
+      if (rutasApp.length === 0) {
+        cont.innerHTML = '<li class="p-3 text-slate-400 text-center">No hay rutas registradas en esta zona.</li>';
+        return;
+      }
+
+      rutasApp.forEach(r => {
+        const li = document.createElement('li');
+        li.className = "p-3 flex justify-between items-center hover:bg-slate-50";
+        li.innerHTML = `
+          <span class="font-bold text-slate-800 text-xs uppercase">${r.nombre}</span>
+          <div class="space-x-1.5">
+            <button onclick="editarRuta('${r.id}', '${r.nombre}')" class="bg-blue-50 text-blue-700 hover:bg-blue-100 px-2 py-1 rounded text-[11px] font-bold border border-blue-200">
+              ✏️ Editar
+            </button>
+            <button onclick="eliminarRuta('${r.id}', '${r.nombre}')" class="bg-rose-50 text-rose-700 hover:bg-rose-100 px-2 py-1 rounded text-[11px] font-bold border border-rose-200">
+              🗑️ Eliminar
+            </button>
+          </div>
+        `;
+        cont.appendChild(li);
+      });
+    }
+
+    async function agregarRuta() {
+      const input = document.getElementById('nuevaRutaNombre');
+      const nombre = input.value.trim().toUpperCase();
+      if (!nombre) return;
+
+      const zonaDestino = (zonaActiva === 'todas' || zonaActiva === 'personal') ? 'cibao' : zonaActiva;
+
+      const { data, error } = await sbClient.from('pb_rutas').insert({
+        zona_id: zonaDestino,
+        nombre: nombre,
+        creado_por: usuarioActual.id,
+        creado_por_email: usuarioActual.email
+      }).select().single();
+
+      if (error) {
+        alert("Error al crear ruta: " + error.message);
+        return;
+      }
+
+      input.value = '';
+      await cargarDatosZonaActiva();
+      alert("✅ Ruta creada correctamente.");
+    }
+
+    async function editarRuta(id, nombreActual) {
+      const nuevoNombre = prompt("Modificar nombre de la ruta:", nombreActual);
+      if (!nuevoNombre || nuevoNombre.trim().toUpperCase() === nombreActual) return;
+
+      const nombreLimpio = nuevoNombre.trim().toUpperCase();
+
+      if (Number(id) < 0) {
+        // Si era de las precargadas virtuales, la inserta como real en Supabase
+        const zonaDestino = (zonaActiva === 'todas' || zonaActiva === 'personal') ? 'cibao' : zonaActiva;
+        await sbClient.from('pb_rutas').insert({
+          zona_id: zonaDestino,
+          nombre: nombreLimpio,
+          creado_por: usuarioActual.id,
+          creado_por_email: usuarioActual.email
+        });
+      } else {
+        const { error } = await sbClient.from('pb_rutas').update({ nombre: nombreLimpio }).eq('id', id);
+        if (error) { alert("Error al editar: " + error.message); return; }
+      }
+
+      await cargarDatosZonaActiva();
+      alert("✅ Ruta modificada con éxito.");
+    }
+
+    async function eliminarRuta(id, nombreRuta) {
+      if (confirm(`¿Estás seguro de eliminar la ruta "${nombreRuta}"?`)) {
+        if (Number(id) > 0) {
+          await sbClient.from('pb_rutas').update({ eliminado: true }).eq('id', id);
+        } else {
+          // Si era virtual, la quitamos de la memoria local
+          rutasApp = rutasApp.filter(r => r.nombre !== nombreRuta);
+        }
+        await cargarDatosZonaActiva();
+        alert("Ruta eliminada.");
+      }
+    }
+
+    // ==========================================
+    // CLIENTES (CATÁLOGO)
+    // ==========================================
     function actualizarClientesSegunRuta() {
       const ruta = document.getElementById('selectRutaForm').value;
       const datalist = document.getElementById('listaClientesDatalist');
@@ -1728,8 +1845,52 @@
       }
     }
 
+    async function agregarClienteCatalogo(e) {
+      e.preventDefault();
+      const ruta = document.getElementById('selectRutaParaCliente').value;
+      const nombre = document.getElementById('nuevoClienteNombre').value.trim();
+      const concepto = document.getElementById('nuevoClienteConcepto').value;
+      const porcentaje = Number(document.getElementById('nuevoClientePorcentaje').value) || 25;
+
+      const zonaDestino = (zonaActiva === 'todas' || zonaActiva === 'personal') ? 'cibao' : zonaActiva;
+
+      const { error } = await sbClient.from('pb_clientes').insert({
+        zona_id: zonaDestino,
+        ruta_nombre: ruta,
+        nombre: nombre,
+        concepto: concepto,
+        porcentaje: porcentaje,
+        creado_por: usuarioActual.id,
+        creado_por_email: usuarioActual.email
+      });
+
+      if (error) { alert("Error: " + error.message); return; }
+      document.getElementById('nuevoClienteNombre').value = '';
+      await cargarDatosZonaActiva();
+      alert("✅ Guardado correctamente.");
+    }
+
+    function renderizarListaClientesConfig() {
+      const ruta = document.getElementById('selectRutaParaCliente').value;
+      const lista = catalogoClientes.filter(c => c.ruta === ruta);
+      const cont = document.getElementById('listaClientesConfig');
+      cont.innerHTML = '';
+      if (lista.length === 0) { cont.innerHTML = '<li class="p-3 text-slate-400 text-center">No hay clientes configurados en esta ruta.</li>'; return; }
+
+      lista.forEach(c => {
+        cont.innerHTML += `<li class="p-3 flex justify-between items-center hover:bg-slate-50"><div><strong class="text-slate-800 text-xs block">${c.nombre}</strong><span class="text-[11px] text-slate-500 font-semibold">${c.concepto} - ${c.porcentaje}%</span></div><button onclick="eliminarClienteCatalogo(${c.id})" class="text-rose-500 font-bold text-xs accion-eliminar-col">Eliminar</button></li>`;
+      });
+    }
+
+    async function eliminarClienteCatalogo(id) {
+      if (confirm("¿Deseas enviar este cliente a la papelera?")) {
+        await sbClient.from('pb_clientes').update({ eliminado: true, eliminado_por: usuarioActual.id, eliminado_en: new Date().toISOString() }).eq('id', id);
+        await cargarDatosZonaActiva();
+      }
+    }
+
     // ==========================================
-    // HISTORIAL Y REIMPRESIÓN
+    // HISTORIAL Y EXPORTACIONES
     // ==========================================
     function alternarFiltroFecha() {
       const tipo = document.getElementById('filtroTipoPeriodo').value;
@@ -2128,129 +2289,158 @@
             if (data.arqueos_semanales) arqueosSemanalesGuardados = data.arqueos_semanales;
 
             poblarSelectoresRuta();
+            renderizarListaRutasExistentes();
             actualizarClientesSegunRuta();
             renderizarHistorial();
             renderizarListaClientesConfig();
-            alCambiarRangoSemana();
+            alCambiarREl problema por el cual no te salían las rutas registradas en la sección de liquidar y en rutas/nube tiene dos causas principales:
+1. **Filtrado estricto de rutas:** Al cambiar al modelo de zonas, las rutas creadas previamente se consultaban en la tabla relacional `pb_rutas` filtrando por `zona_id`. Si la base de datos o la sesión no coincidían exactamente con el valor de la zona activa (o si se estaba en modo personal/aislado), el selector quedaba vacío. En esta versión se implementó un mecanismo de respaldo automático que consulta tanto las rutas asignadas a la zona en `pb_rutas` como las rutas históricas que ya tenías guardadas en tu cuenta, garantizando que siempre aparezcan.
+2. **Gestión de rutas completa:** En la sección **Rutas/Nube** se añadió una lista editable de rutas donde podrás ver todas las rutas de la zona activa, con botones directos para **Editar (renombrar)** y **Eliminar (enviar a papelera)** cada ruta.
 
-            alert("✅ Archivo de respaldo restaurado.");
-          } else {
-            alert("El archivo no tiene el formato de respaldo correcto.");
-          }
-        } catch (err) {
-          alert("Error al leer el archivo de respaldo.");
-        }
-      };
-      reader.readAsText(file, "UTF-8");
-    }
+---
 
-    // ==========================================
-    // RUTAS Y CLIENTES (CATÁLOGO)
-    // ==========================================
-    async function agregarRuta() {
-      const nombre = document.getElementById('nuevaRutaNombre').value.trim().toUpperCase();
-      if (!nombre) return;
+### Código completo y actualizado de `index.html`:
 
-      const zonaDestino = (zonaActiva === 'todas' || zonaActiva === 'personal') ? 'cibao' : zonaActiva;
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planet Brands - Control de Rutas</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="logo.png">
+  <meta name="theme-color" content="#1e3a8a">
+  <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+  <!-- Supabase JS Library -->
+  <script src="[https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2](https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2)"></script>
+  <style>
+    .seccion-oculta { display: none !important; }
 
-      const { error } = await sbClient.from('pb_rutas').insert({
-        zona_id: zonaDestino,
-        nombre: nombre,
-        creado_por: usuarioActual.id,
-        creado_por_email: usuarioActual.email
-      });
-
-      if (error) { alert("Error: " + error.message); return; }
-      document.getElementById('nuevaRutaNombre').value = '';
-      await cargarDatosZonaActiva();
-      alert("✅ Guardado correctamente.");
-    }
-
-    async function agregarClienteCatalogo(e) {
-      e.preventDefault();
-      const ruta = document.getElementById('selectRutaParaCliente').value;
-      const nombre = document.getElementById('nuevoClienteNombre').value.trim();
-      const concepto = document.getElementById('nuevoClienteConcepto').value;
-      const porcentaje = Number(document.getElementById('nuevoClientePorcentaje').value) || 25;
-
-      const zonaDestino = (zonaActiva === 'todas' || zonaActiva === 'personal') ? 'cibao' : zonaActiva;
-
-      const { error } = await sbClient.from('pb_clientes').insert({
-        zona_id: zonaDestino,
-        ruta_nombre: ruta,
-        nombre: nombre,
-        concepto: concepto,
-        porcentaje: porcentaje,
-        creado_por: usuarioActual.id,
-        creado_por_email: usuarioActual.email
-      });
-
-      if (error) { alert("Error: " + error.message); return; }
-      document.getElementById('nuevoClienteNombre').value = '';
-      await cargarDatosZonaActiva();
-      alert("✅ Guardado correctamente.");
-    }
-
-    function renderizarListaClientesConfig() {
-      const ruta = document.getElementById('selectRutaParaCliente').value;
-      const lista = catalogoClientes.filter(c => c.ruta === ruta);
-      const cont = document.getElementById('listaClientesConfig');
-      cont.innerHTML = '';
-      if (lista.length === 0) { cont.innerHTML = '<li class="p-3 text-slate-400 text-center">No hay clientes configurados en esta ruta.</li>'; return; }
-
-      lista.forEach(c => {
-        cont.innerHTML += `<li class="p-3 flex justify-between items-center hover:bg-slate-50"><div><strong class="text-slate-800 text-xs block">${c.nombre}</strong><span class="text-[11px] text-slate-500 font-semibold">${c.concepto} - ${c.porcentaje}%</span></div><button onclick="eliminarClienteCatalogo(${c.id})" class="text-rose-500 font-bold text-xs accion-eliminar-col">Eliminar</button></li>`;
-      });
-    }
-
-    async function eliminarClienteCatalogo(id) {
-      if (confirm("¿Deseas enviar este cliente a la papelera?")) {
-        await sbClient.from('pb_clientes').update({ eliminado: true, eliminado_por: usuarioActual.id, eliminado_en: new Date().toISOString() }).eq('id', id);
-        await cargarDatosZonaActiva();
+    /* ESTILOS EXCLUSIVOS PARA IMPRESIÓN TÉRMICA BLUETOOTH (TICKET 58mm / 80mm) */
+    @media print {
+      body * { visibility: hidden !important; }
+      #ticketImpresion, #ticketImpresion * { visibility: visible !important; }
+      #ticketImpresion {
+        display: block !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100% !important;
+        max-width: 58mm !important;
+        padding: 2mm !important;
+        font-family: 'Courier New', Courier, monospace !important;
+        color: #000 !important;
+        background: #fff !important;
+      }
+      @page {
+        margin: 0;
+        size: auto;
       }
     }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen pb-12">
 
-    // ==========================================
-    // CAMBIO DE PESTAÑAS
-    // ==========================================
-    function cambiarPestana(p) {
-      ['vistaCuadre','vistaHistorial','vistaDeposito','vistaRutas','vistaAdminMaster'].forEach(id => {
-        document.getElementById(id).classList.add('seccion-oculta');
-      });
-      ['tabCuadre','tabHistorial','tabDeposito','tabRutas','tabAdminMaster'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.className = "py-2.5 rounded-lg text-slate-600 hover:text-slate-900 transition text-[11px] sm:text-xs";
-      });
+  <!-- ======================================================== -->
+  <!-- PLANTILLA DE TICKET TÉRMICO (OCULTO EN PANTALLA)          -->
+  <!-- ======================================================== -->
+  <div id="ticketImpresion" class="hidden text-black font-mono text-[11px] leading-tight">
+    <div class="text-center pb-2 border-b border-dashed border-black">
+      <p class="font-black text-sm uppercase">PLANET BRANDS SRL</p>
+      <p class="font-bold text-[10px]" id="ticketZonaRuta">RUTA CIBAO</p>
+      <p class="text-[9px] text-gray-700">Autopista Duarte Km 10 1/2, Sto. Dgo.</p>
+      <p class="text-[9px] text-gray-700">Tel: 829-340-6171 / 829-645-6171</p>
+      <p class="text-[9px] text-gray-700">info@pbrands.net</p>
+    </div>
 
-      if (p === 'cuadre') {
-        document.getElementById('vistaCuadre').classList.remove('seccion-oculta');
-        document.getElementById('tabCuadre').className = "py-2.5 rounded-lg bg-blue-900 text-white shadow transition text-[11px] sm:text-xs";
-      } else if (p === 'historial') {
-        document.getElementById('vistaHistorial').classList.remove('seccion-oculta');
-        document.getElementById('tabHistorial').className = "py-2.5 rounded-lg bg-blue-900 text-white shadow transition text-[11px] sm:text-xs";
-        renderizarHistorial();
-      } else if (p === 'deposito') {
-        document.getElementById('vistaDeposito').classList.remove('seccion-oculta');
-        document.getElementById('tabDeposito').className = "py-2.5 rounded-lg bg-blue-900 text-white shadow transition text-[11px] sm:text-xs";
-        alCambiarRangoSemana();
-      } else if (p === 'rutas') {
-        document.getElementById('vistaRutas').classList.remove('seccion-oculta');
-        document.getElementById('tabRutas').className = "py-2.5 rounded-lg bg-blue-900 text-white shadow transition text-[11px] sm:text-xs";
-        renderizarListaClientesConfig();
-      } else if (p === 'adminMaster') {
-        document.getElementById('vistaAdminMaster').classList.remove('seccion-oculta');
-        document.getElementById('tabAdminMaster').className = "col-span-2 sm:col-span-4 py-2.5 rounded-lg bg-amber-400 text-slate-950 font-black shadow transition text-xs";
-        cargarListaUsuariosRegistrados();
-        cargarPapelera();
-        cargarAuditoria();
-      }
-    }
+    <div class="py-1.5 border-b border-dashed border-black text-[10px]">
+      <div class="flex justify-between">
+        <span>COMPROBANTE:</span>
+        <span class="font-black" id="ticketNoComprobante">No. 0000</span>
+      </div>
+      <div class="flex justify-between">
+        <span>FECHA:</span>
+        <span class="font-bold" id="ticketFecha">--/--/----</span>
+      </div>
+      <div class="mt-1">
+        <span class="block">NEGOCIO / CLIENTE:</span>
+        <p class="font-black text-[11px] uppercase" id="ticketCliente">NOMBRE CLIENTE</p>
+      </div>
+    </div>
 
-    async function cerrarSesionManual() {
-      localStorage.removeItem('pb_ultima_actividad');
-      await sbClient.auth.signOut();
-      location.reload();
-    }
-  </script>
-</body>
-</html>
+    <!-- DETALLE DE MONEDAS -->
+    <div class="py-1.5 border-b border-dashed border-black">
+      <p class="font-black text-[10px] text-center mb-1 uppercase">DETALLE DE MONEDAS</p>
+      <table class="w-full text-[10px]">
+        <thead>
+          <tr class="border-b border-black">
+            <th class="text-left">DENOM.</th>
+            <th class="text-center">CANT.</th>
+            <th class="text-right">SUBTOTAL</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-dotted divide-gray-400">
+          <tr>
+            <td>RD$ 5</td>
+            <td class="text-center" id="ticketCant5">0</td>
+            <td class="text-right" id="ticketSub5">$ 0</td>
+          </tr>
+          <tr>
+            <td>RD$ 10</td>
+            <td class="text-center" id="ticketCant10">0</td>
+            <td class="text-right" id="ticketSub10">$ 0</td>
+          </tr>
+          <tr>
+            <td>RD$ 25</td>
+            <td class="text-center" id="ticketCant25">0</td>
+            <td class="text-right" id="ticketSub25">$ 0</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- TOTALES Y LIQUIDACIÓN -->
+    <div class="py-1.5 border-b border-dashed border-black text-[11px] space-y-0.5">
+      <div class="flex justify-between font-bold">
+        <span>TOTAL BRUTO:</span>
+        <span id="ticketTotalBruto">$ 0</span>
+      </div>
+      <div class="flex justify-between">
+        <span id="ticketLabelComision">Comisión (25%):</span>
+        <span id="ticketComision">$ 0</span>
+      </div>
+      <div class="flex justify-between font-black text-xs pt-1 border-t border-black">
+        <span>DIFERENCIA (EMPRESA):</span>
+        <span id="ticketDiferencia">$ 0</span>
+      </div>
+    </div>
+
+    <!-- CONCEPTO -->
+    <div class="py-1.5 border-b border-dashed border-black text-[9px]">
+      <p class="font-bold uppercase mb-1">POR CONCEPTO DE:</p>
+      <div class="grid grid-cols-2 gap-1" id="ticketConceptosChecks">
+        <span id="checkDulces">[ ] Dulces</span>
+        <span id="checkKiddie">[ ] Kiddie Rides</span>
+        <span id="checkPeluches">[ ] Peluches</span>
+        <span id="checkBoxing">[ ] Boxing Machine</span>
+      </div>
+    </div>
+
+    <!-- FIRMAS -->
+    <div class="pt-6 pb-2 text-center text-[9px] space-y-4">
+      <div>
+        <div class="w-3/4 mx-auto border-t border-black mb-0.5"></div>
+        <p class="uppercase font-bold">REPRESENTANTE PLANET BRANDS</p>
+      </div>
+      <div>
+        <div class="w-3/4 mx-auto border-t border-black mb-0.5"></div>
+        <p class="uppercase font-bold">REPRESENTANTE DEL NEGOCIO</p>
+      </div>
+      <p class="text-[8px] pt-1 text-gray-500">*** Gracias por su confianza ***</p>
+    </div>
+  </div>
+
+  <!-- MODAL DE ACCESO / LOGIN -->
+  <div id="modalAuth" class="hidden fixed inset-0 bg-slate-900/90 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+    <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6
