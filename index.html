@@ -71,7 +71,7 @@
     </div>
   </header>
 
-  <!-- SELECTOR DE ZONA DISCRETO (SOLO SI TIENE ACCESO A MÁS DE UNA ZONA O ES ADMIN) -->
+  <!-- SELECTOR DE ZONA DISCRETO -->
   <div id="barraSelectorZona" class="max-w-5xl mx-auto px-4 mt-2">
     <div class="bg-blue-950 text-white p-2.5 rounded-xl flex items-center justify-between text-xs">
       <div class="flex items-center gap-2">
@@ -100,7 +100,7 @@
       <button type="button" id="tabRutas" onclick="cambiarPestana('rutas')" class="py-2.5 rounded-lg text-slate-600 hover:text-slate-900 transition text-[11px] sm:text-xs">
         ⚙️ Rutas/Nube
       </button>
-      <!-- Pestaña exclusiva Superadmin -->
+      <!-- Pestaña blindada: solo para el administrador maestro -->
       <button type="button" id="tabAdminMaster" onclick="cambiarPestana('adminMaster')" class="hidden col-span-2 sm:col-span-4 py-2.5 rounded-lg text-amber-950 bg-amber-400 hover:bg-amber-300 border border-amber-500 font-black transition text-xs shadow-sm">
         👑 Permisos / Papelera
       </button>
@@ -652,7 +652,7 @@
           </button>
         </div>
 
-        <!-- Contenedor de Tarjetas Móviles (Cards) para que nunca se corte el botón -->
+        <!-- Contenedor de Tarjetas Móviles (Cards) -->
         <div id="listaTarjetasUsuarios" class="space-y-2.5 pt-1">
           <p class="text-center py-4 text-xs text-slate-400">Cargando usuarios registrados...</p>
         </div>
@@ -946,37 +946,38 @@
     async function iniciarAplicacionConUsuario() {
       document.getElementById('modalAuth').classList.add('hidden');
 
-      esSuperAdmin = (usuarioActual.email.toLowerCase() === 'elieldejesusml@gmail.com');
-
-      const { data: perfil } = await sbClient.from('pb_perfiles').select('*').eq('id', usuarioActual.id).single();
-      if (perfil && perfil.es_superadmin) {
-        esSuperAdmin = true;
-      }
+      // 1. RESTRICCIÓN DE SEGURIDAD ESTRICTA: Solo el correo maestro es superadmin
+      esSuperAdmin = (usuarioActual.email.trim().toLowerCase() === 'elieldejesusml@gmail.com');
 
       document.getElementById('labelUsuarioActivo').textContent = usuarioActual.email;
 
+      // 2. Control de la pestaña de administración (solo para ti)
+      const tabAdmin = document.getElementById('tabAdminMaster');
       if (esSuperAdmin) {
+        tabAdmin.classList.remove('hidden');
         permisosUsuario = [
           { zona_id: 'cibao', puede_leer: true, puede_crear: true, puede_editar: true, puede_eliminar: true },
           { zona_id: 'sur', puede_leer: true, puede_crear: true, puede_editar: true, puede_eliminar: true }
         ];
-        document.getElementById('tabAdminMaster').classList.remove('hidden');
       } else {
+        tabAdmin.classList.add('hidden');
         const { data: perms } = await sbClient.from('pb_permisos_zona').select('*').eq('user_id', usuarioActual.id);
         permisosUsuario = perms || [];
-        document.getElementById('tabAdminMaster').classList.add('hidden');
       }
 
+      // 3. Determinar modo de interfaz (Dueño, Colector o Usuario nuevo en blanco)
       const tabCuadre = document.getElementById('tabCuadre');
       const puedeCrearEnAlguna = permisosUsuario.some(p => p.puede_crear === true);
 
       if (permisosUsuario.length === 0 && !esSuperAdmin) {
+        // Usuario nuevo sin zonas asignadas: entra a su espacio personal en blanco
         zonaActiva = 'personal';
         document.getElementById('barraSelectorZona').classList.add('hidden');
         tabCuadre.classList.remove('hidden');
       } else {
         document.getElementById('barraSelectorZona').classList.remove('hidden');
         if (!puedeCrearEnAlguna && !esSuperAdmin) {
+          // Modo Dueño: solo lectura en Registros y Depósito
           tabCuadre.classList.add('hidden');
           cambiarPestana('historial');
         } else {
@@ -1119,13 +1120,13 @@
     }
 
     // ==========================================
-    // LISTA DE USUARIOS EN TARJETAS MÓVILES (NO SE CORTA NADA)
+    // LISTA DE USUARIOS EN TARJETAS MÓVILES (CARDS)
     // ==========================================
     async function cargarListaUsuariosRegistrados() {
       if (!esSuperAdmin) return;
       const cont = document.getElementById('listaTarjetasUsuarios');
       const msgVacio = document.getElementById('mensajeSinUsuarios');
-      cont.innerHTML = '<p class="text-center py-4 text-xs text-slate-400">Buscando usuarios...</p>';
+      cont.innerHTML = '<p class="text-center py-4 text-xs text-slate-400">Buscando usuarios registrados...</p>';
 
       const { data: usuarios, error } = await sbClient.rpc('listar_usuarios_registrados');
 
@@ -1144,23 +1145,21 @@
       msgVacio.classList.add('hidden');
       usuarios.forEach(u => {
         let zonasEtiqueta = [];
-        if (u.tiene_cibao) zonasEtiqueta.push('<span class="bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded text-[10px] font-bold">Cibao</span>');
-        if (u.tiene_sur) zonasEtiqueta.push('<span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded text-[10px] font-bold">Sur</span>');
-        if (zonasEtiqueta.length === 0) zonasEtiqueta.push('<span class="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded text-[10px] font-medium">Sin acceso</span>');
+        if (u.tiene_cibao) zonasEtiqueta.push('<span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[10px] font-bold">Cibao</span>');
+        if (u.tiene_sur) zonasEtiqueta.push('<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[10px] font-bold">Sur</span>');
+        if (zonasEtiqueta.length === 0) zonasEtiqueta.push('<span class="bg-slate-100 text-slate-500 px-2 py-0.5 rounded text-[10px] font-medium">Sin acceso</span>');
 
         const card = document.createElement('div');
-        card.className = "bg-slate-50 p-3 rounded-xl border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2.5 shadow-sm";
+        card.className = "bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2.5 shadow-sm";
         card.innerHTML = `
           <div class="space-y-1 w-full sm:w-auto">
-            <div class="flex items-center justify-between sm:justify-start gap-2">
-              <span class="font-bold text-slate-900 text-xs break-all">${u.email}</span>
-            </div>
+            <span class="font-bold text-slate-900 text-xs block break-all">${u.email}</span>
             <div class="flex items-center gap-2">
-              <span class="text-[10px] text-slate-400">Reg: ${u.creado_en ? u.creado_en.split('T')[0] : '--'}</span>
+              <span class="text-[10px] text-slate-400">Registrado: ${u.creado_en ? u.creado_en.split('T')[0] : '--'}</span>
               <div class="flex items-center gap-1">${zonasEtiqueta.join(' ')}</div>
             </div>
           </div>
-          <button type="button" onclick="seleccionarUsuarioParaPermisos('${u.id}', '${u.email}')" class="w-full sm:w-auto bg-blue-900 hover:bg-blue-800 active:bg-blue-950 text-white px-3.5 py-2 rounded-lg text-xs font-bold uppercase transition flex items-center justify-center gap-1">
+          <button type="button" onclick="seleccionarUsuarioParaPermisos('${u.id}', '${u.email}')" class="w-full sm:w-auto bg-blue-900 hover:bg-blue-800 active:bg-blue-950 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase transition flex items-center justify-center gap-1">
             <span>⚙️ Configurar</span>
           </button>
         `;
@@ -1858,15 +1857,12 @@
         badge.textContent = "Sin datos";
       } else if (dif === 0) {
         difElem.textContent = "$ 0.00";
-        difElem.className = "text-2xl font-black text-emerald-400";
         badge.textContent = "✅ Caja Cuadrada";
       } else if (dif < 0) {
         difElem.textContent = `- ${formatearMontoLimpio(Math.abs(dif))}`;
-        difElem.className = "text-2xl font-black text-rose-400";
         badge.textContent = "⚠️ Faltante";
       } else {
         difElem.textContent = `+ ${formatearMontoLimpio(dif)}`;
-        difElem.className = "text-2xl font-black text-amber-400";
         badge.textContent = "ℹ️ Sobrante";
       }
     }
