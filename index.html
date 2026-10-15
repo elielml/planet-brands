@@ -1186,8 +1186,14 @@
 
       const [resRutas, resClientes, resLiq, resGastos] = await Promise.all([qRutas, qClientes, qLiq, qGastos]);
 
-      // Rutas y clientes estrictos de la zona activa
-      rutasApp = (resRutas.data || []).map(r => r.nombre);
+      // Carga directa de la tabla de rutas + auto-recuperación desde liquidaciones
+      const rutasDesdeTabla = (resRutas.data || []).map(r => r.nombre);
+      const rutasDesdeLiquidaciones = [...new Set((resLiq.data || []).map(l => l.ruta_nombre))];
+      
+      // Une ambas listas sin duplicar nombres
+      rutasApp = [...new Set([...rutasDesdeTabla, ...rutasDesdeLiquidaciones])];
+
+      // Catálogo de clientes de la zona
       catalogoClientes = (resClientes.data || []).map(c => ({ 
         id: c.id, 
         ruta: c.ruta_nombre, 
@@ -1196,6 +1202,23 @@
         porcentaje: c.porcentaje,
         zona_id: c.zona_id
       }));
+
+      // Si la tabla de clientes viniera vacía pero hay liquidaciones, los recupera solos
+      if (catalogoClientes.length === 0 && (resLiq.data || []).length > 0) {
+        (resLiq.data || []).forEach(l => {
+          const existe = catalogoClientes.some(c => c.ruta === l.ruta_nombre && c.nombre.toLowerCase() === l.cliente_nombre.toLowerCase() && c.concepto === l.concepto);
+          if (!existe) {
+            catalogoClientes.push({
+              id: l.id,
+              ruta: l.ruta_nombre,
+              nombre: l.cliente_nombre,
+              concepto: l.concepto,
+              porcentaje: l.porcentaje,
+              zona_id: l.zona_id || 'cibao'
+            });
+          }
+        });
+      }
 
       liquidacionesGuardadas = (resLiq.data || []).map(l => ({
         id: l.id,
