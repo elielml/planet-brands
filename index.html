@@ -38,9 +38,13 @@
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen pb-12">
 
-  <!-- ======================================================== -->
-  <!-- PLANTILLA DE TICKET TÉRMICO (FORMATO PLANET BRANDS SRL)  -->
-  <!-- ======================================================== -->
+  <!-- NOTIFICACIÓN FLOTANTE INTEGRADA (SIN AVISOS DEL NAVEGADOR GITHUB.IO) -->
+  <div id="notificacionFlotante" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 hidden bg-slate-900/95 text-white px-5 py-3 rounded-2xl shadow-2xl border border-slate-700/80 text-xs font-bold transition-all duration-300 flex items-center gap-2 backdrop-blur-md">
+    <span id="notificacionIcono">✅</span>
+    <span id="notificacionTexto">Guardado correctamente.</span>
+  </div>
+
+  <!-- PLANTILLA DE TICKET TÉRMICO (FORMATO PLANET BRANDS SRL) -->
   <div id="ticketImpresion" class="hidden text-black font-mono text-[11px] leading-tight">
     <div class="text-center pb-2 border-b border-dashed border-black">
       <p class="font-black text-sm uppercase">PLANET BRANDS SRL</p>
@@ -65,7 +69,6 @@
       </div>
     </div>
 
-    <!-- DETALLE DE MONEDAS -->
     <div class="py-1.5 border-b border-dashed border-black">
       <p class="font-black text-[10px] text-center mb-1 uppercase">DETALLE DE MONEDAS</p>
       <table class="w-full text-[10px]">
@@ -96,7 +99,6 @@
       </table>
     </div>
 
-    <!-- TOTALES Y LIQUIDACIÓN -->
     <div class="py-1.5 border-b border-dashed border-black text-[11px] space-y-0.5">
       <div class="flex justify-between font-bold">
         <span>Total:</span>
@@ -112,7 +114,6 @@
       </div>
     </div>
 
-    <!-- CONCEPTO -->
     <div class="py-1.5 border-b border-dashed border-black text-[9px]">
       <p class="font-bold uppercase mb-1">POR CONCEPTO DE:</p>
       <div class="grid grid-cols-2 gap-1" id="ticketConceptosChecks">
@@ -123,7 +124,6 @@
       </div>
     </div>
 
-    <!-- FIRMAS -->
     <div class="pt-6 pb-2 text-center text-[9px] space-y-4">
       <div>
         <div class="w-3/4 mx-auto border-t border-black mb-0.5"></div>
@@ -932,6 +932,25 @@
     const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     // ==========================================
+    // NOTIFICACIÓN FLOTANTE (REEMPLAZO DE ALERT)
+    // ==========================================
+    function mostrarMensaje(texto, icono = "✅", duracion = 2500) {
+      const box = document.getElementById('notificacionFlotante');
+      const txt = document.getElementById('notificacionTexto');
+      const ico = document.getElementById('notificacionIcono');
+
+      ico.textContent = icono;
+      txt.textContent = texto;
+
+      box.classList.remove('hidden');
+      box.classList.add('opacity-100');
+
+      setTimeout(() => {
+        box.classList.add('hidden');
+      }, duracion);
+    }
+
+    // ==========================================
     // ESTADO GLOBAL Y PERMISOS MULTI-ZONA
     // ==========================================
     let usuarioActual = null;
@@ -1185,7 +1204,6 @@
 
       const [resRutas, resClientes, resLiq, resGastos] = await Promise.all([qRutas, qClientes, qLiq, qGastos]);
 
-      // Rutas y clientes estrictos de la zona activa + auto-recuperación si existían en liquidaciones
       const rutasDesdeTabla = (resRutas.data || []).map(r => r.nombre);
       const rutasDesdeLiquidaciones = [...new Set((resLiq.data || []).map(l => l.ruta_nombre))];
       rutasApp = [...new Set([...rutasDesdeTabla, ...rutasDesdeLiquidaciones])];
@@ -1415,7 +1433,7 @@
         if (error) {
           alert("Error: " + error.message);
         } else {
-          alert(`✅ Permisos actualizados para ${email}.`);
+          mostrarMensaje(`Permisos actualizados para ${email}.`, "✅");
           cargarListaUsuariosRegistrados();
           cargarAuditoria();
         }
@@ -1478,7 +1496,7 @@
         cargarPapelera();
         cargarDatosZonaActiva();
         cargarAuditoria();
-        alert("✅ Registro restaurado con éxito.");
+        mostrarMensaje("Registro restaurado con éxito.", "✅");
       }
     }
 
@@ -1494,7 +1512,7 @@
         });
         cargarPapelera();
         cargarAuditoria();
-        alert("Registro destruido permanentemente.");
+        mostrarMensaje("Registro destruido permanentemente.", "🗑️");
       }
     }
 
@@ -1532,7 +1550,6 @@
     // IMPRESIÓN DE TICKETS TÉRMICOS (BLUETOOTH)
     // ==========================================
     function poblarYDispararTicket(data) {
-      // Determinación estricta de encabezado de ruta
       let textoRutaEncabezado = "RUTA CIBAO";
       const zona = (data.zona_id || zonaActiva || "").toLowerCase();
       if (zona.includes("sur") || (data.ruta && data.ruta.toLowerCase().includes("sur"))) {
@@ -1621,7 +1638,6 @@
       const s2 = document.getElementById('filtroRuta');
       const s3 = document.getElementById('selectRutaParaCliente');
 
-      // Si la zona no tiene rutas creadas, muestra limpio
       if (rutasApp.length === 0) {
         s1.innerHTML = '<option value="">(Sin rutas en esta zona)</option>';
         s3.innerHTML = '<option value="">(Crea una ruta en esta zona)</option>';
@@ -1639,7 +1655,6 @@
       const ruta = document.getElementById('selectRutaForm').value;
       const datalist = document.getElementById('listaClientesDatalist');
       
-      // Filtrar clientes exclusivamente por la ruta y zona activa
       const filtrados = catalogoClientes.filter(c => c.ruta === ruta);
       datalist.innerHTML = filtrados.map(c => `<option value="${c.nombre}">`).join('');
       limpiarFormulario();
@@ -1750,7 +1765,7 @@
 
       limpiarFormulario();
       await cargarDatosZonaActiva();
-      alert("✅ Guardado correctamente.");
+      mostrarMensaje("Guardado correctamente.", "✅");
     }
 
     async function eliminarRegistro(id) {
@@ -1770,7 +1785,7 @@
         });
 
         await cargarDatosZonaActiva();
-        alert("Registro enviado a la papelera.");
+        mostrarMensaje("Registro enviado a la papelera.", "🗑️");
       }
     }
 
@@ -1906,7 +1921,7 @@
     }
 
     // ==========================================
-    // DEPÓSITO SEMANAL
+    // DEPÓSITO SEMANAL CON RUTAS SEPARADAS POR COLECTOR
     // ==========================================
     function fijarEstaSemanaDeposito() {
       const ahora = new Date();
@@ -1933,6 +1948,7 @@
       if (!desde || !hasta) return;
 
       const liqs = liquidacionesGuardadas.filter(i => i.fecha >= desde && i.fecha <= hasta);
+      
       const resumenPorColectorYRuta = {};
       let totalRecoleccion = 0;
 
@@ -2037,13 +2053,14 @@
       document.getElementById('gastoConcepto').value = '';
       document.getElementById('gastoMonto').value = '';
       await cargarDatosZonaActiva();
-      alert("✅ Guardado correctamente.");
+      mostrarMensaje("Gasto registrado.", "✅");
     }
 
     async function eliminarGasto(id) {
       if (confirm("¿Deseas enviar este gasto a la papelera?")) {
         await sbClient.from('pb_gastos').update({ eliminado: true, eliminado_por: usuarioActual.id, eliminado_en: new Date().toISOString() }).eq('id', id);
         await cargarDatosZonaActiva();
+        mostrarMensaje("Gasto enviado a la papelera.", "🗑️");
       }
     }
 
@@ -2070,7 +2087,7 @@
       });
       arqueosSemanalesGuardados[clave] = conteo;
 
-      if (alerta) alert("✅ Guardado correctamente.");
+      if (alerta) mostrarMensaje("Arqueo guardado.", "💾");
     }
 
     function calcularArqueoFisico() {
@@ -2179,7 +2196,7 @@
             renderizarListaClientesConfig();
             alCambiarRangoSemana();
 
-            alert("✅ Archivo de respaldo restaurado.");
+            mostrarMensaje("Archivo de respaldo restaurado.", "✅");
           } else {
             alert("El archivo no tiene el formato de respaldo correcto.");
           }
@@ -2209,7 +2226,7 @@
       if (error) { alert("Error: " + error.message); return; }
       document.getElementById('nuevaRutaNombre').value = '';
       await cargarDatosZonaActiva();
-      alert("✅ Guardado correctamente.");
+      mostrarMensaje("Guardado correctamente.", "✅");
     }
 
     async function agregarClienteCatalogo(e) {
@@ -2234,7 +2251,7 @@
       if (error) { alert("Error: " + error.message); return; }
       document.getElementById('nuevoClienteNombre').value = '';
       await cargarDatosZonaActiva();
-      alert("✅ Guardado correctamente.");
+      mostrarMensaje("Guardado correctamente.", "✅");
     }
 
     function renderizarListaClientesConfig() {
@@ -2253,6 +2270,7 @@
       if (confirm("¿Deseas enviar este cliente a la papelera?")) {
         await sbClient.from('pb_clientes').update({ eliminado: true, eliminado_por: usuarioActual.id, eliminado_en: new Date().toISOString() }).eq('id', id);
         await cargarDatosZonaActiva();
+        mostrarMensaje("Cliente enviado a la papelera.", "🗑️");
       }
     }
 
