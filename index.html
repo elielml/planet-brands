@@ -12,9 +12,130 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     .seccion-oculta { display: none !important; }
+
+    /* ESTILOS EXCLUSIVOS PARA IMPRESIÓN TÉRMICA BLUETOOTH (TICKET 58mm / 80mm) */
+    @media print {
+      body * { visibility: hidden !important; }
+      #ticketImpresion, #ticketImpresion * { visibility: visible !important; }
+      #ticketImpresion {
+        display: block !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100% !important;
+        max-width: 58mm !important; /* Ajustable a 80mm según tu impresora */
+        padding: 2mm !important;
+        font-family: 'Courier New', Courier, monospace !important;
+        color: #000 !important;
+        background: #fff !important;
+      }
+      @page {
+        margin: 0;
+        size: auto;
+      }
+    }
   </style>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen pb-12">
+
+  <!-- ======================================================== -->
+  <!-- PLANTILLA DE TICKET TÉRMICO (OCULTO EN PANTALLA)          -->
+  <!-- ======================================================== -->
+  <div id="ticketImpresion" class="hidden text-black font-mono text-[11px] leading-tight">
+    <div class="text-center pb-2 border-b border-dashed border-black">
+      <p class="font-black text-sm uppercase">PLANET BRANDS SRL</p>
+      <p class="font-bold text-[10px]" id="ticketZonaRuta">RUTA CIBAO</p>
+      <p class="text-[9px] text-gray-700">Autopista Duarte Km 10 1/2, Sto. Dgo.</p>
+      <p class="text-[9px] text-gray-700">Tel: 829-340-6171 / 829-645-6171</p>
+      <p class="text-[9px] text-gray-700">info@pbrands.net</p>
+    </div>
+
+    <div class="py-1.5 border-b border-dashed border-black text-[10px]">
+      <div class="flex justify-between">
+        <span>COMPROBANTE:</span>
+        <span class="font-black" id="ticketNoComprobante">No. 0000</span>
+      </div>
+      <div class="flex justify-between">
+        <span>FECHA:</span>
+        <span class="font-bold" id="ticketFecha">--/--/----</span>
+      </div>
+      <div class="mt-1">
+        <span class="block">NEGOCIO / CLIENTE:</span>
+        <p class="font-black text-[11px] uppercase" id="ticketCliente">NOMBRE CLIENTE</p>
+      </div>
+    </div>
+
+    <!-- DETALLE DE MONEDAS -->
+    <div class="py-1.5 border-b border-dashed border-black">
+      <p class="font-black text-[10px] text-center mb-1 uppercase">DETALLE DE MONEDAS</p>
+      <table class="w-full text-[10px]">
+        <thead>
+          <tr class="border-b border-black">
+            <th class="text-left">DENOM.</th>
+            <th class="text-center">CANT.</th>
+            <th class="text-right">SUBTOTAL</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-dotted divide-gray-400">
+          <tr>
+            <td>RD$ 5</td>
+            <td class="text-center" id="ticketCant5">0</td>
+            <td class="text-right" id="ticketSub5">$ 0</td>
+          </tr>
+          <tr>
+            <td>RD$ 10</td>
+            <td class="text-center" id="ticketCant10">0</td>
+            <td class="text-right" id="ticketSub10">$ 0</td>
+          </tr>
+          <tr>
+            <td>RD$ 25</td>
+            <td class="text-center" id="ticketCant25">0</td>
+            <td class="text-right" id="ticketSub25">$ 0</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- TOTALES Y LIQUIDACIÓN -->
+    <div class="py-1.5 border-b border-dashed border-black text-[11px] space-y-0.5">
+      <div class="flex justify-between font-bold">
+        <span>TOTAL BRUTO:</span>
+        <span id="ticketTotalBruto">$ 0</span>
+      </div>
+      <div class="flex justify-between">
+        <span id="ticketLabelComision">Comisión (25%):</span>
+        <span id="ticketComision">$ 0</span>
+      </div>
+      <div class="flex justify-between font-black text-xs pt-1 border-t border-black">
+        <span>DIFERENCIA (EMPRESA):</span>
+        <span id="ticketDiferencia">$ 0</span>
+      </div>
+    </div>
+
+    <!-- CONCEPTO -->
+    <div class="py-1.5 border-b border-dashed border-black text-[9px]">
+      <p class="font-bold uppercase mb-1">POR CONCEPTO DE:</p>
+      <div class="grid grid-cols-2 gap-1" id="ticketConceptosChecks">
+        <span id="checkDulces">[ ] Dulces</span>
+        <span id="checkKiddie">[ ] Kiddie Rides</span>
+        <span id="checkPeluches">[ ] Peluches</span>
+        <span id="checkBoxing">[ ] Boxing Machine</span>
+      </div>
+    </div>
+
+    <!-- FIRMAS -->
+    <div class="pt-6 pb-2 text-center text-[9px] space-y-4">
+      <div>
+        <div class="w-3/4 mx-auto border-t border-black mb-0.5"></div>
+        <p class="uppercase font-bold">REPRESENTANTE PLANET BRANDS</p>
+      </div>
+      <div>
+        <div class="w-3/4 mx-auto border-t border-black mb-0.5"></div>
+        <p class="uppercase font-bold">REPRESENTANTE DEL NEGOCIO</p>
+      </div>
+      <p class="text-[8px] pt-1 text-gray-500">*** Gracias por su confianza ***</p>
+    </div>
+  </div>
 
   <!-- MODAL DE ACCESO / LOGIN -->
   <div id="modalAuth" class="hidden fixed inset-0 bg-slate-900/90 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
@@ -100,7 +221,6 @@
       <button type="button" id="tabRutas" onclick="cambiarPestana('rutas')" class="py-2.5 rounded-lg text-slate-600 hover:text-slate-900 transition text-[11px] sm:text-xs">
         ⚙️ Rutas/Nube
       </button>
-      <!-- Pestaña blindada: solo para el administrador maestro -->
       <button type="button" id="tabAdminMaster" onclick="cambiarPestana('adminMaster')" class="hidden col-span-2 sm:col-span-4 py-2.5 rounded-lg text-amber-950 bg-amber-400 hover:bg-amber-300 border border-amber-500 font-black transition text-xs shadow-sm">
         👑 Permisos / Papelera
       </button>
@@ -211,11 +331,15 @@
           </div>
         </div>
 
-        <div id="botonesFormCuadre" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-          <button type="button" onclick="limpiarFormulario()" class="py-3.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-xl border border-rose-200 transition text-sm uppercase">
-            🗑 Borrar Campos
+        <!-- BOTONES: GUARDAR, IMPRIMIR Y LIMPIAR -->
+        <div id="botonesFormCuadre" class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2">
+          <button type="button" onclick="limpiarFormulario()" class="py-3.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-xl border border-rose-200 transition text-xs uppercase">
+            🗑 Borrar
           </button>
-          <button type="submit" class="py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl shadow-md transition text-sm uppercase">
+          <button type="button" onclick="imprimirTicketActual()" class="py-3.5 bg-blue-700 hover:bg-blue-800 text-white font-black rounded-xl shadow transition text-xs uppercase flex items-center justify-center gap-1.5">
+            <span>🖨️ Imprimir Recibo</span>
+          </button>
+          <button type="submit" class="py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl shadow-md transition text-xs uppercase">
             💾 Guardar
           </button>
         </div>
@@ -273,7 +397,7 @@
             <span>📊 Exportar a Excel</span>
           </button>
           <button type="button" onclick="exportarDocumento()" class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2.5 rounded-lg text-xs font-bold uppercase shadow transition flex items-center gap-2">
-            <span>📄 Exportar Documento (Móvil)</span>
+            <span>📄 Exportar Documento</span>
           </button>
         </div>
       </div>
@@ -308,6 +432,7 @@
                 <th class="p-3 text-center">Monedas (25/10/5)</th>
                 <th class="p-3 text-right">Bruto</th>
                 <th class="p-3 text-right">Ganancia</th>
+                <th class="p-3 text-center">Imprimir</th>
                 <th class="p-3 text-center accion-eliminar-col">Acción</th>
               </tr>
             </thead>
@@ -652,7 +777,6 @@
           </button>
         </div>
 
-        <!-- Contenedor de Tarjetas Móviles (Cards) -->
         <div id="listaTarjetasUsuarios" class="space-y-2.5 pt-1">
           <p class="text-center py-4 text-xs text-slate-400">Cargando usuarios registrados...</p>
         </div>
@@ -946,12 +1070,11 @@
     async function iniciarAplicacionConUsuario() {
       document.getElementById('modalAuth').classList.add('hidden');
 
-      // 1. RESTRICCIÓN DE SEGURIDAD ESTRICTA: Solo el correo maestro es superadmin
+      // Seguridad: Solo el correo maestro es superadmin
       esSuperAdmin = (usuarioActual.email.trim().toLowerCase() === 'elieldejesusml@gmail.com');
 
       document.getElementById('labelUsuarioActivo').textContent = usuarioActual.email;
 
-      // 2. Control de la pestaña de administración (solo para ti)
       const tabAdmin = document.getElementById('tabAdminMaster');
       if (esSuperAdmin) {
         tabAdmin.classList.remove('hidden');
@@ -965,19 +1088,16 @@
         permisosUsuario = perms || [];
       }
 
-      // 3. Determinar modo de interfaz (Dueño, Colector o Usuario nuevo en blanco)
       const tabCuadre = document.getElementById('tabCuadre');
       const puedeCrearEnAlguna = permisosUsuario.some(p => p.puede_crear === true);
 
       if (permisosUsuario.length === 0 && !esSuperAdmin) {
-        // Usuario nuevo sin zonas asignadas: entra a su espacio personal en blanco
         zonaActiva = 'personal';
         document.getElementById('barraSelectorZona').classList.add('hidden');
         tabCuadre.classList.remove('hidden');
       } else {
         document.getElementById('barraSelectorZona').classList.remove('hidden');
         if (!puedeCrearEnAlguna && !esSuperAdmin) {
-          // Modo Dueño: solo lectura en Registros y Depósito
           tabCuadre.classList.add('hidden');
           cambiarPestana('historial');
         } else {
@@ -1381,6 +1501,83 @@
     }
 
     // ==========================================
+    // IMPRESIÓN DE TICKETS TÉRMICOS (BLUETOOTH)
+    // ==========================================
+    function poblarYDispararTicket(data) {
+      document.getElementById('ticketZonaRuta').textContent = `${data.ruta.toUpperCase()} (${zonaActiva.toUpperCase()})`;
+      document.getElementById('ticketNoComprobante').textContent = `No. ${data.id ? String(data.id).slice(-4) : Math.floor(1000 + Math.random() * 9000)}`;
+      document.getElementById('ticketFecha').textContent = data.fecha;
+      document.getElementById('ticketCliente').textContent = data.cliente;
+
+      document.getElementById('ticketCant5').textContent = data.cant5 || 0;
+      document.getElementById('ticketSub5').textContent = formatearMontoLimpio((data.cant5 || 0) * 5);
+
+      document.getElementById('ticketCant10').textContent = data.cant10 || 0;
+      document.getElementById('ticketSub10').textContent = formatearMontoLimpio((data.cant10 || 0) * 10);
+
+      document.getElementById('ticketCant25').textContent = data.cant25 || 0;
+      document.getElementById('ticketSub25').textContent = formatearMontoLimpio((data.cant25 || 0) * 25);
+
+      document.getElementById('ticketTotalBruto').textContent = formatearMontoLimpio(data.bruto);
+      document.getElementById('ticketLabelComision').textContent = `Comisión (${data.porcentaje}%):`;
+      document.getElementById('ticketComision').textContent = formatearMontoLimpio(data.comision);
+      document.getElementById('ticketDiferencia').textContent = formatearMontoLimpio(data.gananciaEmpresa);
+
+      // Marcar el concepto exacto
+      const c = data.concepto.toLowerCase();
+      document.getElementById('checkDulces').textContent = c.includes('dulce') ? '[X] Dulces' : '[ ] Dulces';
+      document.getElementById('checkKiddie').textContent = c.includes('kiddie') ? '[X] Kiddie Rides' : '[ ] Kiddie Rides';
+      document.getElementById('checkPeluches').textContent = c.includes('peluche') ? '[X] Peluches' : '[ ] Peluches';
+      document.getElementById('checkBoxing').textContent = c.includes('boxing') ? '[X] Boxing Machine' : '[ ] Boxing Machine';
+
+      window.print();
+    }
+
+    function imprimirTicketActual() {
+      const c25 = Number(document.getElementById('cant25').value) || 0;
+      const c10 = Number(document.getElementById('cant10').value) || 0;
+      const c5 = Number(document.getElementById('cant5').value) || 0;
+      const bruto = (c25 * 25) + (c10 * 10) + (c5 * 5);
+
+      if (bruto <= 0) {
+        alert("Ingresa al menos una moneda para poder imprimir el comprobante.");
+        return;
+      }
+
+      const clienteNombre = document.getElementById('inputCliente').value.trim();
+      if (!clienteNombre) {
+        alert("Escribe el nombre del cliente antes de imprimir.");
+        return;
+      }
+
+      const porc = Number(document.getElementById('porcentajeComision').value) || 25;
+      const comision = (bruto * porc) / 100;
+      const ganancia = bruto - comision;
+
+      poblarYDispararTicket({
+        id: Math.floor(1000 + Math.random() * 9000),
+        fecha: document.getElementById('fechaCuadre').value,
+        ruta: document.getElementById('selectRutaForm').value,
+        cliente: clienteNombre,
+        concepto: document.getElementById('concepto').value,
+        porcentaje: porc,
+        cant25: c25,
+        cant10: c10,
+        cant5: c5,
+        bruto: bruto,
+        comision: comision,
+        gananciaEmpresa: ganancia
+      });
+    }
+
+    function reimprimirLiquidacion(id) {
+      const liq = liquidacionesGuardadas.find(item => item.id === id);
+      if (liq) {
+        poblarYDispararTicket(liq);
+      }
+    }
+
+    // ==========================================
     // OPERACIONES (LIQUIDAR, RUTAS, GASTOS)
     // ==========================================
     function poblarSelectoresRuta() {
@@ -1532,7 +1729,7 @@
     }
 
     // ==========================================
-    // HISTORIAL CON FILTRO INDEPENDIENTE DE COLECTOR
+    // HISTORIAL Y REIMPRESIÓN
     // ==========================================
     function alternarFiltroFecha() {
       const tipo = document.getElementById('filtroTipoPeriodo').value;
@@ -1555,7 +1752,6 @@
       return liquidacionesGuardadas.filter(item => {
         if (colector === "MIO" && !item.esMio) return false;
         if (colector !== "TODOS" && colector !== "MIO" && item.creadoPorEmail !== colector) return false;
-
         if (ruta !== "TODAS" && item.ruta !== ruta) return false;
 
         if (tipo === 'dia') return item.fecha === document.getElementById('filtroFechaDia').value;
@@ -1605,6 +1801,11 @@
             <td class="p-3 text-center font-mono font-medium text-slate-600">${item.cant25} / ${item.cant10} / ${item.cant5}</td>
             <td class="p-3 text-right font-medium text-slate-600">$ ${item.bruto.toLocaleString('es-DO', { minimumFractionDigits: 2 })}</td>
             <td class="p-3 text-right font-black text-emerald-700">$ ${item.gananciaEmpresa.toLocaleString('es-DO', { minimumFractionDigits: 2 })}</td>
+            <td class="p-3 text-center">
+              <button onclick="reimprimirLiquidacion(${item.id})" title="Reimprimir Comprobante" class="bg-blue-50 text-blue-700 hover:bg-blue-100 p-1.5 rounded-lg border border-blue-200 font-bold transition">
+                🖨️
+              </button>
+            </td>
             <td class="p-3 text-center accion-eliminar-col">
               <button onclick="eliminarRegistro(${item.id})" class="text-rose-500 hover:text-rose-700 font-bold text-sm px-2 py-1">✕</button>
             </td>
@@ -1659,7 +1860,7 @@
     }
 
     // ==========================================
-    // DEPÓSITO SEMANAL CON RUTAS SEPARADAS POR COLECTOR
+    // DEPÓSITO SEMANAL
     // ==========================================
     function fijarEstaSemanaDeposito() {
       const ahora = new Date();
@@ -1686,7 +1887,6 @@
       if (!desde || !hasta) return;
 
       const liqs = liquidacionesGuardadas.filter(i => i.fecha >= desde && i.fecha <= hasta);
-      
       const resumenPorColectorYRuta = {};
       let totalRecoleccion = 0;
 
@@ -1857,12 +2057,15 @@
         badge.textContent = "Sin datos";
       } else if (dif === 0) {
         difElem.textContent = "$ 0.00";
+        difElem.className = "text-2xl font-black text-emerald-400";
         badge.textContent = "✅ Caja Cuadrada";
       } else if (dif < 0) {
         difElem.textContent = `- ${formatearMontoLimpio(Math.abs(dif))}`;
+        difElem.className = "text-2xl font-black text-rose-400";
         badge.textContent = "⚠️ Faltante";
       } else {
         difElem.textContent = `+ ${formatearMontoLimpio(dif)}`;
+        difElem.className = "text-2xl font-black text-amber-400";
         badge.textContent = "ℹ️ Sobrante";
       }
     }
