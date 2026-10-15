@@ -62,7 +62,6 @@
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <!-- Indicador de conexión / sync -->
         <span id="indicadorAutoSync" class="text-[10px] bg-blue-950/60 text-blue-200 border border-blue-700/50 px-2 py-1 rounded-md font-medium flex items-center gap-1">
           <span>☁️</span> Sincronizado
         </span>
@@ -92,12 +91,6 @@
   </nav>
 
   <main class="max-w-4xl mx-auto px-4 mt-3 space-y-4">
-
-    <!-- AVISO VISUAL DE MODO SIN CONEXIÓN -->
-    <div id="bannerOffline" class="hidden bg-amber-500 text-slate-950 px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between shadow">
-      <span>⚡ Modo Sin Conexión activo: trabajando con las rutas y clientes guardados en tu teléfono.</span>
-      <span class="text-[10px] bg-slate-900 text-white px-2 py-0.5 rounded uppercase font-black">Offline</span>
-    </div>
 
     <!-- PANEL EXCLUSIVO ADMIN -->
     <div id="panelAdmin" class="hidden bg-amber-500/10 border border-amber-300 p-3 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
@@ -158,7 +151,7 @@
           </div>
         </div>
 
-        <!-- CONTEO DE MONEDAS -->
+        <!-- CANTIDAD DE MONEDAS -->
         <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
           <div class="flex items-center justify-between">
             <h2 class="text-xs font-black uppercase tracking-wider text-slate-600">Cantidad de Monedas</h2>
@@ -323,6 +316,7 @@
     <!-- ========================================== -->
     <section id="vistaDeposito" class="seccion-oculta space-y-4">
       
+      <!-- Selector de semana para depósito -->
       <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
@@ -337,15 +331,16 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
           <div>
             <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Desde (Lunes)</label>
-            <input type="date" id="depositoFechaDesde" onchange="calcularDepositoSemanal()" class="w-full p-2.5 border rounded-xl text-xs font-bold bg-slate-50 border-slate-300 outline-none">
+            <input type="date" id="depositoFechaDesde" onchange="alCambiarRangoSemana()" class="w-full p-2.5 border rounded-xl text-xs font-bold bg-slate-50 border-slate-300 outline-none">
           </div>
           <div>
             <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Hasta (Viernes/Domingo)</label>
-            <input type="date" id="depositoFechaHasta" onchange="calcularDepositoSemanal()" class="w-full p-2.5 border rounded-xl text-xs font-bold bg-slate-50 border-slate-300 outline-none">
+            <input type="date" id="depositoFechaHasta" onchange="alCambiarRangoSemana()" class="w-full p-2.5 border rounded-xl text-xs font-bold bg-slate-50 border-slate-300 outline-none">
           </div>
         </div>
       </div>
 
+      <!-- DESGLOSE POR RUTAS DE LA SEMANA -->
       <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
         <div class="flex justify-between items-center">
           <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">1. Rutas Trabajadas en esta Semana</h2>
@@ -375,6 +370,7 @@
         </div>
       </div>
 
+      <!-- GASTOS EN EFECTIVO -->
       <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div class="flex justify-between items-center">
           <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">2. Gastos en Efectivo de la Semana</h2>
@@ -425,12 +421,12 @@
         </div>
       </div>
 
-      <!-- ARQUEO FÍSICO EN MANO -->
+      <!-- ARQUEO FÍSICO EN MANO (GUARDADO PERSISTENTE POR SEMANA) -->
       <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div class="flex justify-between items-center">
           <div>
-            <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">3. Arqueo Físico en Mano (Bolsa de Efectivo)</h2>
-            <p class="text-[11px] text-slate-500">Cuenta tus papeletas y monedas para validar contra el depósito</p>
+            <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">3. Arqueo Físico en Mano (Guardado de esta semana)</h2>
+            <p class="text-[11px] text-slate-500">Se mantiene guardado para este período específico</p>
           </div>
           <button type="button" onclick="limpiarArqueoFisico()" class="text-xs text-slate-400 hover:text-rose-600 underline font-semibold">
             Reiniciar Conteo
@@ -455,32 +451,32 @@
               <tbody class="divide-y divide-slate-100 bg-white">
                 <tr>
                   <td class="p-2 font-bold text-slate-700">RD$ 2,000</td>
-                  <td class="p-1.5"><input type="number" min="0" placeholder="0" id="b2000" oninput="calcularArqueoFisico()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none focus:border-blue-600 focus:bg-white"></td>
+                  <td class="p-1.5"><input type="number" min="0" placeholder="0" id="b2000" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none focus:border-blue-600 focus:bg-white"></td>
                   <td class="p-2 text-right font-black text-slate-800" id="subB2000">RD$ 0.00</td>
                 </tr>
                 <tr>
                   <td class="p-2 font-bold text-slate-700">RD$ 1,000</td>
-                  <td class="p-1.5"><input type="number" min="0" placeholder="0" id="b1000" oninput="calcularArqueoFisico()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none focus:border-blue-600 focus:bg-white"></td>
+                  <td class="p-1.5"><input type="number" min="0" placeholder="0" id="b1000" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none focus:border-blue-600 focus:bg-white"></td>
                   <td class="p-2 text-right font-black text-slate-800" id="subB1000">RD$ 0.00</td>
                 </tr>
                 <tr>
                   <td class="p-2 font-bold text-slate-700">RD$ 500</td>
-                  <td class="p-1.5"><input type="number" min="0" placeholder="0" id="b500" oninput="calcularArqueoFisico()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none focus:border-blue-600 focus:bg-white"></td>
+                  <td class="p-1.5"><input type="number" min="0" placeholder="0" id="b500" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none focus:border-blue-600 focus:bg-white"></td>
                   <td class="p-2 text-right font-black text-slate-800" id="subB500">RD$ 0.00</td>
                 </tr>
                 <tr>
                   <td class="p-2 font-bold text-slate-700">RD$ 200</td>
-                  <td class="p-1.5"><input type="number" min="0" placeholder="0" id="b200" oninput="calcularArqueoFisico()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none focus:border-blue-600 focus:bg-white"></td>
+                  <td class="p-1.5"><input type="number" min="0" placeholder="0" id="b200" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none focus:border-blue-600 focus:bg-white"></td>
                   <td class="p-2 text-right font-black text-slate-800" id="subB200">RD$ 0.00</td>
                 </tr>
                 <tr>
                   <td class="p-2 font-bold text-slate-700">RD$ 100</td>
-                  <td class="p-1.5"><input type="number" min="0" placeholder="0" id="b100" oninput="calcularArqueoFisico()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none focus:border-blue-600 focus:bg-white"></td>
+                  <td class="p-1.5"><input type="number" min="0" placeholder="0" id="b100" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none focus:border-blue-600 focus:bg-white"></td>
                   <td class="p-2 text-right font-black text-slate-800" id="subB100">RD$ 0.00</td>
                 </tr>
                 <tr>
                   <td class="p-2 font-bold text-slate-700">RD$ 50</td>
-                  <td class="p-1.5"><input type="number" min="0" placeholder="0" id="b50" oninput="calcularArqueoFisico()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none focus:border-blue-600 focus:bg-white"></td>
+                  <td class="p-1.5"><input type="number" min="0" placeholder="0" id="b50" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none focus:border-blue-600 focus:bg-white"></td>
                   <td class="p-2 text-right font-black text-slate-800" id="subB50">RD$ 0.00</td>
                 </tr>
               </tbody>
@@ -511,22 +507,22 @@
                 <tbody class="divide-y divide-slate-100 bg-white">
                   <tr>
                     <td class="p-2 font-bold text-slate-700">RD$ 25</td>
-                    <td class="p-1.5"><input type="number" min="0" placeholder="0" id="m25" oninput="calcularArqueoFisico()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none focus:border-amber-600 focus:bg-white"></td>
+                    <td class="p-1.5"><input type="number" min="0" placeholder="0" id="m25" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none focus:border-amber-600 focus:bg-white"></td>
                     <td class="p-2 text-right font-black text-slate-800" id="subM25">RD$ 0.00</td>
                   </tr>
                   <tr>
                     <td class="p-2 font-bold text-slate-700">RD$ 10</td>
-                    <td class="p-1.5"><input type="number" min="0" placeholder="0" id="m10" oninput="calcularArqueoFisico()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none focus:border-amber-600 focus:bg-white"></td>
+                    <td class="p-1.5"><input type="number" min="0" placeholder="0" id="m10" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none focus:border-amber-600 focus:bg-white"></td>
                     <td class="p-2 text-right font-black text-slate-800" id="subM10">RD$ 0.00</td>
                   </tr>
                   <tr>
                     <td class="p-2 font-bold text-slate-700">RD$ 5</td>
-                    <td class="p-1.5"><input type="number" min="0" placeholder="0" id="m5" oninput="calcularArqueoFisico()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none focus:border-amber-600 focus:bg-white"></td>
+                    <td class="p-1.5"><input type="number" min="0" placeholder="0" id="m5" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none focus:border-amber-600 focus:bg-white"></td>
                     <td class="p-2 text-right font-black text-slate-800" id="subM5">RD$ 0.00</td>
                   </tr>
                   <tr>
                     <td class="p-2 font-bold text-slate-700">RD$ 1</td>
-                    <td class="p-1.5"><input type="number" min="0" placeholder="0" id="m1" oninput="calcularArqueoFisico()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none focus:border-amber-600 focus:bg-white"></td>
+                    <td class="p-1.5"><input type="number" min="0" placeholder="0" id="m1" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none focus:border-amber-600 focus:bg-white"></td>
                     <td class="p-2 text-right font-black text-slate-800" id="subM1">RD$ 0.00</td>
                   </tr>
                 </tbody>
@@ -574,6 +570,9 @@
         <p id="mensajeAuditoria" class="text-xs font-bold text-center pt-2 text-slate-400"></p>
 
         <div class="flex flex-wrap gap-2 pt-2 border-t border-slate-800">
+          <button type="button" onclick="guardarArqueoSemanaActual(true)" class="bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold rounded-xl text-xs uppercase px-4 py-3 shadow transition flex items-center justify-center gap-1.5">
+            <span>💾</span> Guardar Cuadre de la Semana
+          </button>
           <button type="button" onclick="exportarDepositoWord()" class="flex-1 py-3 bg-blue-700 hover:bg-blue-800 active:bg-blue-900 text-white font-bold rounded-xl text-xs uppercase shadow transition flex items-center justify-center gap-2">
             <span>📄 Exportar Comprobante de Depósito (Word)</span>
           </button>
@@ -591,10 +590,10 @@
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
             <h2 class="text-sm font-bold flex items-center gap-2">
-              <span>💾</span> Copia de Seguridad
+              <span>💾</span> Copias de Seguridad Locales
             </h2>
             <p class="text-xs text-slate-300 mt-0.5">
-              Tus cambios se guardan automáticamente.
+              Tus cambios se guardan automáticamente en la nube. También puedes guardar o restaurar un archivo físico en tu teléfono.
             </p>
           </div>
           <span id="badgeNube" class="px-3 py-1 bg-emerald-500/20 text-emerald-300 text-[11px] font-semibold rounded-full border border-emerald-500/30">
@@ -677,7 +676,7 @@
     const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     // ==========================================
-    // ESTADO GLOBAL Y CACHÉ LOCAL OFFLINE-FIRST
+    // ESTADO GLOBAL Y CONTROL DE 24 HORAS
     // ==========================================
     let usuarioActual = null;
     let perfilActual = null;
@@ -688,56 +687,32 @@
     let catalogoClientes = [];
     let liquidacionesGuardadas = [];
     let gastosGuardados = [];
+    let arqueosSemanalesGuardados = {}; // Clave: "desde_hasta" -> Valores de billetes y monedas
 
     let totalNetoDepositoCalculado = 0;
+    let debounceTimerArqueo = null;
 
     function registrarActividad() {
       localStorage.setItem('pb_ultima_actividad', Date.now().toString());
     }
 
-    // Guardado persistente en el dispositivo
-    function guardarEnCacheLocal() {
-      const dataLocal = {
-        rutas: rutasApp,
-        clientes: catalogoClientes,
-        liquidaciones: liquidacionesGuardadas,
-        gastos: gastosGuardados,
-        usuarioEmail: perfilActual ? perfilActual.email : (usuarioActual ? usuarioActual.email : "elieldejesusml@gmail.com"),
-        rol: perfilActual ? perfilActual.rol : "admin"
-      };
-      localStorage.setItem('pb_cache_offline', JSON.stringify(dataLocal));
+    function expiroLimite24Horas() {
+      const ultima = localStorage.getItem('pb_ultima_actividad');
+      if (!ultima) return false;
+      const horasTranscurridas = (Date.now() - parseInt(ultima, 10)) / (1000 * 60 * 60);
+      return horasTranscurridas >= 24;
     }
 
-    // Carga inmediata de datos desde el dispositivo
-    function cargarDesdeCacheLocal() {
-      const cacheStr = localStorage.getItem('pb_cache_offline');
-      if (cacheStr) {
-        try {
-          const cache = JSON.parse(cacheStr);
-          rutasApp = cache.rutas || RUTAS_BASE;
-          catalogoClientes = cache.clientes || [];
-          liquidacionesGuardadas = cache.liquidaciones || [];
-          gastosGuardados = cache.gastos || [];
-          return cache;
-        } catch (e) {
-          console.error("Error al leer cache local", e);
-        }
-      }
-      return null;
-    }
-
-    // ==========================================
-    // ARRANQUE DE LA APLICACIÓN
-    // ==========================================
     window.addEventListener('DOMContentLoaded', async () => {
-      // 1. Service Worker para archivos estáticos offline
+      // Registro del Service Worker
       if ('serviceWorker' in navigator) {
         try {
           await navigator.serviceWorker.register('./sw.js');
-        } catch (err) {}
+        } catch (err) {
+          console.warn("Service worker no disponible:", err);
+        }
       }
 
-      // 2. Establecer fechas del día
       const hoy = new Date().toISOString().split('T')[0];
       document.getElementById('fechaCuadre').value = hoy;
       document.getElementById('filtroFechaDia').value = hoy;
@@ -747,63 +722,22 @@
 
       fijarEstaSemanaDeposito();
 
-      // 3. CARGA INSTANTÁNEA OFFLINE: Si hay datos locales, los mostramos primero
-      const cacheLocal = cargarDesdeCacheLocal();
-      if (cacheLocal) {
-        document.getElementById('labelUsuarioActivo').textContent = cacheLocal.usuarioEmail;
-        const badgeRol = document.getElementById('badgeRol');
-        badgeRol.textContent = cacheLocal.rol;
-        badgeRol.className = cacheLocal.rol === 'admin' 
-          ? "px-1.5 py-0.5 bg-amber-400 text-slate-900 rounded font-black text-[9px] uppercase" 
-          : "px-1.5 py-0.5 bg-blue-700 text-white rounded font-bold text-[9px] uppercase";
-
-        poblarSelectoresRuta();
-        actualizarClientesSegunRuta();
-        renderizarHistorial();
-        renderizarListaClientesConfig();
-        calcularDepositoSemanal();
+      if (expiroLimite24Horas()) {
+        localStorage.removeItem('pb_ultima_actividad');
+        await sbClient.auth.signOut();
+        document.getElementById('modalAuth').classList.remove('hidden');
+        return;
       }
 
-      // 4. Comprobación de conectividad
-      actualizarBannerConectividad();
-      window.addEventListener('online', async () => {
-        actualizarBannerConectividad();
-        await sincronizarEnNubeAuto();
-      });
-      window.addEventListener('offline', actualizarBannerConectividad);
-
-      // 5. Verificación de sesión con Supabase
-      try {
-        const { data: { session } } = await sbClient.auth.getSession();
-        if (session) {
-          usuarioActual = session.user;
-          registrarActividad();
-          await iniciarAplicacionConUsuario();
-        } else {
-          // Si no hay sesión y tampoco caché, pedimos login
-          if (!cacheLocal) {
-            document.getElementById('modalAuth').classList.remove('hidden');
-          }
-        }
-      } catch (error) {
-        // Si no hay internet, no bloqueamos la app si ya teníamos sesión en caché
-        console.warn("Sin conexión con Supabase en el arranque. Usando datos locales.");
+      const { data: { session } } = await sbClient.auth.getSession();
+      if (session) {
+        usuarioActual = session.user;
+        registrarActividad();
+        await iniciarAplicacionConUsuario();
+      } else {
+        document.getElementById('modalAuth').classList.remove('hidden');
       }
     });
-
-    function actualizarBannerConectividad() {
-      const banner = document.getElementById('bannerOffline');
-      const indicador = document.getElementById('indicadorAutoSync');
-      if (navigator.onLine) {
-        banner.classList.add('hidden');
-        indicador.innerHTML = '<span>☁️</span> Sincronizado';
-        indicador.className = 'text-[10px] bg-blue-950/60 text-blue-200 border border-blue-700/50 px-2 py-1 rounded-md font-medium flex items-center gap-1';
-      } else {
-        banner.classList.remove('hidden');
-        indicador.innerHTML = '<span>⚡</span> Modo Local (Offline)';
-        indicador.className = 'text-[10px] bg-amber-500/20 text-amber-200 border border-amber-500/40 px-2 py-1 rounded-md font-medium flex items-center gap-1';
-      }
-    }
 
     // ==========================================
     // AUTENTICACIÓN
@@ -831,16 +765,21 @@
       const err = document.getElementById('authError');
       err.classList.add('hidden');
 
-      if (!navigator.onLine) {
-        alert("Para iniciar sesión por primera vez necesitas conexión a internet.");
-        return;
-      }
-
       if (modoRegistro) {
-        const { data, error } = await sbClient.auth.signUp({ email, password });
+        const { data, error } = await sbClient.auth.signUp({
+          email: email,
+          password: password
+        });
+
         if (error) {
           err.className = "text-xs font-semibold text-center mt-3 text-rose-600 block";
           err.textContent = "Error al crear cuenta: " + error.message;
+          return;
+        }
+
+        if (data?.user && (!data.session || data.user.identities?.length === 0)) {
+          err.className = "text-xs font-semibold text-center mt-3 text-amber-700 bg-amber-50 p-2.5 rounded-lg border border-amber-200 block";
+          err.innerHTML = "✉️ Hemos enviado un correo de confirmación a <strong>" + email + "</strong>. Confírmalo e inicia sesión.";
           return;
         }
 
@@ -854,13 +793,19 @@
           rutas: RUTAS_BASE,
           clientes: [],
           liquidaciones: [],
-          gastos: []
+          gastos: [],
+          arqueos_semanales: {}
         });
 
         registrarActividad();
         await iniciarAplicacionConUsuario();
+
       } else {
-        const { data, error } = await sbClient.auth.signInWithPassword({ email, password });
+        const { data, error } = await sbClient.auth.signInWithPassword({
+          email: email,
+          password: password
+        });
+
         if (error) {
           err.className = "text-xs font-semibold text-center mt-3 text-rose-600 block";
           err.textContent = "Correo o contraseña incorrectos.";
@@ -876,37 +821,41 @@
     async function iniciarAplicacionConUsuario() {
       document.getElementById('modalAuth').classList.add('hidden');
 
-      try {
-        const { data } = await sbClient
-          .from('pb_usuarios_data')
-          .select('*')
-          .eq('user_id', usuarioActual.id)
-          .single();
+      const { data } = await sbClient
+        .from('pb_usuarios_data')
+        .select('*')
+        .eq('user_id', usuarioActual.id)
+        .single();
 
-        if (data) {
-          perfilActual = data;
-          rutasApp = perfilActual.rutas || RUTAS_BASE;
-          catalogoClientes = perfilActual.clientes || [];
-          liquidacionesGuardadas = perfilActual.liquidaciones || [];
-          gastosGuardados = perfilActual.gastos || [];
-          // Guardamos copia de seguridad en memoria local
-          guardarEnCacheLocal();
-        }
-      } catch (e) {
-        console.warn("No se pudo descargar de la nube; manteniendo datos locales.");
+      if (data) {
+        perfilActual = data;
+      } else {
+        perfilActual = {
+          user_id: usuarioActual.id,
+          email: usuarioActual.email,
+          rol: (usuarioActual.email === 'elieldejesusml@gmail.com') ? 'admin' : 'colector',
+          rutas: RUTAS_BASE,
+          clientes: [],
+          liquidaciones: [],
+          gastos: [],
+          arqueos_semanales: {}
+        };
       }
 
-      const emailActivo = perfilActual ? perfilActual.email : usuarioActual.email;
-      const rolActivo = perfilActual ? perfilActual.rol : "colector";
-
-      document.getElementById('labelUsuarioActivo').textContent = emailActivo;
+      document.getElementById('labelUsuarioActivo').textContent = perfilActual.email;
       const badgeRol = document.getElementById('badgeRol');
-      badgeRol.textContent = rolActivo;
-      badgeRol.className = rolActivo === 'admin' 
+      badgeRol.textContent = perfilActual.rol;
+      badgeRol.className = perfilActual.rol === 'admin' 
         ? "px-1.5 py-0.5 bg-amber-400 text-slate-900 rounded font-black text-[9px] uppercase" 
         : "px-1.5 py-0.5 bg-blue-700 text-white rounded font-bold text-[9px] uppercase";
 
-      if (rolActivo === 'admin' && navigator.onLine) {
+      rutasApp = perfilActual.rutas || RUTAS_BASE;
+      catalogoClientes = perfilActual.clientes || [];
+      liquidacionesGuardadas = perfilActual.liquidaciones || [];
+      gastosGuardados = perfilActual.gastos || [];
+      arqueosSemanalesGuardados = perfilActual.arqueos_semanales || {};
+
+      if (perfilActual.rol === 'admin') {
         configurarPanelAdmin();
       } else {
         document.getElementById('panelAdmin').classList.add('hidden');
@@ -916,7 +865,7 @@
       actualizarClientesSegunRuta();
       renderizarHistorial();
       renderizarListaClientesConfig();
-      calcularDepositoSemanal();
+      alCambiarRangoSemana();
     }
 
     // ==========================================
@@ -949,39 +898,28 @@
         catalogoClientes = data.clientes || [];
         liquidacionesGuardadas = data.liquidaciones || [];
         gastosGuardados = data.gastos || [];
+        arqueosSemanalesGuardados = data.arqueos_semanales || {};
 
-        guardarEnCacheLocal();
         poblarSelectoresRuta();
         actualizarClientesSegunRuta();
         renderizarHistorial();
         renderizarListaClientesConfig();
-        calcularDepositoSemanal();
+        alCambiarRangoSemana();
       }
     }
 
     async function cerrarSesionManual() {
       localStorage.removeItem('pb_ultima_actividad');
-      localStorage.removeItem('pb_cache_offline');
-      try { await sbClient.auth.signOut(); } catch(e){}
+      await sbClient.auth.signOut();
       location.reload();
     }
 
     // ==========================================
-    // AUTOGUARDADO EN SUPABASE CON RESPALDO LOCAL
+    // AUTOGUARDADO EN SUPABASE
     // ==========================================
     async function sincronizarEnNubeAuto() {
-      registrarActividad();
-      // 1. SIEMPRE guardamos primero localmente en el teléfono (asegura el modo sin conexión)
-      guardarEnCacheLocal();
-
-      // 2. Si no hay internet, dejamos marcado para subir cuando vuelva
-      if (!navigator.onLine) {
-        actualizarBannerConectividad();
-        return;
-      }
-
       if (!usuarioActual) return;
-
+      registrarActividad();
       const indicador = document.getElementById('indicadorAutoSync');
       if (indicador) {
         indicador.innerHTML = '<span>🔄</span> Guardando...';
@@ -996,15 +934,17 @@
           clientes: catalogoClientes,
           liquidaciones: liquidacionesGuardadas,
           gastos: gastosGuardados,
+          arqueos_semanales: arqueosSemanalesGuardados,
           updated_at: new Date().toISOString()
         }).eq('user_id', targetUserId);
       } catch (err) {
-        console.warn("Fallo temporal de sincronización en la nube, se mantiene en memoria local.");
+        console.error("Error al sincronizar con la nube:", err);
       } finally {
         if (indicador) {
           setTimeout(() => {
-            actualizarBannerConectividad();
-          }, 600);
+            indicador.innerHTML = '<span>☁️</span> Sincronizado';
+            indicador.className = 'text-[10px] bg-blue-950/60 text-blue-200 border border-blue-700/50 px-2 py-1 rounded-md font-medium flex items-center gap-1';
+          }, 800);
         }
       }
     }
@@ -1020,6 +960,7 @@
         clientes: catalogoClientes,
         liquidaciones: liquidacionesGuardadas,
         gastos: gastosGuardados,
+        arqueos_semanales: arqueosSemanalesGuardados,
         fecha: new Date().toISOString()
       };
 
@@ -1049,15 +990,16 @@
             catalogoClientes = data.clientes;
             if (data.liquidaciones) liquidacionesGuardadas = data.liquidaciones;
             if (data.gastos) gastosGuardados = data.gastos;
+            if (data.arqueos_semanales) arqueosSemanalesGuardados = data.arqueos_semanales;
 
             poblarSelectoresRuta();
             actualizarClientesSegunRuta();
             renderizarHistorial();
             renderizarListaClientesConfig();
-            calcularDepositoSemanal();
+            alCambiarRangoSemana();
 
             await sincronizarEnNubeAuto();
-            alert("✅ Archivo de respaldo restaurado con éxito.");
+            alert("✅ Archivo de respaldo restaurado y sincronizado.");
           } else {
             alert("El archivo no tiene el formato de respaldo correcto.");
           }
@@ -1096,7 +1038,7 @@
       } else if (p === 'deposito') {
         document.getElementById('vistaDeposito').classList.remove('seccion-oculta');
         document.getElementById('tabDeposito').className = clasesActiva;
-        calcularDepositoSemanal();
+        alCambiarRangoSemana();
       } else if (p === 'rutas') {
         document.getElementById('vistaRutas').classList.remove('seccion-oculta');
         document.getElementById('tabRutas').className = clasesActiva;
@@ -1268,11 +1210,10 @@
         });
       }
 
-      // Sincronización automática (guarda local primero, y si hay red, a Supabase)
       await sincronizarEnNubeAuto();
 
       limpiarFormulario();
-      alert("✅ Liquidación guardada (disponible con y sin conexión).");
+      alert("✅ Guardado correctamente.");
     }
 
     // ==========================================
@@ -1527,8 +1468,14 @@
     }
 
     // ==========================================
-    // SECCIÓN DEPÓSITO SEMANAL, GASTOS Y ARQUEO
+    // SECCIÓN DEPÓSITO SEMANAL Y ARQUEO PERSISTENTE
     // ==========================================
+    function obtenerClaveSemanaActual() {
+      const d = document.getElementById('depositoFechaDesde').value;
+      const h = document.getElementById('depositoFechaHasta').value;
+      return `${d}_${h}`;
+    }
+
     function fijarEstaSemanaDeposito() {
       const ahora = new Date();
       const diaSemana = ahora.getDay();
@@ -1543,7 +1490,12 @@
       document.getElementById('depositoFechaDesde').value = lunes.toISOString().split('T')[0];
       document.getElementById('depositoFechaHasta').value = viernes.toISOString().split('T')[0];
 
+      alCambiarRangoSemana();
+    }
+
+    function alCambiarRangoSemana() {
       calcularDepositoSemanal();
+      cargarArqueoSemanaActual();
     }
 
     function calcularDepositoSemanal() {
@@ -1657,7 +1609,7 @@
       document.getElementById('gastoMonto').value = '';
 
       calcularDepositoSemanal();
-      alert("✅ Gasto registrado (disponible con y sin conexión).");
+      alert("✅ Guardado correctamente.");
     }
 
     async function eliminarGasto(id) {
@@ -1665,6 +1617,63 @@
         gastosGuardados = gastosGuardados.filter(g => g.id !== id);
         await sincronizarEnNubeAuto();
         calcularDepositoSemanal();
+      }
+    }
+
+    // ==========================================
+    // PERSISTENCIA DEL CONTEO POR SEMANA
+    // ==========================================
+    function cargarArqueoSemanaActual() {
+      const clave = obtenerClaveSemanaActual();
+      const guardado = arqueosSemanalesGuardados[clave];
+
+      const campos = ['b2000', 'b1000', 'b500', 'b200', 'b100', 'b50', 'm25', 'm10', 'm5', 'm1'];
+
+      if (guardado) {
+        campos.forEach(id => {
+          document.getElementById(id).value = (guardado[id] !== undefined && guardado[id] !== null) ? guardado[id] : '';
+        });
+      } else {
+        campos.forEach(id => {
+          document.getElementById(id).value = '';
+        });
+      }
+
+      calcularArqueoFisico();
+    }
+
+    function alModificarArqueo() {
+      calcularArqueoFisico();
+
+      // Guardado automático retrasado (debounce) para no saturar al teclear
+      clearTimeout(debounceTimerArqueo);
+      debounceTimerArqueo = setTimeout(() => {
+        guardarArqueoSemanaActual(false);
+      }, 700);
+    }
+
+    async function guardarArqueoSemanaActual(mostrarAlerta = false) {
+      const clave = obtenerClaveSemanaActual();
+      if (!clave || clave === '_') return;
+
+      const datosConteo = {
+        b2000: document.getElementById('b2000').value,
+        b1000: document.getElementById('b1000').value,
+        b500: document.getElementById('b500').value,
+        b200: document.getElementById('b200').value,
+        b100: document.getElementById('b100').value,
+        b50: document.getElementById('b50').value,
+        m25: document.getElementById('m25').value,
+        m10: document.getElementById('m10').value,
+        m5: document.getElementById('m5').value,
+        m1: document.getElementById('m1').value
+      };
+
+      arqueosSemanalesGuardados[clave] = datosConteo;
+      await sincronizarEnNubeAuto();
+
+      if (mostrarAlerta) {
+        alert("✅ Arqueo de la semana guardado correctamente.");
       }
     }
 
@@ -1769,11 +1778,16 @@
       }
     }
 
-    function limpiarArqueoFisico() {
-      ['b2000', 'b1000', 'b500', 'b200', 'b100', 'b50', 'm25', 'm10', 'm5', 'm1'].forEach(id => {
-        document.getElementById(id).value = '';
-      });
-      calcularArqueoFisico();
+    async function limpiarArqueoFisico() {
+      if (confirm("¿Deseas reiniciar el conteo de esta semana?")) {
+        ['b2000', 'b1000', 'b500', 'b200', 'b100', 'b50', 'm25', 'm10', 'm5', 'm1'].forEach(id => {
+          document.getElementById(id).value = '';
+        });
+        const clave = obtenerClaveSemanaActual();
+        delete arqueosSemanalesGuardados[clave];
+        await sincronizarEnNubeAuto();
+        calcularArqueoFisico();
+      }
     }
 
     function exportarDepositoWord() {
@@ -1917,17 +1931,16 @@
 
       if (!rutasApp.includes(nombre)) {
         rutasApp.push(nombre);
-
         await sincronizarEnNubeAuto();
-        poblarSelectoresRuta();
 
+        poblarSelectoresRuta();
         document.getElementById('selectRutaParaCliente').value = nombre;
         document.getElementById('selectRutaForm').value = nombre;
         renderizarListaClientesConfig();
         actualizarClientesSegunRuta();
 
         input.value = '';
-        alert("✅ Ruta creada exitosamente: " + nombre);
+        alert("✅ Guardado correctamente.");
       } else {
         alert("Esa ruta ya existe.");
       }
@@ -1971,7 +1984,7 @@
 
       renderizarListaClientesConfig();
       actualizarClientesSegunRuta();
-      alert("✅ Cliente guardado en catálogo.");
+      alert("✅ Guardado correctamente.");
     }
 
     function renderizarListaClientesConfig() {
