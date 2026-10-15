@@ -62,7 +62,7 @@
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <!-- Indicador de autoguardado en nube -->
+        <!-- Indicador de conexión / sync -->
         <span id="indicadorAutoSync" class="text-[10px] bg-blue-950/60 text-blue-200 border border-blue-700/50 px-2 py-1 rounded-md font-medium flex items-center gap-1">
           <span>☁️</span> Sincronizado
         </span>
@@ -92,6 +92,12 @@
   </nav>
 
   <main class="max-w-4xl mx-auto px-4 mt-3 space-y-4">
+
+    <!-- AVISO VISUAL DE MODO SIN CONEXIÓN -->
+    <div id="bannerOffline" class="hidden bg-amber-500 text-slate-950 px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between shadow">
+      <span>⚡ Modo Sin Conexión activo: trabajando con las rutas y clientes guardados en tu teléfono.</span>
+      <span class="text-[10px] bg-slate-900 text-white px-2 py-0.5 rounded uppercase font-black">Offline</span>
+    </div>
 
     <!-- PANEL EXCLUSIVO ADMIN -->
     <div id="panelAdmin" class="hidden bg-amber-500/10 border border-amber-300 p-3 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
@@ -317,7 +323,6 @@
     <!-- ========================================== -->
     <section id="vistaDeposito" class="seccion-oculta space-y-4">
       
-      <!-- Selector de semana para depósito -->
       <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
@@ -341,7 +346,6 @@
         </div>
       </div>
 
-      <!-- DESGLOSE POR RUTAS DE LA SEMANA -->
       <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
         <div class="flex justify-between items-center">
           <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">1. Rutas Trabajadas en esta Semana</h2>
@@ -371,7 +375,6 @@
         </div>
       </div>
 
-      <!-- GASTOS EN EFECTIVO -->
       <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div class="flex justify-between items-center">
           <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">2. Gastos en Efectivo de la Semana</h2>
@@ -422,7 +425,7 @@
         </div>
       </div>
 
-      <!-- ARQUEO FÍSICO EN MANO (BILLETES Y MONEDAS) -->
+      <!-- ARQUEO FÍSICO EN MANO -->
       <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div class="flex justify-between items-center">
           <div>
@@ -584,7 +587,6 @@
     <!-- ========================================== -->
     <section id="vistaRutas" class="seccion-oculta space-y-4">
 
-      <!-- Panel de Respaldos Físicos Locales -->
       <div class="w-full bg-slate-900 text-white p-4 sm:p-5 rounded-xl shadow border border-slate-800 space-y-3 box-border overflow-hidden">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
@@ -592,7 +594,7 @@
               <span>💾</span> Copias de Seguridad Locales
             </h2>
             <p class="text-xs text-slate-300 mt-0.5">
-              Tus cambios se guardan automáticamente en Supabase. También puedes guardar o restaurar un archivo físico en tu teléfono.
+              Tus cambios se guardan automáticamente en tu dispositivo y en la nube.
             </p>
           </div>
           <span id="badgeNube" class="px-3 py-1 bg-emerald-500/20 text-emerald-300 text-[11px] font-semibold rounded-full border border-emerald-500/30">
@@ -667,7 +669,7 @@
 
   <script>
     // ==========================================
-    // CONFIGURACIÓN DE SUPABASE (CREDENCIALES ACTIVAS)
+    // CONFIGURACIÓN DE SUPABASE
     // ==========================================
     const SUPABASE_URL = "https://nfgnyvdjolpowdpybuvw.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mZ255dmRqb2xwb3dkcHlidXZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4MTE5MzEsImV4cCI6MjEwNDM4NzkzMX0.bnNuDhGmIx04GoSEbmgHi_EJPv7Q4XixiCel-3owKSo";
@@ -675,7 +677,7 @@
     const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     // ==========================================
-    // ESTADO GLOBAL Y CONTROL DE 24 HORAS
+    // ESTADO GLOBAL Y CACHÉ LOCAL OFFLINE-FIRST
     // ==========================================
     let usuarioActual = null;
     let perfilActual = null;
@@ -693,24 +695,49 @@
       localStorage.setItem('pb_ultima_actividad', Date.now().toString());
     }
 
-    function expiroLimite24Horas() {
-      const ultima = localStorage.getItem('pb_ultima_actividad');
-      if (!ultima) return false;
-      const horasTranscurridas = (Date.now() - parseInt(ultima, 10)) / (1000 * 60 * 60);
-      return horasTranscurridas >= 24;
+    // Guardado persistente en el dispositivo
+    function guardarEnCacheLocal() {
+      const dataLocal = {
+        rutas: rutasApp,
+        clientes: catalogoClientes,
+        liquidaciones: liquidacionesGuardadas,
+        gastos: gastosGuardados,
+        usuarioEmail: perfilActual ? perfilActual.email : (usuarioActual ? usuarioActual.email : "elieldejesusml@gmail.com"),
+        rol: perfilActual ? perfilActual.rol : "admin"
+      };
+      localStorage.setItem('pb_cache_offline', JSON.stringify(dataLocal));
     }
 
-   window.addEventListener('DOMContentLoaded', async () => {
-      // REGISTRO DEL SERVICE WORKER (SOPORTE OFFLINE)
+    // Carga inmediata de datos desde el dispositivo
+    function cargarDesdeCacheLocal() {
+      const cacheStr = localStorage.getItem('pb_cache_offline');
+      if (cacheStr) {
+        try {
+          const cache = JSON.parse(cacheStr);
+          rutasApp = cache.rutas || RUTAS_BASE;
+          catalogoClientes = cache.clientes || [];
+          liquidacionesGuardadas = cache.liquidaciones || [];
+          gastosGuardados = cache.gastos || [];
+          return cache;
+        } catch (e) {
+          console.error("Error al leer cache local", e);
+        }
+      }
+      return null;
+    }
+
+    // ==========================================
+    // ARRANQUE DE LA APLICACIÓN
+    // ==========================================
+    window.addEventListener('DOMContentLoaded', async () => {
+      // 1. Service Worker para archivos estáticos offline
       if ('serviceWorker' in navigator) {
         try {
           await navigator.serviceWorker.register('./sw.js');
-          console.log("Service Worker registrado con éxito.");
-        } catch (err) {
-          console.warn("Fallo al registrar Service Worker:", err);
-        }
+        } catch (err) {}
       }
 
+      // 2. Establecer fechas del día
       const hoy = new Date().toISOString().split('T')[0];
       document.getElementById('fechaCuadre').value = hoy;
       document.getElementById('filtroFechaDia').value = hoy;
@@ -720,22 +747,63 @@
 
       fijarEstaSemanaDeposito();
 
-      if (expiroLimite24Horas()) {
-        localStorage.removeItem('pb_ultima_actividad');
-        await sbClient.auth.signOut();
-        document.getElementById('modalAuth').classList.remove('hidden');
-        return;
+      // 3. CARGA INSTANTÁNEA OFFLINE: Si hay datos locales, los mostramos primero
+      const cacheLocal = cargarDesdeCacheLocal();
+      if (cacheLocal) {
+        document.getElementById('labelUsuarioActivo').textContent = cacheLocal.usuarioEmail;
+        const badgeRol = document.getElementById('badgeRol');
+        badgeRol.textContent = cacheLocal.rol;
+        badgeRol.className = cacheLocal.rol === 'admin' 
+          ? "px-1.5 py-0.5 bg-amber-400 text-slate-900 rounded font-black text-[9px] uppercase" 
+          : "px-1.5 py-0.5 bg-blue-700 text-white rounded font-bold text-[9px] uppercase";
+
+        poblarSelectoresRuta();
+        actualizarClientesSegunRuta();
+        renderizarHistorial();
+        renderizarListaClientesConfig();
+        calcularDepositoSemanal();
       }
 
-      const { data: { session } } = await sbClient.auth.getSession();
-      if (session) {
-        usuarioActual = session.user;
-        registrarActividad();
-        await iniciarAplicacionConUsuario();
-      } else {
-        document.getElementById('modalAuth').classList.remove('hidden');
+      // 4. Comprobación de conectividad
+      actualizarBannerConectividad();
+      window.addEventListener('online', async () => {
+        actualizarBannerConectividad();
+        await sincronizarEnNubeAuto();
+      });
+      window.addEventListener('offline', actualizarBannerConectividad);
+
+      // 5. Verificación de sesión con Supabase
+      try {
+        const { data: { session } } = await sbClient.auth.getSession();
+        if (session) {
+          usuarioActual = session.user;
+          registrarActividad();
+          await iniciarAplicacionConUsuario();
+        } else {
+          // Si no hay sesión y tampoco caché, pedimos login
+          if (!cacheLocal) {
+            document.getElementById('modalAuth').classList.remove('hidden');
+          }
+        }
+      } catch (error) {
+        // Si no hay internet, no bloqueamos la app si ya teníamos sesión en caché
+        console.warn("Sin conexión con Supabase en el arranque. Usando datos locales.");
       }
     });
+
+    function actualizarBannerConectividad() {
+      const banner = document.getElementById('bannerOffline');
+      const indicador = document.getElementById('indicadorAutoSync');
+      if (navigator.onLine) {
+        banner.classList.add('hidden');
+        indicador.innerHTML = '<span>☁️</span> Sincronizado';
+        indicador.className = 'text-[10px] bg-blue-950/60 text-blue-200 border border-blue-700/50 px-2 py-1 rounded-md font-medium flex items-center gap-1';
+      } else {
+        banner.classList.remove('hidden');
+        indicador.innerHTML = '<span>⚡</span> Modo Local (Offline)';
+        indicador.className = 'text-[10px] bg-amber-500/20 text-amber-200 border border-amber-500/40 px-2 py-1 rounded-md font-medium flex items-center gap-1';
+      }
+    }
 
     // ==========================================
     // AUTENTICACIÓN
@@ -763,21 +831,16 @@
       const err = document.getElementById('authError');
       err.classList.add('hidden');
 
-      if (modoRegistro) {
-        const { data, error } = await sbClient.auth.signUp({
-          email: email,
-          password: password
-        });
+      if (!navigator.onLine) {
+        alert("Para iniciar sesión por primera vez necesitas conexión a internet.");
+        return;
+      }
 
+      if (modoRegistro) {
+        const { data, error } = await sbClient.auth.signUp({ email, password });
         if (error) {
           err.className = "text-xs font-semibold text-center mt-3 text-rose-600 block";
           err.textContent = "Error al crear cuenta: " + error.message;
-          return;
-        }
-
-        if (data?.user && (!data.session || data.user.identities?.length === 0)) {
-          err.className = "text-xs font-semibold text-center mt-3 text-amber-700 bg-amber-50 p-2.5 rounded-lg border border-amber-200 block";
-          err.innerHTML = "✉️ Hemos enviado un correo de confirmación a <strong>" + email + "</strong>. Confírmalo e inicia sesión.";
           return;
         }
 
@@ -796,13 +859,8 @@
 
         registrarActividad();
         await iniciarAplicacionConUsuario();
-
       } else {
-        const { data, error } = await sbClient.auth.signInWithPassword({
-          email: email,
-          password: password
-        });
-
+        const { data, error } = await sbClient.auth.signInWithPassword({ email, password });
         if (error) {
           err.className = "text-xs font-semibold text-center mt-3 text-rose-600 block";
           err.textContent = "Correo o contraseña incorrectos.";
@@ -818,39 +876,37 @@
     async function iniciarAplicacionConUsuario() {
       document.getElementById('modalAuth').classList.add('hidden');
 
-      const { data } = await sbClient
-        .from('pb_usuarios_data')
-        .select('*')
-        .eq('user_id', usuarioActual.id)
-        .single();
+      try {
+        const { data } = await sbClient
+          .from('pb_usuarios_data')
+          .select('*')
+          .eq('user_id', usuarioActual.id)
+          .single();
 
-      if (data) {
-        perfilActual = data;
-      } else {
-        perfilActual = {
-          user_id: usuarioActual.id,
-          email: usuarioActual.email,
-          rol: (usuarioActual.email === 'elieldejesusml@gmail.com') ? 'admin' : 'colector',
-          rutas: RUTAS_BASE,
-          clientes: [],
-          liquidaciones: [],
-          gastos: []
-        };
+        if (data) {
+          perfilActual = data;
+          rutasApp = perfilActual.rutas || RUTAS_BASE;
+          catalogoClientes = perfilActual.clientes || [];
+          liquidacionesGuardadas = perfilActual.liquidaciones || [];
+          gastosGuardados = perfilActual.gastos || [];
+          // Guardamos copia de seguridad en memoria local
+          guardarEnCacheLocal();
+        }
+      } catch (e) {
+        console.warn("No se pudo descargar de la nube; manteniendo datos locales.");
       }
 
-      document.getElementById('labelUsuarioActivo').textContent = perfilActual.email;
+      const emailActivo = perfilActual ? perfilActual.email : usuarioActual.email;
+      const rolActivo = perfilActual ? perfilActual.rol : "colector";
+
+      document.getElementById('labelUsuarioActivo').textContent = emailActivo;
       const badgeRol = document.getElementById('badgeRol');
-      badgeRol.textContent = perfilActual.rol;
-      badgeRol.className = perfilActual.rol === 'admin' 
+      badgeRol.textContent = rolActivo;
+      badgeRol.className = rolActivo === 'admin' 
         ? "px-1.5 py-0.5 bg-amber-400 text-slate-900 rounded font-black text-[9px] uppercase" 
         : "px-1.5 py-0.5 bg-blue-700 text-white rounded font-bold text-[9px] uppercase";
 
-      rutasApp = perfilActual.rutas || RUTAS_BASE;
-      catalogoClientes = perfilActual.clientes || [];
-      liquidacionesGuardadas = perfilActual.liquidaciones || [];
-      gastosGuardados = perfilActual.gastos || [];
-
-      if (perfilActual.rol === 'admin') {
+      if (rolActivo === 'admin' && navigator.onLine) {
         configurarPanelAdmin();
       } else {
         document.getElementById('panelAdmin').classList.add('hidden');
@@ -894,6 +950,7 @@
         liquidacionesGuardadas = data.liquidaciones || [];
         gastosGuardados = data.gastos || [];
 
+        guardarEnCacheLocal();
         poblarSelectoresRuta();
         actualizarClientesSegunRuta();
         renderizarHistorial();
@@ -904,16 +961,27 @@
 
     async function cerrarSesionManual() {
       localStorage.removeItem('pb_ultima_actividad');
-      await sbClient.auth.signOut();
+      localStorage.removeItem('pb_cache_offline');
+      try { await sbClient.auth.signOut(); } catch(e){}
       location.reload();
     }
 
     // ==========================================
-    // AUTOGUARDADO EN SUPABASE (100% AUTOMÁTICO)
+    // AUTOGUARDADO EN SUPABASE CON RESPALDO LOCAL
     // ==========================================
     async function sincronizarEnNubeAuto() {
-      if (!usuarioActual) return;
       registrarActividad();
+      // 1. SIEMPRE guardamos primero localmente en el teléfono (asegura el modo sin conexión)
+      guardarEnCacheLocal();
+
+      // 2. Si no hay internet, dejamos marcado para subir cuando vuelva
+      if (!navigator.onLine) {
+        actualizarBannerConectividad();
+        return;
+      }
+
+      if (!usuarioActual) return;
+
       const indicador = document.getElementById('indicadorAutoSync');
       if (indicador) {
         indicador.innerHTML = '<span>🔄</span> Guardando...';
@@ -931,13 +999,12 @@
           updated_at: new Date().toISOString()
         }).eq('user_id', targetUserId);
       } catch (err) {
-        console.error("Error al sincronizar con Supabase:", err);
+        console.warn("Fallo temporal de sincronización en la nube, se mantiene en memoria local.");
       } finally {
         if (indicador) {
           setTimeout(() => {
-            indicador.innerHTML = '<span>☁️</span> Sincronizado';
-            indicador.className = 'text-[10px] bg-blue-950/60 text-blue-200 border border-blue-700/50 px-2 py-1 rounded-md font-medium flex items-center gap-1';
-          }, 800);
+            actualizarBannerConectividad();
+          }, 600);
         }
       }
     }
@@ -990,7 +1057,7 @@
             calcularDepositoSemanal();
 
             await sincronizarEnNubeAuto();
-            alert("✅ Archivo de respaldo restaurado y sincronizado automáticamente.");
+            alert("✅ Archivo de respaldo restaurado con éxito.");
           } else {
             alert("El archivo no tiene el formato de respaldo correcto.");
           }
@@ -1201,11 +1268,11 @@
         });
       }
 
-      // Autoguardado directo en Supabase
+      // Sincronización automática (guarda local primero, y si hay red, a Supabase)
       await sincronizarEnNubeAuto();
 
       limpiarFormulario();
-      alert("✅ Liquidación guardada y sincronizada en la nube.");
+      alert("✅ Liquidación guardada (disponible con y sin conexión).");
     }
 
     // ==========================================
@@ -1584,15 +1651,13 @@
       };
 
       gastosGuardados.unshift(nuevoGasto);
-      
-      // Autoguardado directo en Supabase
       await sincronizarEnNubeAuto();
 
       document.getElementById('gastoConcepto').value = '';
       document.getElementById('gastoMonto').value = '';
 
       calcularDepositoSemanal();
-      alert("✅ Gasto registrado y sincronizado en la nube.");
+      alert("✅ Gasto registrado (disponible con y sin conexión).");
     }
 
     async function eliminarGasto(id) {
@@ -1843,7 +1908,7 @@
     }
 
     // ==========================================
-    // ADMINISTRACIÓN DE RUTAS Y CLIENTES (CORREGIDO)
+    // ADMINISTRACIÓN DE RUTAS Y CLIENTES
     // ==========================================
     async function agregarRuta() {
       const input = document.getElementById('nuevaRutaNombre');
@@ -1853,19 +1918,16 @@
       if (!rutasApp.includes(nombre)) {
         rutasApp.push(nombre);
 
-        // Autoguardado directo en Supabase
         await sincronizarEnNubeAuto();
-
         poblarSelectoresRuta();
 
-        // Mantiene seleccionada la nueva ruta creada
         document.getElementById('selectRutaParaCliente').value = nombre;
         document.getElementById('selectRutaForm').value = nombre;
         renderizarListaClientesConfig();
         actualizarClientesSegunRuta();
 
         input.value = '';
-        alert("✅ Ruta creada y sincronizada: " + nombre);
+        alert("✅ Ruta creada exitosamente: " + nombre);
       } else {
         alert("Esa ruta ya existe.");
       }
@@ -1902,7 +1964,6 @@
         porcentaje: porcentaje
       });
 
-      // Autoguardado directo en Supabase
       await sincronizarEnNubeAuto();
 
       document.getElementById('nuevoClienteNombre').value = '';
@@ -1910,7 +1971,7 @@
 
       renderizarListaClientesConfig();
       actualizarClientesSegunRuta();
-      alert("✅ Cliente guardado y sincronizado en la nube.");
+      alert("✅ Cliente guardado en catálogo.");
     }
 
     function renderizarListaClientesConfig() {
