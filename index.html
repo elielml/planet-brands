@@ -44,14 +44,14 @@
     <span id="notificacionTexto">Guardado correctamente.</span>
   </div>
 
-  <!-- MODAL DE CONFIRMACIÓN PROPIO (REEMPLAZO DE CONFIRM SIN ENCABEZADO GITHUB.IO) -->
+  <!-- MODAL DE CONFIRMACIÓN PROPIO -->
   <div id="modalConfirmacionPropio" class="hidden fixed inset-0 bg-slate-900/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
     <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-5 border border-slate-200 space-y-4">
       <div class="flex items-start gap-3">
-        <span class="text-2xl" id="modalConfirmIcono">⚠️</span>
+        <span class="text-2xl" id="modalConfirmIcono">🗑️</span>
         <div class="space-y-1">
-          <h3 class="text-sm font-black text-slate-900 uppercase tracking-wide" id="modalConfirmTitulo">Confirmación</h3>
-          <p class="text-xs text-slate-600 leading-relaxed" id="modalConfirmMensaje">¿Estás seguro de continuar?</p>
+          <h3 class="text-sm font-black text-slate-900 uppercase tracking-wide" id="modalConfirmTitulo">ELIMINAR REGISTRO</h3>
+          <p class="text-xs text-slate-600 leading-relaxed" id="modalConfirmMensaje">¿Estás seguro de que quieres eliminarlo?</p>
         </div>
       </div>
       <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
@@ -65,7 +65,7 @@
     </div>
   </div>
 
-  <!-- PLANTILLA DE TICKET TÉRMICO (FORMATO PLANET BRANDS SRL) -->
+  <!-- PLANTILLA DE TICKET TÉRMICO -->
   <div id="ticketImpresion" class="hidden text-black font-mono text-[11px] leading-tight">
     <div class="text-center pb-2 border-b border-dashed border-black">
       <p class="font-black text-sm uppercase">PLANET BRANDS SRL</p>
@@ -241,7 +241,6 @@
       <button type="button" id="tabRutas" onclick="cambiarPestana('rutas')" class="py-2.5 rounded-lg text-slate-600 hover:text-slate-900 transition text-[11px] sm:text-xs">
         ⚙️ Rutas/Nube
       </button>
-      <!-- Pestaña exclusiva del correo maestro -->
       <button type="button" id="tabAdminMaster" onclick="cambiarPestana('adminMaster')" class="hidden col-span-2 sm:col-span-4 py-2.5 rounded-lg text-amber-950 bg-amber-400 hover:bg-amber-300 border border-amber-500 font-black transition text-xs shadow-sm">
         👑 Permisos / Papelera
       </button>
@@ -555,7 +554,7 @@
 
         <div class="border border-slate-100 rounded-xl overflow-hidden">
           <table class="w-full text-left text-xs border-collapse">
-            <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
+            <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
               <tr>
                 <th class="p-3">Concepto / Colector</th>
                 <th class="p-3 text-center">Fecha</th>
@@ -688,7 +687,7 @@
           <button type="button" id="btnGuardarArqueoMaster" onclick="guardarArqueoSemanaActual(true)" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs uppercase px-4 py-3 shadow transition flex items-center justify-center gap-1.5">
             <span>💾</span> Guardar Arqueo
           </button>
-          <button type="button" onclick="exportarDepositoDocumento()" class="flex-1 py-3 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-xs uppercase shadow transition flex items-center justify-center gap-2">
+          <button type="button" onclick="exportarDepositoDocumento()" class="flex-1 py-3 bg-blue-700 hover:bg-blue-800 text-white font-black rounded-xl text-xs uppercase shadow transition flex items-center justify-center gap-2">
             <span>📄 Exportar Comprobante</span>
           </button>
         </div>
@@ -1148,7 +1147,6 @@
     async function iniciarAplicacionConUsuario() {
       document.getElementById('modalAuth').classList.add('hidden');
 
-      // Restricción: la sección de permisos solo existe para tu correo maestro
       esSuperAdmin = (usuarioActual.email.trim().toLowerCase() === 'elieldejesusml@gmail.com');
       document.getElementById('labelUsuarioActivo').textContent = usuarioActual.email;
 
@@ -1333,7 +1331,7 @@
       const valPrevio = select.value;
       select.innerHTML = `
         <option value="TODOS">Todos los usuarios (Consolidado)</option>
-        <option value="MIO">Solo mis registros</option>
+        <option value="MIO" selected>Solo mis registros</option>
       `;
 
       const otrosEmails = [...new Set(liquidacionesGuardadas.filter(i => !i.esMio).map(i => i.creadoPorEmail))];
@@ -1440,7 +1438,7 @@
       }
     }
 
-    async function marcarModoDuenoRapido() {
+    function marcarModoDuenoRapido() {
       const userId = document.getElementById('inputUserIdSeleccionado').value;
       if (!userId) {
         mostrarMensaje("Primero toca 'Configurar' en un usuario de la lista.", "⚠️");
@@ -1543,7 +1541,7 @@
     }
 
     async function restaurarRegistro(id) {
-      const confirmado = await pedirConfirmacion("¿Deseas restaurar este registro para que vuelva a aparecer en la aplicación?", "Restaurar Registro", "♻️");
+      const confirmado = await pedirConfirmacion("¿Estás seguro de que quieres restaurarlo?", "Restaurar Registro", "♻️");
       if (confirmado) {
         await sbClient.from('pb_liquidaciones').update({ eliminado: false, eliminado_en: null, eliminado_por: null }).eq('id', id);
         await sbClient.from('pb_auditoria').insert({
@@ -1561,7 +1559,7 @@
     }
 
     async function eliminarDefinitivo(id) {
-      const confirmado = await pedirConfirmacion("¿Estás seguro de eliminar este registro permanentemente? No se podrá recuperar jamás.", "Eliminación Definitiva", "⚠️");
+      const confirmado = await pedirConfirmacion("¿Estás seguro de que quieres eliminarlo definitivamente?", "Eliminación Definitiva", "⚠️");
       if (confirmado) {
         await sbClient.from('pb_liquidaciones').delete().eq('id', id);
         await sbClient.from('pb_auditoria').insert({
@@ -1830,7 +1828,7 @@
     }
 
     async function eliminarRegistro(id) {
-      const confirmado = await pedirConfirmacion("¿Deseas enviar esta liquidación a la papelera?", "Enviar a Papelera", "🗑️");
+      const confirmado = await pedirConfirmacion("¿Estás seguro de que quieres eliminarlo?", "ELIMINAR REGISTRO", "🗑️");
       if (confirmado) {
         await sbClient.from('pb_liquidaciones').update({
           eliminado: true,
@@ -1852,7 +1850,7 @@
     }
 
     // ==========================================
-    // HISTORIAL Y REIMPRESIÓN
+    // HISTORIAL Y EXPORTACIONES LIMPIAS
     // ==========================================
     function alternarFiltroFecha() {
       const tipo = document.getElementById('filtroTipoPeriodo').value;
@@ -1943,42 +1941,57 @@
       document.getElementById('resumenGananciaEmpresa').textContent = `$ ${totalEmpresa.toLocaleString('es-DO', { minimumFractionDigits: 0 })}`;
     }
 
+    // EXPORTAR A EXCEL: Sin colector, con 'Nombre del cliente' y 'Ganancia'
     function exportarExcel() {
       const lista = filtrarLiquidaciones();
       if (lista.length === 0) { mostrarMensaje("No hay datos para exportar.", "⚠️"); return; }
 
-      let csv = "Cliente / Concepto;Colector;Ganancia Empresa\r\n";
+      const rutaSeleccionada = document.getElementById('filtroRuta').value;
+      const nombreRutaReporte = (rutaSeleccionada === "TODAS") ? "CONSOLIDADO GENERAL" : rutaSeleccionada;
+      const fechaReporte = document.getElementById('filtroTipoPeriodo').value === 'dia' ? document.getElementById('filtroFechaDia').value : new Date().toISOString().split('T')[0];
+
+      let csv = `${nombreRutaReporte}; Fecha: ${fechaReporte}\r\n`;
+      csv += "Nombre del cliente;Ganancia\r\n";
       let total = 0;
+
       lista.forEach(item => {
         total += item.gananciaEmpresa;
-        csv += `"- ${item.cliente} (${item.concepto}):";"${item.creadoPorEmail}";"${formatearMontoLimpio(item.gananciaEmpresa)}"\r\n`;
+        const conceptoLimpio = item.concepto ? ` (${item.concepto})` : "";
+        const nombreClienteLimpio = `${item.cliente}${conceptoLimpio}`;
+        csv += `"${nombreClienteLimpio}";"${formatearMontoLimpio(item.gananciaEmpresa)}"\r\n`;
       });
-      csv += `"- Total de recolección:";"";"${formatearMontoLimpio(total)}"\r\n`;
+      csv += `"- Total de recolección:";"${formatearMontoLimpio(total)}"\r\n`;
 
       const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = `Liquidacion_${zonaActiva.toUpperCase()}_${new Date().toISOString().split('T')[0]}.csv`;
+      link.download = `Liquidacion_${zonaActiva.toUpperCase()}_${fechaReporte}.csv`;
       link.click();
     }
 
+    // EXPORTAR DOCUMENTO (MÓVIL): Sin colector, con 'Nombre del cliente' y 'Ganancia'
     function exportarDocumento() {
       const lista = filtrarLiquidaciones();
       if (lista.length === 0) { mostrarMensaje("No hay datos para exportar.", "⚠️"); return; }
+
+      const rutaSeleccionada = document.getElementById('filtroRuta').value;
+      const nombreRutaReporte = (rutaSeleccionada === "TODAS") ? "CONSOLIDADO GENERAL" : rutaSeleccionada;
+      const fechaReporte = document.getElementById('filtroTipoPeriodo').value === 'dia' ? document.getElementById('filtroFechaDia').value : new Date().toISOString().split('T')[0];
 
       let filas = "";
       let total = 0;
       lista.forEach(item => {
         total += item.gananciaEmpresa;
-        filas += `<tr><td style="padding:8px 12px;font-size:14px;border-bottom:1px solid #e2e8f0;">- ${item.cliente} (${item.concepto}) [${item.creadoPorEmail.split('@')[0]}]:</td><td style="padding:8px 12px;text-align:right;font-weight:bold;border-bottom:1px solid #e2e8f0;">${formatearMontoLimpio(item.gananciaEmpresa)}</td></tr>`;
+        const conceptoLimpio = item.concepto ? ` (${item.concepto})` : "";
+        filas += `<tr><td style="padding:8px 12px;font-size:14px;border-bottom:1px solid #e2e8f0;">${item.cliente}${conceptoLimpio}</td><td style="padding:8px 12px;text-align:right;font-weight:bold;border-bottom:1px solid #e2e8f0;">${formatearMontoLimpio(item.gananciaEmpresa)}</td></tr>`;
       });
 
-      const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Liquidación</title></head><body style="font-family:sans-serif;padding:20px;"><div style="max-width:600px;margin:auto;border:1px solid #cbd5e1;padding:20px;border-radius:12px;"><h2 style="color:#1e3a8a;margin-top:0;">PLANET BRANDS - CONTROL DE RUTAS</h2><p style="color:#64748b;font-size:13px;">Zona: <strong>${zonaActiva.toUpperCase()}</strong></p><table style="width:100%;border-collapse:collapse;">${filas}<tr style="border-top:2px solid #0f172a;"><td style="padding:12px;font-weight:bold;">- Total de recolección:</td><td style="padding:12px;text-align:right;font-weight:bold;color:#1e3a8a;">${formatearMontoLimpio(total)}</td></tr></table></div></body></html>`;
+      const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Liquidación</title></head><body style="font-family:sans-serif;padding:20px;"><div style="max-width:600px;margin:auto;border:1px solid #cbd5e1;padding:20px;border-radius:12px;"><h2 style="color:#1e3a8a;margin-top:0;">${nombreRutaReporte}</h2><p style="color:#64748b;font-size:13px;margin-bottom:16px;">Fecha: <strong>${fechaReporte}</strong></p><table style="width:100%;border-collapse:collapse;"><thead><tr style="border-bottom:2px solid #cbd5e1;text-align:left;"><th style="padding:8px 12px;font-size:13px;color:#475569;">Nombre del cliente</th><th style="padding:8px 12px;font-size:13px;color:#475569;text-align:right;">Ganancia</th></tr></thead><tbody>${filas}<tr style="border-top:2px solid #0f172a;"><td style="padding:12px;font-weight:bold;">- Total de recolección:</td><td style="padding:12px;text-align:right;font-weight:bold;color:#1e3a8a;">${formatearMontoLimpio(total)}</td></tr></tbody></table></div></body></html>`;
 
       const blob = new Blob(["\uFEFF" + html], { type: 'text/html;charset=utf-8;' });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = `Liquidacion_${zonaActiva.toUpperCase()}_${new Date().toISOString().split('T')[0]}.html`;
+      link.download = `Liquidacion_${zonaActiva.toUpperCase()}_${fechaReporte}.html`;
       link.click();
     }
 
@@ -2118,7 +2131,7 @@
     }
 
     async function eliminarGasto(id) {
-      const confirmado = await pedirConfirmacion("¿Deseas enviar este gasto a la papelera?", "Enviar a Papelera", "🗑️");
+      const confirmado = await pedirConfirmacion("¿Estás seguro de que quieres eliminarlo?", "ELIMINAR GASTO", "🗑️");
       if (confirmado) {
         await sbClient.from('pb_gastos').update({ eliminado: true, eliminado_por: usuarioActual.id, eliminado_en: new Date().toISOString() }).eq('id', id);
         await cargarDatosZonaActiva();
@@ -2329,11 +2342,11 @@
     }
 
     async function eliminarClienteCatalogo(id) {
-      const confirmado = await pedirConfirmacion("¿Deseas enviar este cliente a la papelera?", "Enviar a Papelera", "🗑️");
+      const confirmado = await pedirConfirmacion("¿Estás seguro de que quieres eliminarlo?", "ELIMINAR CLIENTE", "🗑️");
       if (confirmado) {
         await sbClient.from('pb_clientes').update({ eliminado: true, eliminado_por: usuarioActual.id, eliminado_en: new Date().toISOString() }).eq('id', id);
         await cargarDatosZonaActiva();
-        mostrarMensaje("Cliente enviado a la papelera.", "🗑️");
+        mostrarMensaje("Cliente eliminado correctamente.", "🗑️");
       }
     }
 
