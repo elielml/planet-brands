@@ -166,6 +166,12 @@
       </div>
 
       <form id="formAuth" onsubmit="procesarAuth(event)" class="space-y-4">
+        
+        <div id="grupoNombre" class="hidden">
+          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Tu Primer Nombre</label>
+          <input type="text" id="authNombre" placeholder="Ej: Anthony" class="w-full p-3 border rounded-xl text-sm font-bold bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-600 outline-none">
+        </div>
+
         <div>
           <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Correo Electrónico</label>
           <input type="email" id="authEmail" placeholder="tu_correo@ejemplo.com" required autocomplete="email" class="w-full p-3 border rounded-xl text-sm font-bold bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-600 outline-none">
@@ -479,17 +485,17 @@
             <p class="text-xs text-slate-500">Resumen para depósito bancario y control de gastos</p>
           </div>
           <button type="button" onclick="fijarEstaSemanaDeposito()" class="bg-blue-100 hover:bg-blue-200 text-blue-900 text-xs font-bold px-3 py-1.5 rounded-lg transition">
-            📅 Esta Semana
+            📅 Lunes a Sábado
           </button>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
           <div>
-            <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Desde (Lunes)</label>
+            <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Desde</label>
             <input type="date" id="depositoFechaDesde" onchange="alCambiarRangoSemana()" class="w-full p-2.5 border rounded-xl text-xs font-bold bg-slate-50 border-slate-300 outline-none">
           </div>
           <div>
-            <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Hasta (Viernes/Domingo)</label>
+            <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Hasta</label>
             <input type="date" id="depositoFechaHasta" onchange="alCambiarRangoSemana()" class="w-full p-2.5 border rounded-xl text-xs font-bold bg-slate-50 border-slate-300 outline-none">
           </div>
         </div>
@@ -976,7 +982,7 @@
     }
 
     // ==========================================
-    // MODAL DE CONFIRMACIÓN PROPIO (REEMPLAZO CONFIRM)
+    // MODAL DE CONFIRMACIÓN PROPIO
     // ==========================================
     function pedirConfirmacion(mensaje, titulo = "Confirmación", icono = "⚠️") {
       return new Promise((resolve) => {
@@ -1021,6 +1027,7 @@
     let esSuperAdmin = false;
     let permisosUsuario = [];
     let zonaActiva = 'cibao';
+    window.nombreMostrar = "Usuario";
 
     let rutasGuardadas = [];
     let rutasApp = [];
@@ -1058,9 +1065,13 @@
       if ('serviceWorker' in navigator) {
         try {
           await navigator.serviceWorker.register('./sw.js');
-        } catch (err) {
-          console.warn("Service worker offline:", err);
-        }
+        } catch (err) {}
+      }
+
+      // Cargar arqueos de memoria local inmediatamente
+      const arqueosLocales = localStorage.getItem('pb_arqueos_local');
+      if (arqueosLocales) {
+        try { arqueosSemanalesGuardados = JSON.parse(arqueosLocales); } catch(e){}
       }
 
       const hoy = new Date().toISOString().split('T')[0];
@@ -1090,11 +1101,13 @@
     });
 
     // ==========================================
-    // AUTENTICACIÓN
+    // AUTENTICACIÓN Y NOMBRE DE USUARIO
     // ==========================================
     function alternarModoAuth() {
       const btnSubmit = document.getElementById('btnAuthSubmit');
       const btnModo = document.getElementById('btnModoAuth');
+      const grupoNombre = document.getElementById('grupoNombre');
+      const inputNombre = document.getElementById('authNombre');
       const err = document.getElementById('authError');
       err.classList.add('hidden');
 
@@ -1102,9 +1115,13 @@
       if (modoReg) {
         btnSubmit.textContent = "Crear Cuenta Nueva";
         btnModo.textContent = "¿Ya tienes cuenta? Inicia sesión";
+        grupoNombre.classList.remove('hidden');
+        inputNombre.required = true;
       } else {
         btnSubmit.textContent = "Iniciar Sesión";
         btnModo.textContent = "¿No tienes cuenta? Regístrate aquí";
+        grupoNombre.classList.add('hidden');
+        inputNombre.required = false;
       }
     }
 
@@ -1118,7 +1135,13 @@
       const esRegistro = document.getElementById('btnAuthSubmit').textContent.includes("Crear");
 
       if (esRegistro) {
-        const { data, error } = await sbClient.auth.signUp({ email, password });
+        const nombre = document.getElementById('authNombre').value.trim();
+        const { data, error } = await sbClient.auth.signUp({ 
+          email, 
+          password,
+          options: { data: { primer_nombre: nombre } } 
+        });
+
         if (error) {
           err.className = "text-xs font-semibold text-center mt-3 text-rose-600 block";
           err.textContent = "Error al registrarse: " + error.message;
@@ -1154,7 +1177,10 @@
       document.getElementById('modalAuth').classList.add('hidden');
 
       esSuperAdmin = (usuarioActual.email.trim().toLowerCase() === 'elieldejesusml@gmail.com');
-      document.getElementById('labelUsuarioActivo').textContent = usuarioActual.email;
+      
+      // Obtener el nombre registrado o caer al email si es cuenta vieja
+      window.nombreMostrar = usuarioActual.user_metadata?.primer_nombre || usuarioActual.email.split('@')[0];
+      document.getElementById('labelUsuarioActivo').textContent = window.nombreMostrar;
 
       const tabAdmin = document.getElementById('tabAdminMaster');
       if (esSuperAdmin) {
@@ -1312,8 +1338,8 @@
         comision: Number(l.comision),
         gananciaEmpresa: Number(l.ganancia_empresa),
         zona_id: l.zona_id,
-        creadoPorEmail: l.creado_por_email || 'elieldejesusml@gmail.com',
-        esMio: l.creado_por === usuarioActual.id || (l.creado_por_email && l.creado_por_email.toLowerCase() === usuarioActual.email.toLowerCase())
+        creadoPorEmail: l.creado_por_email || 'Usuario Oculto',
+        esMio: l.creado_por === usuarioActual.id
       }));
 
       gastosGuardados = (resGastos.data || []).map(g => ({
@@ -1321,8 +1347,8 @@
         concepto: g.concepto,
         fecha: g.fecha,
         monto: Number(g.monto),
-        creadoPorEmail: g.creado_por_email || 'elieldejesusml@gmail.com',
-        esMio: g.creado_por === usuarioActual.id || (g.creado_por_email && g.creado_por_email.toLowerCase() === usuarioActual.email.toLowerCase())
+        creadoPorEmail: g.creado_por_email || 'Usuario Oculto',
+        esMio: g.creado_por === usuarioActual.id
       }));
 
       poblarFiltroColectores();
@@ -1351,7 +1377,7 @@
     }
 
     // ==========================================
-    // LISTA DE USUARIOS EN TARJETAS MÓVILES
+    // SECCIÓN DE PERMISOS SUPERADMIN 
     // ==========================================
     async function cargarListaUsuariosRegistrados() {
       if (!esSuperAdmin) return;
@@ -1557,7 +1583,7 @@
           registro_id: id,
           accion: 'RESTAURAR',
           usuario_id: usuarioActual.id,
-          usuario_email: usuarioActual.email
+          usuario_email: window.nombreMostrar
         });
         cargarPapelera();
         cargarDatosZonaActiva();
@@ -1575,7 +1601,7 @@
           registro_id: id,
           accion: 'ELIMINAR_DEFINITIVO',
           usuario_id: usuarioActual.id,
-          usuario_email: usuarioActual.email
+          usuario_email: window.nombreMostrar
         });
         cargarPapelera();
         cargarAuditoria();
@@ -1705,7 +1731,6 @@
       const s2 = document.getElementById('filtroRuta');
       const s3 = document.getElementById('selectRutaParaCliente');
 
-      // Guardar las selecciones actuales para no perderlas al recargar
       const val1 = s1.value;
       const val2 = s2.value;
       const val3 = s3.value;
@@ -1722,7 +1747,6 @@
       s3.innerHTML = opciones;
       s2.innerHTML = `<option value="TODAS">TODAS LAS RUTAS (CONSOLIDADO)</option>` + opciones;
 
-      // Restaurar las selecciones si siguen existiendo
       if (val1 && rutasApp.includes(val1)) s1.value = val1;
       if (val2 && (rutasApp.includes(val2) || val2 === 'TODAS')) s2.value = val2;
       if (val3 && rutasApp.includes(val3)) s3.value = val3;
@@ -1760,7 +1784,13 @@
       
       const filtrados = catalogoClientes.filter(c => c.ruta === ruta);
       datalist.innerHTML = filtrados.map(c => `<option value="${c.nombre}">`).join('');
-      limpiarFormulario();
+      // No borramos la ruta seleccionada ni la fecha aquí para mantenerlas fijas.
+      document.getElementById('inputCliente').value = '';
+      document.getElementById('cant25').value = '';
+      document.getElementById('cant10').value = '';
+      document.getElementById('cant5').value = '';
+      document.getElementById('porcentajeComision').value = '25';
+      calcularTodo();
     }
 
     function alCambiarCliente() {
@@ -1849,7 +1879,7 @@
         comision: comision,
         ganancia_empresa: ganancia,
         creado_por: usuarioActual.id,
-        creado_por_email: usuarioActual.email
+        creado_por_email: window.nombreMostrar
       }).select().single();
 
       if (error) {
@@ -1863,7 +1893,7 @@
         accion: 'CREAR',
         datos_nuevos: nuevaLiq,
         usuario_id: usuarioActual.id,
-        usuario_email: usuarioActual.email
+        usuario_email: window.nombreMostrar
       });
 
       limpiarFormulario();
@@ -1885,7 +1915,7 @@
           registro_id: id,
           accion: 'ELIMINAR_PAPELERA',
           usuario_id: usuarioActual.id,
-          usuario_email: usuarioActual.email
+          usuario_email: window.nombreMostrar
         });
 
         await cargarDatosZonaActiva();
@@ -2099,14 +2129,16 @@
     function fijarEstaSemanaDeposito() {
       const ahora = new Date();
       const dia = ahora.getDay();
-      const dist = (dia === 0 ? -6 : 1) - dia;
+      const distLunes = (dia === 0 ? -6 : 1) - dia;
+      
       const lunes = new Date(ahora);
-      lunes.setDate(ahora.getDate() + dist);
-      const viernes = new Date(lunes);
-      viernes.setDate(lunes.getDate() + 4);
+      lunes.setDate(ahora.getDate() + distLunes);
+      
+      const sabado = new Date(lunes);
+      sabado.setDate(lunes.getDate() + 5);
 
       document.getElementById('depositoFechaDesde').value = lunes.toISOString().split('T')[0];
-      document.getElementById('depositoFechaHasta').value = viernes.toISOString().split('T')[0];
+      document.getElementById('depositoFechaHasta').value = sabado.toISOString().split('T')[0];
       alCambiarRangoSemana();
     }
 
@@ -2217,7 +2249,7 @@
         zona_id: zonaDestino,
         concepto, fecha, monto,
         creado_por: usuarioActual.id,
-        creado_por_email: usuarioActual.email
+        creado_por_email: window.nombreMostrar
       });
 
       if (error) { mostrarMensaje("Error: " + error.message, "❌"); return; }
@@ -2259,24 +2291,46 @@
         conteo[id] = document.getElementById(id).value;
       });
       arqueosSemanalesGuardados[clave] = conteo;
+      
+      localStorage.setItem('pb_arqueos_local', JSON.stringify(arqueosSemanalesGuardados));
 
-      if (alerta) mostrarMensaje("Arqueo guardado.", "💾");
+      if (alerta) mostrarMensaje("Arqueo guardado localmente.", "💾");
     }
 
     function calcularArqueoFisico() {
       const b2000 = (Number(document.getElementById('b2000').value) || 0) * 2000;
+      document.getElementById('subB2000').textContent = `$ ${b2000.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      
       const b1000 = (Number(document.getElementById('b1000').value) || 0) * 1000;
+      document.getElementById('subB1000').textContent = `$ ${b1000.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      
       const b500 = (Number(document.getElementById('b500').value) || 0) * 500;
+      document.getElementById('subB500').textContent = `$ ${b500.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      
       const b200 = (Number(document.getElementById('b200').value) || 0) * 200;
+      document.getElementById('subB200').textContent = `$ ${b200.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      
       const b100 = (Number(document.getElementById('b100').value) || 0) * 100;
+      document.getElementById('subB100').textContent = `$ ${b100.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      
       const b50 = (Number(document.getElementById('b50').value) || 0) * 50;
+      document.getElementById('subB50').textContent = `$ ${b50.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+
       const totalB = b2000 + b1000 + b500 + b200 + b100 + b50;
       document.getElementById('totalBilletesCard').textContent = `$ ${totalB.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
 
       const m25 = (Number(document.getElementById('m25').value) || 0) * 25;
+      document.getElementById('subM25').textContent = `$ ${m25.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      
       const m10 = (Number(document.getElementById('m10').value) || 0) * 10;
+      document.getElementById('subM10').textContent = `$ ${m10.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      
       const m5 = (Number(document.getElementById('m5').value) || 0) * 5;
+      document.getElementById('subM5').textContent = `$ ${m5.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      
       const m1 = (Number(document.getElementById('m1').value) || 0) * 1;
+      document.getElementById('subM1').textContent = `$ ${m1.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      
       const totalM = m25 + m10 + m5 + m1;
       document.getElementById('totalMonedasFisicasCard').textContent = `$ ${totalM.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
 
@@ -2328,7 +2382,7 @@
     function descargarCopiaSeguridad() {
       registrarActividad();
       const backup = {
-        usuario: usuarioActual ? usuarioActual.email : "local",
+        usuario: usuarioActual ? window.nombreMostrar : "local",
         zona: zonaActiva,
         rutas: rutasApp,
         clientes: catalogoClientes,
@@ -2393,7 +2447,7 @@
         zona_id: zonaDestino,
         nombre: nombre,
         creado_por: usuarioActual.id,
-        creado_por_email: usuarioActual.email
+        creado_por_email: window.nombreMostrar
       });
 
       if (error) { mostrarMensaje("Error: " + error.message, "❌"); return; }
@@ -2446,7 +2500,7 @@
         concepto: concepto,
         porcentaje: porcentaje,
         creado_por: usuarioActual.id,
-        creado_por_email: usuarioActual.email
+        creado_por_email: window.nombreMostrar
       });
 
       if (error) { mostrarMensaje("Error: " + error.message, "❌"); return; }
