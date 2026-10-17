@@ -554,7 +554,7 @@
 
         <div class="border border-slate-100 rounded-xl overflow-hidden">
           <table class="w-full text-left text-xs border-collapse">
-            <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
+            <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
               <tr>
                 <th class="p-3">Concepto / Colector</th>
                 <th class="p-3 text-center">Fecha</th>
@@ -707,7 +707,7 @@
               <span>💾</span> Copias de Seguridad Locales
             </h2>
             <p class="text-xs text-slate-300 mt-0.5">
-              Tus cambios se guardan automáticamente en la nube. También puedes descargar o restaurar un archivo físico en tu teléfono.
+              Tus cambios se guardan automáticamente en la nube.
             </p>
           </div>
           <span id="badgeNube" class="px-3 py-1 bg-emerald-500/20 text-emerald-300 text-[11px] font-semibold rounded-full border border-emerald-500/30">
@@ -726,13 +726,18 @@
         </div>
       </div>
 
+      <!-- GESTIÓN Y ADMINISTRACIÓN DE RUTAS (NUEVO) -->
       <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
-        <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">Crear Nueva Ruta en esta Zona</h2>
+        <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">Crear y Administrar Rutas</h2>
         <div class="flex gap-2">
           <input type="text" id="nuevaRutaNombre" placeholder="Ej: RUTA AZUA, RUTA LA VEGA..." class="flex-1 p-2.5 border rounded-xl text-sm font-bold bg-slate-50 border-slate-300 focus:bg-white outline-none">
           <button type="button" onclick="agregarRuta()" class="bg-blue-900 text-white px-4 py-2.5 rounded-xl text-xs font-bold uppercase hover:bg-blue-800 transition">
             Crear
           </button>
+        </div>
+        <div class="pt-2">
+          <ul id="listaRutasAdministrar" class="divide-y divide-slate-100 text-xs font-medium border border-slate-100 rounded-xl overflow-hidden bg-white">
+          </ul>
         </div>
       </div>
 
@@ -1017,6 +1022,7 @@
     let permisosUsuario = [];
     let zonaActiva = 'cibao';
 
+    let rutasGuardadas = [];
     let rutasApp = [];
     let catalogoClientes = [];
     let liquidacionesGuardadas = [];
@@ -1261,7 +1267,8 @@
 
       const [resRutas, resClientes, resLiq, resGastos] = await Promise.all([qRutas, qClientes, qLiq, qGastos]);
 
-      const rutasDesdeTabla = (resRutas.data || []).map(r => r.nombre);
+      rutasGuardadas = resRutas.data || [];
+      const rutasDesdeTabla = rutasGuardadas.map(r => r.nombre);
       const rutasDesdeLiquidaciones = [...new Set((resLiq.data || []).map(l => l.ruta_nombre))];
       rutasApp = [...new Set([...rutasDesdeTabla, ...rutasDesdeLiquidaciones])];
 
@@ -1320,6 +1327,7 @@
 
       poblarFiltroColectores();
       poblarSelectoresRuta();
+      renderizarAdminRutas();
       actualizarClientesSegunRuta();
       renderizarHistorial();
       renderizarListaClientesConfig();
@@ -1710,6 +1718,32 @@
       s2.innerHTML = `<option value="TODAS">TODAS LAS RUTAS (CONSOLIDADO)</option>` + opciones;
     }
 
+    function renderizarAdminRutas() {
+       const cont = document.getElementById('listaRutasAdministrar');
+       if(!cont) return;
+       cont.innerHTML = '';
+       if(rutasGuardadas.length === 0) {
+          cont.innerHTML = '<li class="p-3 text-slate-400 text-center">No hay rutas creadas en esta zona.</li>';
+          return;
+       }
+       rutasGuardadas.forEach(r => {
+          cont.innerHTML += `
+            <li class="p-3 flex justify-between items-center hover:bg-slate-50">
+              <strong class="text-slate-800 text-xs">${r.nombre}</strong>
+              <div class="flex gap-2">
+                <button onclick="editarRuta(${r.id}, '${r.nombre}')" class="text-blue-600 hover:text-blue-800 font-bold text-xs bg-blue-50 px-2 py-1 rounded">Editar</button>
+                <button onclick="eliminarRuta(${r.id}, '${r.nombre}')" class="text-rose-500 hover:text-rose-700 font-bold text-xs bg-rose-50 px-2 py-1 rounded accion-eliminar-col">Eliminar</button>
+              </div>
+            </li>
+          `;
+       });
+       
+       const permisoActual = permisosUsuario.find(p => p.zona_id === zonaActiva) || { puede_eliminar: esSuperAdmin, puede_editar: esSuperAdmin };
+       document.querySelectorAll('.accion-eliminar-col').forEach(el => {
+          if (!permisoActual.puede_eliminar && !esSuperAdmin) el.style.display = 'none';
+       });
+    }
+
     function actualizarClientesSegunRuta() {
       const ruta = document.getElementById('selectRutaForm').value;
       const datalist = document.getElementById('listaClientesDatalist');
@@ -1845,12 +1879,12 @@
         });
 
         await cargarDatosZonaActiva();
-        mostrarMensaje("Registro enviado a la papelera.", "🗑️");
+        mostrarMensaje("Registro eliminado correctamente.", "🗑️");
       }
     }
 
     // ==========================================
-    // HISTORIAL Y EXPORTACIONES LIMPIAS
+    // HISTORIAL Y EXPORTACIONES AGRUPADAS
     // ==========================================
     function alternarFiltroFecha() {
       const tipo = document.getElementById('filtroTipoPeriodo').value;
@@ -1883,6 +1917,15 @@
         }
         return true;
       });
+    }
+
+    function agruparPorRuta(lista) {
+      const grupos = {};
+      lista.forEach(i => {
+        if (!grupos[i.ruta]) grupos[i.ruta] = [];
+        grupos[i.ruta].push(i);
+      });
+      return grupos;
     }
 
     function renderizarHistorial() {
@@ -1941,52 +1984,76 @@
       document.getElementById('resumenGananciaEmpresa').textContent = `$ ${totalEmpresa.toLocaleString('es-DO', { minimumFractionDigits: 0 })}`;
     }
 
-    // EXPORTAR A EXCEL: Sin colector, con 'Nombre del cliente' y 'Ganancia'
+    // EXCEL: Formato HTML exportado como .xls para evitar ruptura de tildes y caracteres
     function exportarExcel() {
       const lista = filtrarLiquidaciones();
       if (lista.length === 0) { mostrarMensaje("No hay datos para exportar.", "⚠️"); return; }
 
-      const rutaSeleccionada = document.getElementById('filtroRuta').value;
-      const nombreRutaReporte = (rutaSeleccionada === "TODAS") ? "CONSOLIDADO GENERAL" : rutaSeleccionada;
       const fechaReporte = document.getElementById('filtroTipoPeriodo').value === 'dia' ? document.getElementById('filtroFechaDia').value : new Date().toISOString().split('T')[0];
 
-      let csv = `${nombreRutaReporte}; Fecha: ${fechaReporte}\r\n`;
-      csv += "Nombre del cliente;Ganancia\r\n";
-      let total = 0;
+      let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"></head><body>`;
+      html += `<table border="1" style="border-collapse: collapse; font-family: sans-serif;">`;
+      
+      const grupos = agruparPorRuta(lista);
+      let granTotal = 0;
 
-      lista.forEach(item => {
-        total += item.gananciaEmpresa;
-        const conceptoLimpio = item.concepto ? ` (${item.concepto})` : "";
-        const nombreClienteLimpio = `${item.cliente}${conceptoLimpio}`;
-        csv += `"${nombreClienteLimpio}";"${formatearMontoLimpio(item.gananciaEmpresa)}"\r\n`;
+      Object.keys(grupos).forEach(ruta => {
+        html += `<tr><td colspan="2" style="background-color:#1e3a8a; color:#ffffff; font-size:16px; font-weight:bold; text-align:center; padding:10px;">${ruta.toUpperCase()} - Fecha: ${fechaReporte}</td></tr>`;
+        
+        let subtotalRuta = 0;
+        grupos[ruta].forEach(item => {
+          subtotalRuta += item.gananciaEmpresa;
+          granTotal += item.gananciaEmpresa;
+          const conceptoLimpio = item.concepto ? ` (${item.concepto})` : "";
+          html += `<tr><td style="padding:5px;">${item.cliente}${conceptoLimpio}</td><td style="text-align:right; padding:5px;">${formatearMontoLimpio(item.gananciaEmpresa)}</td></tr>`;
+        });
+        
+        html += `<tr><td style="font-weight:bold; text-align:right; padding:5px; background-color:#f1f5f9;">Subtotal ${ruta}:</td><td style="font-weight:bold; text-align:right; padding:5px; background-color:#f1f5f9;">${formatearMontoLimpio(subtotalRuta)}</td></tr>`;
+        html += `<tr><td colspan="2" style="height:20px; border:none;"></td></tr>`; // Separador
       });
-      csv += `"- Total de recolección:";"${formatearMontoLimpio(total)}"\r\n`;
 
-      const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+      if (Object.keys(grupos).length > 1) {
+         html += `<tr><td style="font-weight:bold; font-size:14px; text-align:right; background-color:#cbd5e1; padding:8px;">TOTAL GENERAL TODAS LAS RUTAS:</td><td style="font-weight:bold; font-size:14px; text-align:right; background-color:#cbd5e1; padding:8px;">${formatearMontoLimpio(granTotal)}</td></tr>`;
+      }
+      
+      html += `</table></body></html>`;
+
+      const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = `Liquidacion_${zonaActiva.toUpperCase()}_${fechaReporte}.csv`;
+      link.download = `Liquidacion_${zonaActiva.toUpperCase()}_${fechaReporte}.xls`;
       link.click();
     }
 
-    // EXPORTAR DOCUMENTO (MÓVIL): Sin colector, con 'Nombre del cliente' y 'Ganancia'
+    // DOCUMENTO HTML MÓVIL: Agrupado por rutas
     function exportarDocumento() {
       const lista = filtrarLiquidaciones();
       if (lista.length === 0) { mostrarMensaje("No hay datos para exportar.", "⚠️"); return; }
 
-      const rutaSeleccionada = document.getElementById('filtroRuta').value;
-      const nombreRutaReporte = (rutaSeleccionada === "TODAS") ? "CONSOLIDADO GENERAL" : rutaSeleccionada;
       const fechaReporte = document.getElementById('filtroTipoPeriodo').value === 'dia' ? document.getElementById('filtroFechaDia').value : new Date().toISOString().split('T')[0];
 
-      let filas = "";
-      let total = 0;
-      lista.forEach(item => {
-        total += item.gananciaEmpresa;
-        const conceptoLimpio = item.concepto ? ` (${item.concepto})` : "";
-        filas += `<tr><td style="padding:8px 12px;font-size:14px;border-bottom:1px solid #e2e8f0;">${item.cliente}${conceptoLimpio}</td><td style="padding:8px 12px;text-align:right;font-weight:bold;border-bottom:1px solid #e2e8f0;">${formatearMontoLimpio(item.gananciaEmpresa)}</td></tr>`;
+      let filasHTML = "";
+      let granTotal = 0;
+      const grupos = agruparPorRuta(lista);
+
+      Object.keys(grupos).forEach(ruta => {
+        filasHTML += `<tr><td colspan="2" style="padding:12px; font-weight:bold; background-color:#e2e8f0; color:#1e293b; font-size:14px; text-transform:uppercase; text-align:center;">📍 ${ruta} - ${fechaReporte}</td></tr>`;
+        
+        let subtotalRuta = 0;
+        grupos[ruta].forEach(item => {
+          subtotalRuta += item.gananciaEmpresa;
+          granTotal += item.gananciaEmpresa;
+          const conceptoLimpio = item.concepto ? ` (${item.concepto})` : "";
+          filasHTML += `<tr><td style="padding:8px 12px;font-size:13px;border-bottom:1px solid #f1f5f9;">${item.cliente}${conceptoLimpio}</td><td style="padding:8px 12px;text-align:right;font-weight:bold;border-bottom:1px solid #f1f5f9;">${formatearMontoLimpio(item.gananciaEmpresa)}</td></tr>`;
+        });
+        
+        filasHTML += `<tr><td style="padding:8px 12px; text-align:right; font-size:12px; color:#64748b;">Subtotal ${ruta}:</td><td style="padding:8px 12px; text-align:right; font-weight:bold; color:#0f172a;">${formatearMontoLimpio(subtotalRuta)}</td></tr>`;
+        filasHTML += `<tr><td colspan="2" style="height:15px; border-bottom:2px dashed #cbd5e1;"></td></tr>`; // Separador
       });
 
-      const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Liquidación</title></head><body style="font-family:sans-serif;padding:20px;"><div style="max-width:600px;margin:auto;border:1px solid #cbd5e1;padding:20px;border-radius:12px;"><h2 style="color:#1e3a8a;margin-top:0;">${nombreRutaReporte}</h2><p style="color:#64748b;font-size:13px;margin-bottom:16px;">Fecha: <strong>${fechaReporte}</strong></p><table style="width:100%;border-collapse:collapse;"><thead><tr style="border-bottom:2px solid #cbd5e1;text-align:left;"><th style="padding:8px 12px;font-size:13px;color:#475569;">Nombre del cliente</th><th style="padding:8px 12px;font-size:13px;color:#475569;text-align:right;">Ganancia</th></tr></thead><tbody>${filas}<tr style="border-top:2px solid #0f172a;"><td style="padding:12px;font-weight:bold;">- Total de recolección:</td><td style="padding:12px;text-align:right;font-weight:bold;color:#1e3a8a;">${formatearMontoLimpio(total)}</td></tr></tbody></table></div></body></html>`;
+      const totalHtml = Object.keys(grupos).length > 1 ? `<tr style="background-color:#f8fafc;"><td style="padding:12px;font-weight:bold;font-size:14px; text-align:right;">TOTAL GENERAL:</td><td style="padding:12px;text-align:right;font-weight:900;color:#1e3a8a;font-size:16px;">${formatearMontoLimpio(granTotal)}</td></tr>` : '';
+
+      const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Liquidación</title></head><body style="font-family:sans-serif;padding:20px;background:#f8fafc;"><div style="max-width:600px;margin:auto;background:#fff;border:1px solid #cbd5e1;padding:20px;border-radius:12px;box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1);"><h2 style="color:#1e3a8a;margin-top:0;font-size:18px;text-align:center;">REPORTE DE RECOLECCIÓN</h2><table style="width:100%;border-collapse:collapse;"><tbody>${filasHTML}${totalHtml}</tbody></table></div></body></html>`;
 
       const blob = new Blob(["\uFEFF" + html], { type: 'text/html;charset=utf-8;' });
       const link = document.createElement("a");
@@ -2135,7 +2202,7 @@
       if (confirmado) {
         await sbClient.from('pb_gastos').update({ eliminado: true, eliminado_por: usuarioActual.id, eliminado_en: new Date().toISOString() }).eq('id', id);
         await cargarDatosZonaActiva();
-        mostrarMensaje("Gasto enviado a la papelera.", "🗑️");
+        mostrarMensaje("Gasto eliminado correctamente.", "🗑️");
       }
     }
 
@@ -2301,7 +2368,30 @@
       if (error) { mostrarMensaje("Error: " + error.message, "❌"); return; }
       document.getElementById('nuevaRutaNombre').value = '';
       await cargarDatosZonaActiva();
-      mostrarMensaje("Guardado correctamente.", "✅");
+      mostrarMensaje("Ruta creada correctamente.", "✅");
+    }
+
+    async function editarRuta(id, nombreActual) {
+      const nuevoNombre = prompt("Editar nombre de la ruta:", nombreActual);
+      if (nuevoNombre && nuevoNombre.trim().toUpperCase() !== nombreActual) {
+        const nombreFinal = nuevoNombre.trim().toUpperCase();
+        
+        await sbClient.from('pb_rutas').update({ nombre: nombreFinal }).eq('id', id);
+        await sbClient.from('pb_clientes').update({ ruta_nombre: nombreFinal }).eq('ruta_nombre', nombreActual);
+        await sbClient.from('pb_liquidaciones').update({ ruta_nombre: nombreFinal }).eq('ruta_nombre', nombreActual);
+        
+        await cargarDatosZonaActiva();
+        mostrarMensaje("Ruta actualizada", "✅");
+      }
+    }
+
+    async function eliminarRuta(id, nombreActual) {
+      const confirmado = await pedirConfirmacion(`¿Estás seguro de que deseas eliminar la ruta ${nombreActual}?`, "ELIMINAR RUTA", "⚠️");
+      if (confirmado) {
+        await sbClient.from('pb_rutas').update({ eliminado: true }).eq('id', id);
+        await cargarDatosZonaActiva();
+        mostrarMensaje("Ruta eliminada", "🗑️");
+      }
     }
 
     async function agregarClienteCatalogo(e) {
@@ -2376,6 +2466,7 @@
       } else if (p === 'rutas') {
         document.getElementById('vistaRutas').classList.remove('seccion-oculta');
         document.getElementById('tabRutas').className = "py-2.5 rounded-lg bg-blue-900 text-white shadow transition text-[11px] sm:text-xs";
+        renderizarAdminRutas();
         renderizarListaClientesConfig();
       } else if (p === 'adminMaster') {
         document.getElementById('vistaAdminMaster').classList.remove('seccion-oculta');
