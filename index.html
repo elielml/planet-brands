@@ -3048,32 +3048,6 @@
         renderizarListaGlobalClientes();
       }
     }
-
-      if (p === 'cuadre') {
-        document.getElementById('vistaCuadre').classList.remove('seccion-oculta');
-        document.getElementById('tabCuadre').className = "py-2.5 rounded-lg bg-blue-900 text-white shadow transition text-[11px] sm:text-xs";
-      } else if (p === 'historial') {
-        document.getElementById('vistaHistorial').classList.remove('seccion-oculta');
-        document.getElementById('tabHistorial').className = "py-2.5 rounded-lg bg-blue-900 text-white shadow transition text-[11px] sm:text-xs";
-        renderizarHistorial();
-      } else if (p === 'deposito') {
-        document.getElementById('vistaDeposito').classList.remove('seccion-oculta');
-        document.getElementById('tabDeposito').className = "py-2.5 rounded-lg bg-blue-900 text-white shadow transition text-[11px] sm:text-xs";
-        alCambiarRangoSemana();
-      } else if (p === 'rutas') {
-        document.getElementById('vistaRutas').classList.remove('seccion-oculta');
-        document.getElementById('tabRutas').className = "py-2.5 rounded-lg bg-blue-900 text-white shadow transition text-[11px] sm:text-xs";
-        renderizarAdminRutas();
-        renderizarListaClientesConfig();
-      } else if (p === 'adminMaster') {
-        document.getElementById('vistaAdminMaster').classList.remove('seccion-oculta');
-        document.getElementById('tabAdminMaster').className = "col-span-2 sm:col-span-4 py-2.5 rounded-lg bg-amber-400 text-slate-950 font-black shadow transition text-xs";
-        cargarListaUsuariosRegistrados();
-        cargarPapelera();
-        cargarAuditoria();
-      }
-    }
-
     async function cerrarSesionManual() {
       localStorage.removeItem('pb_ultima_actividad');
       await sbClient.auth.signOut();
