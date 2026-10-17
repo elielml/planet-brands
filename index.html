@@ -255,7 +255,11 @@
       <button type="button" id="tabRutas" onclick="cambiarPestana('rutas')" class="py-2.5 rounded-lg text-slate-600 hover:text-slate-900 transition text-[11px] sm:text-xs">
         ⚙️ Rutas/Nube
       </button>
-      <button type="button" id="tabAdminMaster" onclick="cambiarPestana('adminMaster')" class="hidden col-span-2 sm:col-span-4 py-2.5 rounded-lg text-amber-950 bg-amber-400 hover:bg-amber-300 border border-amber-500 font-black transition text-xs shadow-sm">
+      <!-- NUEVA PESTAÑA LISTA DE CLIENTES -->
+      <button type="button" id="tabClientes" onclick="cambiarPestana('clientes')" class="hidden col-span-2 sm:col-span-4 py-2.5 rounded-lg text-indigo-950 bg-indigo-200 hover:bg-indigo-300 border border-indigo-400 font-black transition text-xs shadow-sm mt-1">
+        📋 Lista de Clientes
+      </button>
+      <button type="button" id="tabAdminMaster" onclick="cambiarPestana('adminMaster')" class="hidden col-span-2 sm:col-span-4 py-2.5 rounded-lg text-amber-950 bg-amber-400 hover:bg-amber-300 border border-amber-500 font-black transition text-xs shadow-sm mt-1">
         👑 Permisos / Papelera
       </button>
     </div>
@@ -853,7 +857,71 @@
       </div>
 
     </section>
+<!-- ========================================== -->
+    <!-- VISTA: LISTA GENERAL DE CLIENTES           -->
+    <!-- ========================================== -->
+    <section id="vistaClientesGeneral" class="seccion-oculta space-y-4">
+      <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+          <h2 class="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-1.5">
+            <span>📋</span> Base de Datos de Clientes
+          </h2>
+          <div class="flex gap-2">
+            <button type="button" onclick="exportarListaClientesExcel()" class="text-xs bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-lg font-bold hover:bg-emerald-200 transition">📊 Exportar</button>
+          </div>
+        </div>
+        
+        <div class="overflow-x-auto w-full pb-2">
+          <table class="w-full text-left text-xs border-collapse whitespace-nowrap min-w-[800px]">
+            <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
+              <tr>
+                <th class="p-2">ID</th>
+                <th class="p-2">Nombre del Cliente</th>
+                <th class="p-2">Ruta</th>
+                <th class="p-2 text-center">Tipo</th>
+                <th class="p-2 text-center">%</th>
+                <th class="p-2">Dirección</th>
+                <th class="p-2">Sector</th>
+                <th class="p-2">Provincia</th>
+                <th class="p-2">Representante</th>
+                <th class="p-2">Teléfono</th>
+                <th class="p-2 text-center">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="cuerpoListaClientes" class="divide-y divide-slate-100 text-slate-700">
+            </tbody>
+          </table>
+        </div>
+      </div>
 
+      <!-- MODAL PARA EDITAR INFO DEL CLIENTE -->
+      <div id="modalEditarCliente" class="hidden fixed inset-0 bg-slate-900/80 z-50 overflow-y-auto p-4 backdrop-blur-sm flex items-center justify-center">
+        <form onsubmit="guardarInfoCliente(event)" class="bg-white w-full max-w-lg rounded-2xl shadow-2xl p-5 border border-slate-200 space-y-3">
+          <h3 class="font-black text-sm uppercase text-slate-800 border-b border-slate-100 pb-2">Editar Cliente</h3>
+          <input type="hidden" id="editClienteId">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div><label class="text-[10px] font-bold text-slate-500 uppercase">Nombre</label><input type="text" id="editNombre" class="w-full p-2 border rounded-lg text-xs font-bold" required></div>
+            <div><label class="text-[10px] font-bold text-slate-500 uppercase">Ruta</label><select id="editRuta" class="w-full p-2 border rounded-lg text-xs font-bold"></select></div>
+            <div>
+              <label class="text-[10px] font-bold text-slate-500 uppercase">Máquina</label>
+              <select id="editConcepto" class="w-full p-2 border rounded-lg text-xs font-bold">
+                <option value="Dulces">Dulces</option><option value="Peluches">Peluches</option><option value="Kiddie Rides">Kiddie Rides</option><option value="Boxing Machine">Boxing Machine</option><option value="General">General / Otra</option>
+              </select>
+            </div>
+            <div><label class="text-[10px] font-bold text-slate-500 uppercase">% Comisión</label><input type="number" id="editPorc" class="w-full p-2 border rounded-lg text-xs font-bold" required></div>
+            <div class="sm:col-span-2"><label class="text-[10px] font-bold text-slate-500 uppercase">Dirección</label><input type="text" id="editDir" class="w-full p-2 border rounded-lg text-xs"></div>
+            <div><label class="text-[10px] font-bold text-slate-500 uppercase">Sector</label><input type="text" id="editSector" class="w-full p-2 border rounded-lg text-xs"></div>
+            <div><label class="text-[10px] font-bold text-slate-500 uppercase">Provincia</label><input type="text" id="editProv" class="w-full p-2 border rounded-lg text-xs"></div>
+            <div><label class="text-[10px] font-bold text-slate-500 uppercase">Representante</label><input type="text" id="editRep" class="w-full p-2 border rounded-lg text-xs"></div>
+            <div><label class="text-[10px] font-bold text-slate-500 uppercase">Teléfono</label><input type="text" id="editTel" class="w-full p-2 border rounded-lg text-xs"></div>
+          </div>
+          <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+            <button type="button" onclick="document.getElementById('modalEditarCliente').classList.add('hidden')" class="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-xl text-xs uppercase">Cancelar</button>
+            <button type="submit" class="px-4 py-2 bg-blue-900 text-white font-black rounded-xl text-xs uppercase shadow">Guardar Cambios</button>
+          </div>
+        </form>
+      </div>
+    </section>
     <!-- ======================================================== -->
     <!-- VISTA 5: USUARIOS REGISTRADOS Y PERMISOS (SOLO MASTER)   -->
     <!-- ======================================================== -->
@@ -1312,9 +1380,40 @@
       const formGasto = document.getElementById('formGastoEfectivo');
       const btnGuardarArqueo = document.getElementById('btnGuardarArqueoMaster');
       const btnReiniciarConteo = document.getElementById('btnReiniciarConteo');
+      const tabCuadre = document.getElementById('tabCuadre');
+      const tabClientes = document.getElementById('tabClientes');
 
       if (esModoConsulta) {
         if (formGasto) formGasto.classList.add('hidden');
+        if (btnGuardarArqueo) btnGuardarArqueo.classList.add('hidden');
+        if (btnReiniciarConteo) btnReiniciarConteo.classList.add('hidden');
+        
+        tabCuadre.classList.add('hidden');
+        if (tabClientes) tabClientes.classList.remove('hidden');
+        if (!document.getElementById('vistaCuadre').classList.contains('seccion-oculta')) {
+           cambiarPestana('historial');
+        }
+        
+        ['b2000','b1000','b500','b200','b100','b50','m25','m10','m5','m1'].forEach(id => {
+            const input = document.getElementById(id);
+            if (input) input.disabled = true;
+        });
+      } else {
+        if (formGasto) formGasto.classList.remove('hidden');
+        if (btnGuardarArqueo) btnGuardarArqueo.classList.remove('hidden');
+        if (btnReiniciarConteo) btnReiniciarConteo.classList.remove('hidden');
+        
+        tabCuadre.classList.remove('hidden');
+        if (tabClientes) {
+           if (esSuperAdmin) tabClientes.classList.remove('hidden');
+           else tabClientes.classList.add('hidden');
+        }
+        
+        ['b2000','b1000','b500','b200','b100','b50','m25','m10','m5','m1'].forEach(id => {
+            const input = document.getElementById(id);
+            if (input) input.disabled = false;
+        });
+      }
         if (btnGuardarArqueo) btnGuardarArqueo.classList.add('hidden');
         if (btnReiniciarConteo) btnReiniciarConteo.classList.add('hidden');
         
@@ -1346,14 +1445,16 @@
       let qLiq = sbClient.from('pb_liquidaciones').select('*').eq('eliminado', false).order('fecha', { ascending: false });
       let qGastos = sbClient.from('pb_gastos').select('*').eq('eliminado', false).order('fecha', { ascending: false });
 
-      if (permisosUsuario.length === 0 && !esSuperAdmin) {
+     if (permisosUsuario.length === 0 && !esSuperAdmin) {
         qRutas = qRutas.eq('creado_por', usuarioActual.id);
         qClientes = qClientes.eq('creado_por', usuarioActual.id);
         qLiq = qLiq.eq('creado_por', usuarioActual.id);
         qGastos = qGastos.eq('creado_por', usuarioActual.id);
       } else if (zonaActiva !== 'todas') {
         qRutas = qRutas.eq('zona_id', zonaActiva);
-        qClientes = qClientes.eq('zona_id', zonaActiva);
+        if (!esSuperAdmin && !esModoConsulta) {
+           qClientes = qClientes.eq('zona_id', zonaActiva);
+        }
         qLiq = qLiq.eq('zona_id', zonaActiva);
         qGastos = qGastos.eq('zona_id', zonaActiva);
       }
@@ -1365,13 +1466,18 @@
       const rutasDesdeLiquidaciones = [...new Set((resLiq.data || []).map(l => l.ruta_nombre))];
       rutasApp = [...new Set([...rutasDesdeTabla, ...rutasDesdeLiquidaciones])];
 
-      catalogoClientes = (resClientes.data || []).map(c => ({ 
+     catalogoClientes = (resClientes.data || []).map(c => ({ 
         id: c.id, 
         ruta: c.ruta_nombre, 
         nombre: c.nombre, 
         concepto: c.concepto, 
         porcentaje: c.porcentaje,
-        zona_id: c.zona_id
+        zona_id: c.zona_id,
+        direccion: c.direccion || '',
+        sector: c.sector || '',
+        provincia: c.provincia || '',
+        representante: c.representante || '',
+        telefono: c.telefono || ''
       }));
 
       if (catalogoClientes.length === 0 && (resLiq.data || []).length > 0) {
@@ -2926,13 +3032,43 @@
     function cambiarPestana(p) {
       if (p === 'adminMaster' && !esSuperAdmin) return;
 
-      ['vistaCuadre','vistaHistorial','vistaDeposito','vistaRutas','vistaAdminMaster'].forEach(id => {
-        document.getElementById(id).classList.add('seccion-oculta');
+      ['vistaCuadre','vistaHistorial','vistaDeposito','vistaRutas','vistaAdminMaster','vistaClientesGeneral'].forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.classList.add('seccion-oculta');
       });
-      ['tabCuadre','tabHistorial','tabDeposito','tabRutas','tabAdminMaster'].forEach(id => {
+      ['tabCuadre','tabHistorial','tabDeposito','tabRutas','tabAdminMaster','tabClientes'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.className = "py-2.5 rounded-lg text-slate-600 hover:text-slate-900 transition text-[11px] sm:text-xs";
       });
+
+      if (p === 'cuadre') {
+        document.getElementById('vistaCuadre').classList.remove('seccion-oculta');
+        document.getElementById('tabCuadre').className = "py-2.5 rounded-lg bg-blue-900 text-white shadow transition text-[11px] sm:text-xs";
+      } else if (p === 'historial') {
+        document.getElementById('vistaHistorial').classList.remove('seccion-oculta');
+        document.getElementById('tabHistorial').className = "py-2.5 rounded-lg bg-blue-900 text-white shadow transition text-[11px] sm:text-xs";
+        renderizarHistorial();
+      } else if (p === 'deposito') {
+        document.getElementById('vistaDeposito').classList.remove('seccion-oculta');
+        document.getElementById('tabDeposito').className = "py-2.5 rounded-lg bg-blue-900 text-white shadow transition text-[11px] sm:text-xs";
+        alCambiarRangoSemana();
+      } else if (p === 'rutas') {
+        document.getElementById('vistaRutas').classList.remove('seccion-oculta');
+        document.getElementById('tabRutas').className = "py-2.5 rounded-lg bg-blue-900 text-white shadow transition text-[11px] sm:text-xs";
+        renderizarAdminRutas();
+        renderizarListaClientesConfig();
+      } else if (p === 'adminMaster') {
+        document.getElementById('vistaAdminMaster').classList.remove('seccion-oculta');
+        document.getElementById('tabAdminMaster').className = "col-span-2 sm:col-span-4 py-2.5 rounded-lg bg-amber-400 text-slate-950 font-black shadow transition text-xs";
+        cargarListaUsuariosRegistrados();
+        cargarPapelera();
+        cargarAuditoria();
+      } else if (p === 'clientes') {
+        document.getElementById('vistaClientesGeneral').classList.remove('seccion-oculta');
+        document.getElementById('tabClientes').className = "col-span-2 sm:col-span-4 py-2.5 rounded-lg bg-indigo-500 text-white font-black shadow transition text-xs";
+        renderizarListaGlobalClientes();
+      }
+    }
 
       if (p === 'cuadre') {
         document.getElementById('vistaCuadre').classList.remove('seccion-oculta');
@@ -2963,6 +3099,112 @@
       localStorage.removeItem('pb_ultima_actividad');
       await sbClient.auth.signOut();
       location.reload();
+    }
+// ==========================================
+    // LISTA GENERAL DE CLIENTES (DUEÑO/ADMIN)
+    // ==========================================
+    function renderizarListaGlobalClientes() {
+       const cuerpo = document.getElementById('cuerpoListaClientes');
+       cuerpo.innerHTML = '';
+       
+       if(catalogoClientes.length === 0) {
+          cuerpo.innerHTML = '<tr><td colspan="11" class="p-3 text-center text-slate-400">No hay clientes registrados.</td></tr>';
+          return;
+       }
+
+       catalogoClientes.forEach(c => {
+          cuerpo.innerHTML += `
+             <tr class="hover:bg-slate-50 border-b border-slate-100">
+               <td class="p-2 font-mono text-slate-500 text-[10px]">${c.id}</td>
+               <td class="p-2 font-bold text-slate-800">${c.nombre}</td>
+               <td class="p-2 font-semibold text-blue-900">${c.ruta}</td>
+               <td class="p-2 text-center text-[10px] uppercase font-bold text-slate-500">${c.concepto}</td>
+               <td class="p-2 text-center font-black text-rose-600">${c.porcentaje}%</td>
+               <td class="p-2 text-[10px] text-slate-600 truncate max-w-[120px]" title="${c.direccion}">${c.direccion || '-'}</td>
+               <td class="p-2 text-[10px] text-slate-600">${c.sector || '-'}</td>
+               <td class="p-2 text-[10px] text-slate-600">${c.provincia || '-'}</td>
+               <td class="p-2 text-[10px] font-semibold text-slate-700">${c.representante || '-'}</td>
+               <td class="p-2 text-[10px] text-slate-600">${c.telefono || '-'}</td>
+               <td class="p-2 text-center">
+                 <button onclick="abrirModalEditarInfoCliente(${c.id})" class="text-blue-600 bg-blue-50 px-2 py-1 rounded font-bold hover:bg-blue-100 transition">Editar</button>
+               </td>
+             </tr>
+          `;
+       });
+    }
+
+    function abrirModalEditarInfoCliente(id) {
+       const c = catalogoClientes.find(item => item.id === id);
+       if(!c) return;
+
+       document.getElementById('editClienteId').value = c.id;
+       document.getElementById('editNombre').value = c.nombre;
+       document.getElementById('editConcepto').value = c.concepto;
+       document.getElementById('editPorc').value = c.porcentaje;
+       document.getElementById('editDir').value = c.direccion;
+       document.getElementById('editSector').value = c.sector;
+       document.getElementById('editProv').value = c.provincia;
+       document.getElementById('editRep').value = c.representante;
+       document.getElementById('editTel').value = c.telefono;
+
+       const sRuta = document.getElementById('editRuta');
+       sRuta.innerHTML = rutasApp.map(r => `<option value="${r}">${r}</option>`).join('');
+       sRuta.value = c.ruta;
+
+       document.getElementById('modalEditarCliente').classList.remove('hidden');
+    }
+
+    async function guardarInfoCliente(e) {
+       e.preventDefault();
+       const id = document.getElementById('editClienteId').value;
+       const nombre = document.getElementById('editNombre').value.trim();
+       const ruta = document.getElementById('editRuta').value;
+       const concepto = document.getElementById('editConcepto').value;
+       const porc = document.getElementById('editPorc').value;
+       
+       const payload = {
+          nombre: nombre,
+          ruta_nombre: ruta,
+          concepto: concepto,
+          porcentaje: Number(porc),
+          direccion: document.getElementById('editDir').value.trim(),
+          sector: document.getElementById('editSector').value.trim(),
+          provincia: document.getElementById('editProv').value.trim(),
+          representante: document.getElementById('editRep').value.trim(),
+          telefono: document.getElementById('editTel').value.trim()
+       };
+
+       const { error } = await sbClient.from('pb_clientes').update(payload).eq('id', id);
+       if(error) {
+          mostrarMensaje("Error al actualizar.", "❌");
+       } else {
+          document.getElementById('modalEditarCliente').classList.add('hidden');
+          await cargarDatosZonaActiva();
+          if(!document.getElementById('vistaClientesGeneral').classList.contains('seccion-oculta')){
+             renderizarListaGlobalClientes();
+          }
+          mostrarMensaje("Cliente actualizado.", "✅");
+       }
+    }
+
+    function exportarListaClientesExcel() {
+      if (catalogoClientes.length === 0) { mostrarMensaje("No hay datos para exportar.", "⚠️"); return; }
+      
+      let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"></head><body>`;
+      html += `<table border="1" style="border-collapse: collapse; font-family: sans-serif;">`;
+      html += `<tr><td colspan="10" style="background-color:#1e3a8a; color:#ffffff; font-size:16px; font-weight:bold; text-align:center; padding:10px;">BASE DE DATOS GENERAL DE CLIENTES</td></tr>`;
+      html += `<tr style="background-color:#cbd5e1; font-weight:bold;"><td>ID</td><td>Nombre del Cliente</td><td>Ruta</td><td>Tipo de Máquina</td><td>Porciento (%)</td><td>Dirección</td><td>Sector</td><td>Provincia</td><td>Representante</td><td>Teléfono</td></tr>`;
+      
+      catalogoClientes.forEach(c => {
+         html += `<tr><td>${c.id}</td><td>${c.nombre}</td><td>${c.ruta}</td><td>${c.concepto}</td><td>${c.porcentaje}%</td><td>${c.direccion}</td><td>${c.sector}</td><td>${c.provincia}</td><td>${c.representante}</td><td>${c.telefono}</td></tr>`;
+      });
+      html += `</table></body></html>`;
+
+      const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `Base_Datos_Clientes.xls`;
+      link.click();
     }
   </script>
 </body>
