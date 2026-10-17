@@ -1126,15 +1126,8 @@
 
         modal.classList.remove('hidden');
 
-        const onAceptar = () => {
-          limpiar();
-          resolve(true);
-        };
-
-        const onCancelar = () => {
-          limpiar();
-          resolve(false);
-        };
+        const onAceptar = () => { limpiar(); resolve(true); };
+        const onCancelar = () => { limpiar(); resolve(false); };
 
         const limpiar = () => {
           modal.classList.add('hidden');
@@ -1190,9 +1183,7 @@
 
     window.addEventListener('DOMContentLoaded', async () => {
       if ('serviceWorker' in navigator) {
-        try {
-          await navigator.serviceWorker.register('./sw.js');
-        } catch (err) {}
+        try { await navigator.serviceWorker.register('./sw.js'); } catch (err) {}
       }
 
       const arqueosLocales = localStorage.getItem('pb_arqueos_local');
@@ -1453,7 +1444,7 @@
       rutasGuardadas = resRutas.data || [];
       const rutasDesdeTabla = rutasGuardadas.map(r => r.nombre);
       const rutasDesdeLiquidaciones = [...new Set((resLiq.data || []).map(l => l.ruta_nombre))];
-      rutasApp = [...new Set([...rutasDesdeTabla, ...rutasDesdeLiquidaciones])];
+      rutasApp = [...new Set([...rutasDesdeTabla, ...rutasDesdeLiquidaciones])].filter(r => r && r.toString().trim() !== '');
 
       catalogoClientes = (resClientes.data || []).map(c => ({ 
         id: c.id, 
@@ -1522,11 +1513,27 @@
       renderizarHistorial();
       renderizarListaClientesConfig();
       alCambiarRangoSemana();
-      
+
       const vistaCli = document.getElementById('vistaClientesGeneral');
       if(vistaCli && !vistaCli.classList.contains('seccion-oculta')) {
          renderizarListaGlobalClientes();
       }
+    }
+
+    function poblarFiltroColectores() {
+      const select = document.getElementById('filtroColector');
+      const valPrevio = select.value;
+      select.innerHTML = `
+        <option value="TODOS">Todos los usuarios (Consolidado)</option>
+        <option value="MIO" selected>Solo mis registros</option>
+      `;
+
+      const otrosEmails = [...new Set(liquidacionesGuardadas.filter(i => !i.esMio).map(i => i.creadoPorEmail))];
+      otrosEmails.forEach(email => {
+        select.innerHTML += `<option value="${email}">Solo de: ${email}</option>`;
+      });
+
+      select.value = valPrevio || "MIO";
     }
 
     // ==========================================
@@ -2153,8 +2160,13 @@
       s2.innerHTML = `<option value="TODAS">TODAS LAS RUTAS (CONSOLIDADO)</option>` + opciones;
 
       if (val1 && rutasApp.includes(val1)) s1.value = val1;
-      if (val2 && (rutasApp.includes(val2) || val2 === 'TODAS')) s2.value = val2;
+      else if (rutasApp.length > 0) s1.value = rutasApp[0];
+
       if (val3 && rutasApp.includes(val3)) s3.value = val3;
+      else if (rutasApp.length > 0) s3.value = rutasApp[0];
+
+      if (val2 && (rutasApp.includes(val2) || val2 === 'TODAS')) s2.value = val2;
+      else s2.value = 'TODAS';
     }
 
     function renderizarAdminRutas() {
@@ -3048,12 +3060,14 @@
         renderizarListaGlobalClientes();
       }
     }
+
     async function cerrarSesionManual() {
       localStorage.removeItem('pb_ultima_actividad');
       await sbClient.auth.signOut();
       location.reload();
     }
-// ==========================================
+
+    // ==========================================
     // LISTA GENERAL DE CLIENTES (DUEÑO/ADMIN)
     // ==========================================
     function renderizarListaGlobalClientes() {
