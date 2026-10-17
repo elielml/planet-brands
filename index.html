@@ -453,7 +453,7 @@
                 <th class="p-3 text-right">Bruto</th>
                 <th class="p-3 text-right">Ganancia</th>
                 <th class="p-3 text-center">Imprimir</th>
-                <th class="p-3 text-center accion-eliminar-col">Acción</th>
+                <th class="p-3 text-center accion-eliminar-col">Acciones</th>
               </tr>
             </thead>
             <tbody id="cuerpoHistorial" class="divide-y divide-slate-100 text-slate-700">
@@ -726,7 +726,7 @@
         </div>
       </div>
 
-      <!-- GESTIÓN Y ADMINISTRACIÓN DE RUTAS (NUEVO) -->
+      <!-- GESTIÓN Y ADMINISTRACIÓN DE RUTAS -->
       <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
         <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">Crear y Administrar Rutas</h2>
         <div class="flex gap-2">
@@ -976,7 +976,7 @@
     }
 
     // ==========================================
-    // MODAL DE CONFIRMACIÓN PROPIO (REEMPLAZO CONFIRM)
+    // MODAL DE CONFIRMACIÓN PROPIO
     // ==========================================
     function pedirConfirmacion(mensaje, titulo = "Confirmación", icono = "⚠️") {
       return new Promise((resolve) => {
@@ -1728,7 +1728,7 @@
        }
        rutasGuardadas.forEach(r => {
           cont.innerHTML += `
-            <li class="p-3 flex justify-between items-center hover:bg-slate-50">
+            <li class="p-3 flex justify-between items-center hover:bg-slate-50 border-b border-slate-100">
               <strong class="text-slate-800 text-xs">${r.nombre}</strong>
               <div class="flex gap-2">
                 <button onclick="editarRuta(${r.id}, '${r.nombre}')" class="text-blue-600 hover:text-blue-800 font-bold text-xs bg-blue-50 px-2 py-1 rounded">Editar</button>
@@ -1883,6 +1883,24 @@
       }
     }
 
+    async function editarFechaRegistro(id, fechaActual) {
+      const nuevaFecha = prompt("Corrige la fecha de este registro (Formato AAAA-MM-DD):", fechaActual);
+      if (nuevaFecha && nuevaFecha.trim() !== fechaActual) {
+        const nf = nuevaFecha.trim();
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(nf)) {
+          mostrarMensaje("Formato incorrecto. Usa Año-Mes-Día.", "⚠️");
+          return;
+        }
+        const { error } = await sbClient.from('pb_liquidaciones').update({ fecha: nf }).eq('id', id);
+        if (error) {
+          mostrarMensaje("Error: " + error.message, "❌");
+        } else {
+          await cargarDatosZonaActiva();
+          mostrarMensaje("Fecha actualizada.", "✅");
+        }
+      }
+    }
+
     // ==========================================
     // HISTORIAL Y EXPORTACIONES AGRUPADAS
     // ==========================================
@@ -1971,7 +1989,10 @@
               </button>
             </td>
             <td class="p-3 text-center accion-eliminar-col">
-              <button onclick="eliminarRegistro(${item.id})" class="text-rose-500 hover:text-rose-700 font-bold text-sm px-2 py-1">✕</button>
+              <div class="flex items-center justify-center gap-2">
+                <button onclick="editarFechaRegistro(${item.id}, '${item.fecha}')" title="Editar Fecha" class="text-blue-500 hover:text-blue-700 font-bold text-sm bg-blue-50 px-2 py-1 rounded">📅</button>
+                <button onclick="eliminarRegistro(${item.id})" title="Eliminar" class="text-rose-500 hover:text-rose-700 font-bold text-sm bg-rose-50 px-2 py-1 rounded">✕</button>
+              </div>
             </td>
           `;
           cuerpo.appendChild(fila);
@@ -1984,7 +2005,7 @@
       document.getElementById('resumenGananciaEmpresa').textContent = `$ ${totalEmpresa.toLocaleString('es-DO', { minimumFractionDigits: 0 })}`;
     }
 
-    // EXCEL: Formato HTML exportado como .xls para evitar ruptura de tildes y caracteres
+    // EXCEL: Formato HTML exportado como .xls
     function exportarExcel() {
       const lista = filtrarLiquidaciones();
       if (lista.length === 0) { mostrarMensaje("No hay datos para exportar.", "⚠️"); return; }
@@ -2009,7 +2030,7 @@
         });
         
         html += `<tr><td style="font-weight:bold; text-align:right; padding:5px; background-color:#f1f5f9;">Subtotal ${ruta}:</td><td style="font-weight:bold; text-align:right; padding:5px; background-color:#f1f5f9;">${formatearMontoLimpio(subtotalRuta)}</td></tr>`;
-        html += `<tr><td colspan="2" style="height:20px; border:none;"></td></tr>`; // Separador
+        html += `<tr><td colspan="2" style="height:20px; border:none;"></td></tr>`;
       });
 
       if (Object.keys(grupos).length > 1) {
@@ -2048,7 +2069,7 @@
         });
         
         filasHTML += `<tr><td style="padding:8px 12px; text-align:right; font-size:12px; color:#64748b;">Subtotal ${ruta}:</td><td style="padding:8px 12px; text-align:right; font-weight:bold; color:#0f172a;">${formatearMontoLimpio(subtotalRuta)}</td></tr>`;
-        filasHTML += `<tr><td colspan="2" style="height:15px; border-bottom:2px dashed #cbd5e1;"></td></tr>`; // Separador
+        filasHTML += `<tr><td colspan="2" style="height:15px; border-bottom:2px dashed #cbd5e1;"></td></tr>`;
       });
 
       const totalHtml = Object.keys(grupos).length > 1 ? `<tr style="background-color:#f8fafc;"><td style="padding:12px;font-weight:bold;font-size:14px; text-align:right;">TOTAL GENERAL:</td><td style="padding:12px;text-align:right;font-weight:900;color:#1e3a8a;font-size:16px;">${formatearMontoLimpio(granTotal)}</td></tr>` : '';
@@ -2376,12 +2397,17 @@
       if (nuevoNombre && nuevoNombre.trim().toUpperCase() !== nombreActual) {
         const nombreFinal = nuevoNombre.trim().toUpperCase();
         
-        await sbClient.from('pb_rutas').update({ nombre: nombreFinal }).eq('id', id);
+        const { error } = await sbClient.from('pb_rutas').update({ nombre: nombreFinal }).eq('id', id);
+        if (error) {
+            mostrarMensaje("Error al actualizar la base de datos.", "❌");
+            return;
+        }
+
         await sbClient.from('pb_clientes').update({ ruta_nombre: nombreFinal }).eq('ruta_nombre', nombreActual);
         await sbClient.from('pb_liquidaciones').update({ ruta_nombre: nombreFinal }).eq('ruta_nombre', nombreActual);
         
         await cargarDatosZonaActiva();
-        mostrarMensaje("Ruta actualizada", "✅");
+        mostrarMensaje("Ruta y registros actualizados.", "✅");
       }
     }
 
@@ -2390,7 +2416,7 @@
       if (confirmado) {
         await sbClient.from('pb_rutas').update({ eliminado: true }).eq('id', id);
         await cargarDatosZonaActiva();
-        mostrarMensaje("Ruta eliminada", "🗑️");
+        mostrarMensaje("Ruta eliminada.", "🗑️");
       }
     }
 
@@ -2427,7 +2453,7 @@
       if (lista.length === 0) { cont.innerHTML = '<li class="p-3 text-slate-400 text-center">No hay clientes configurados en esta ruta.</li>'; return; }
 
       lista.forEach(c => {
-        cont.innerHTML += `<li class="p-3 flex justify-between items-center hover:bg-slate-50"><div><strong class="text-slate-800 text-xs block">${c.nombre}</strong><span class="text-[11px] text-slate-500 font-semibold">${c.concepto} - ${c.porcentaje}%</span></div><button onclick="eliminarClienteCatalogo(${c.id})" class="text-rose-500 font-bold text-xs accion-eliminar-col">Eliminar</button></li>`;
+        cont.innerHTML += `<li class="p-3 flex justify-between items-center hover:bg-slate-50 border-b border-slate-100"><div><strong class="text-slate-800 text-xs block">${c.nombre}</strong><span class="text-[11px] text-slate-500 font-semibold">${c.concepto} - ${c.porcentaje}%</span></div><button onclick="eliminarClienteCatalogo(${c.id})" class="text-rose-500 font-bold text-xs accion-eliminar-col">Eliminar</button></li>`;
       });
     }
 
