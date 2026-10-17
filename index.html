@@ -255,12 +255,7 @@
       <button type="button" id="tabRutas" onclick="cambiarPestana('rutas')" class="py-2.5 rounded-lg text-slate-600 hover:text-slate-900 transition text-[11px] sm:text-xs">
         ⚙️ Rutas/Nube
       </button>
-      
-      <!-- PESTAÑAS EXCLUSIVAS (ADMIN / DUEÑO) -->
-      <button type="button" id="tabClientes" onclick="cambiarPestana('clientes')" class="hidden col-span-2 sm:col-span-4 py-2.5 rounded-lg text-indigo-950 bg-indigo-200 hover:bg-indigo-300 border border-indigo-400 font-black transition text-xs shadow-sm mt-1">
-        📋 Lista de Clientes
-      </button>
-      <button type="button" id="tabAdminMaster" onclick="cambiarPestana('adminMaster')" class="hidden col-span-2 sm:col-span-4 py-2.5 rounded-lg text-amber-950 bg-amber-400 hover:bg-amber-300 border border-amber-500 font-black transition text-xs shadow-sm mt-1">
+      <button type="button" id="tabAdminMaster" onclick="cambiarPestana('adminMaster')" class="hidden col-span-2 sm:col-span-4 py-2.5 rounded-lg text-amber-950 bg-amber-400 hover:bg-amber-300 border border-amber-500 font-black transition text-xs shadow-sm">
         👑 Permisos / Papelera
       </button>
     </div>
@@ -462,7 +457,7 @@
 
       <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div class="overflow-x-auto w-full">
-          <table class="w-full text-left text-xs border-collapse whitespace-nowrap min-w-[700px]">
+          <table class="w-full text-left text-xs border-collapse whitespace-nowrap min-w-[600px]">
             <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
               <tr>
                 <th class="p-3">Cliente / Máquina</th>
@@ -514,69 +509,114 @@
         </div>
       </div>
 
-      <!-- VISTA NORMAL -->
+      <!-- VISTA NORMAL (Ruta Cibao o Ruta Sur Seleccionadas) -->
       <div id="vistaDepositoNormal" class="space-y-4">
-        <!-- RUTAS -->
+        <!-- DESGLOSE POR RUTAS -->
         <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
           <div class="flex justify-between items-center">
             <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">1. Rutas Trabajadas en esta Semana</h2>
             <span class="text-xs font-bold text-slate-400" id="totalRutasSemanaLabel">0 rutas</span>
           </div>
+
           <div class="border border-slate-100 rounded-xl overflow-x-auto w-full">
             <table class="w-full text-left text-xs border-collapse whitespace-nowrap min-w-[300px]">
               <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
-                <tr><th class="p-3">Ruta / Colector</th><th class="p-3 text-center">Liquidaciones</th><th class="p-3 text-right">Subtotal Recolectado</th></tr>
+                <tr>
+                  <th class="p-3">Ruta / Colector</th>
+                  <th class="p-3 text-center">Liquidaciones</th>
+                  <th class="p-3 text-right">Subtotal Recolectado</th>
+                </tr>
               </thead>
-              <tbody id="cuerpoRutasSemana" class="divide-y divide-slate-100 text-slate-700"></tbody>
+              <tbody id="cuerpoRutasSemana" class="divide-y divide-slate-100 text-slate-700">
+              </tbody>
             </table>
-            <p id="sinRutasSemanaMsg" class="text-center py-5 text-xs text-slate-400 hidden">No se realizaron liquidaciones.</p>
+            <p id="sinRutasSemanaMsg" class="text-center py-5 text-xs text-slate-400 hidden">
+              No se realizaron liquidaciones en el rango de fechas seleccionado.
+            </p>
           </div>
+
           <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-200 font-bold text-xs">
-            <span class="text-slate-600 uppercase">Subtotal Recolección Semanal:</span><span class="text-blue-900 text-sm font-black" id="subtotalRecoleccionSemanaCard">$ 0.00</span>
+            <span class="text-slate-600 uppercase">Subtotal Recolección Semanal:</span>
+            <span class="text-blue-900 text-sm font-black" id="subtotalRecoleccionSemanaCard">$ 0.00</span>
           </div>
         </div>
 
-        <!-- GASTOS -->
+        <!-- GASTOS EN EFECTIVO -->
         <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
           <div class="flex justify-between items-center">
             <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">2. Gastos en Efectivo de la Semana</h2>
             <span class="text-[11px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">Se resta del depósito</span>
           </div>
+
           <form id="formGastoEfectivo" onsubmit="agregarGasto(event)" class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-3">
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div><label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Concepto del Gasto</label><input type="text" id="gastoConcepto" placeholder="Ej: Combustible..." required class="w-full p-2.5 border rounded-lg text-xs font-bold bg-white border-slate-300 outline-none"></div>
-              <div><label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Fecha</label><input type="date" id="gastoFecha" required class="w-full p-2.5 border rounded-lg text-xs font-bold bg-white border-slate-300 outline-none"></div>
-              <div><label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Monto ($)</label><input type="number" id="gastoMonto" min="1" step="any" placeholder="0.00" required class="w-full p-2.5 border rounded-lg text-xs font-bold bg-white border-slate-300 outline-none"></div>
+              <div>
+                <label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Concepto del Gasto</label>
+                <input type="text" id="gastoConcepto" placeholder="Ej: Combustible, Peajes..." required class="w-full p-2.5 border rounded-lg text-xs font-bold bg-white border-slate-300 outline-none">
+              </div>
+              <div>
+                <label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Fecha</label>
+                <input type="date" id="gastoFecha" required class="w-full p-2.5 border rounded-lg text-xs font-bold bg-white border-slate-300 outline-none">
+              </div>
+              <div>
+                <label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Monto en Efectivo ($)</label>
+                <input type="number" id="gastoMonto" min="1" step="any" placeholder="0.00" required class="w-full p-2.5 border rounded-lg text-xs font-bold bg-white border-slate-300 outline-none">
+              </div>
             </div>
-            <button type="submit" class="w-full py-2 bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold uppercase rounded-lg shadow transition">- Registrar Gasto en Efectivo</button>
+            <button type="submit" class="w-full py-2 bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold uppercase rounded-lg shadow transition">
+              - Registrar Gasto en Efectivo
+            </button>
           </form>
+
           <div class="border border-slate-100 rounded-xl overflow-x-auto w-full">
             <table class="w-full text-left text-xs border-collapse whitespace-nowrap min-w-[300px]">
               <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
-                <tr><th class="p-3">Concepto / Colector</th><th class="p-3 text-center">Fecha</th><th class="p-3 text-right">Monto</th><th class="p-3 text-center accion-eliminar-col">Quitar</th></tr>
+                <tr>
+                  <th class="p-3">Concepto / Colector</th>
+                  <th class="p-3 text-center">Fecha</th>
+                  <th class="p-3 text-right">Monto</th>
+                  <th class="p-3 text-center accion-eliminar-col">Quitar</th>
+                </tr>
               </thead>
-              <tbody id="cuerpoGastosSemana" class="divide-y divide-slate-100 text-slate-700"></tbody>
+              <tbody id="cuerpoGastosSemana" class="divide-y divide-slate-100 text-slate-700">
+              </tbody>
             </table>
-            <p id="sinGastosSemanaMsg" class="text-center py-4 text-xs text-slate-400">No hay gastos registrados en esta semana.</p>
+            <p id="sinGastosSemanaMsg" class="text-center py-4 text-xs text-slate-400">
+              No hay gastos registrados en esta semana.
+            </p>
           </div>
+
           <div class="flex justify-between items-center bg-rose-50 p-3 rounded-xl border border-rose-200 font-bold text-xs">
-            <span class="text-rose-800 uppercase">Total Gastos Restados:</span><span class="text-rose-700 text-sm font-black" id="totalGastosSemanaCard">- $ 0.00</span>
+            <span class="text-rose-800 uppercase">Total Gastos Restados:</span>
+            <span class="text-rose-700 text-sm font-black" id="totalGastosSemanaCard">- $ 0.00</span>
           </div>
         </div>
 
-        <!-- ARQUEO FÍSICO -->
+        <!-- ARQUEO FÍSICO EN MANO -->
         <div id="seccionArqueoFisico" class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
           <div class="flex justify-between items-center">
-            <div><h2 class="text-xs font-black uppercase tracking-wider text-slate-700">3. Arqueo Físico en Mano</h2><p class="text-[11px] text-slate-500">Conteo de efectivo en tu poder de esta zona</p></div>
-            <button type="button" id="btnReiniciarConteo" onclick="limpiarArqueoFisico()" class="text-xs text-slate-400 hover:text-rose-600 underline font-semibold">Reiniciar Conteo</button>
+            <div>
+              <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">3. Arqueo Físico en Mano</h2>
+              <p class="text-[11px] text-slate-500">Conteo de efectivo en tu poder de esta zona</p>
+            </div>
+            <button type="button" id="btnReiniciarConteo" onclick="limpiarArqueoFisico()" class="text-xs text-slate-400 hover:text-rose-600 underline font-semibold">
+              Reiniciar Conteo
+            </button>
           </div>
+
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- Billetes -->
             <div class="border border-slate-200 rounded-xl overflow-hidden bg-slate-50/50">
-              <div class="bg-blue-900 text-white px-3 py-2 text-xs font-black uppercase tracking-wide flex justify-between"><span>💵 Papeletas / Billetes</span></div>
+              <div class="bg-blue-900 text-white px-3 py-2 text-xs font-black uppercase tracking-wide flex justify-between">
+                <span>💵 Papeletas / Billetes</span>
+              </div>
               <table class="w-full text-xs text-left">
                 <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
-                  <tr><th class="p-2.5">Denominación</th><th class="p-2.5 text-center w-24">Cantidad</th><th class="p-2.5 text-right">Subtotal</th></tr>
+                  <tr>
+                    <th class="p-2.5">Denominación</th>
+                    <th class="p-2.5 text-center w-24">Cantidad</th>
+                    <th class="p-2.5 text-right">Subtotal</th>
+                  </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 bg-white">
                   <tr><td class="p-2 font-bold text-slate-700">$ 2,000</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="b2000" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subB2000">$ 0.00</td></tr>
@@ -587,17 +627,27 @@
                   <tr><td class="p-2 font-bold text-slate-700">$ 50</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="b50" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subB50">$ 0.00</td></tr>
                 </tbody>
                 <tfoot class="bg-blue-50 border-t border-blue-200">
-                  <tr><td colspan="2" class="p-2.5 font-black text-blue-900 uppercase text-[11px]">Total Papeletas:</td><td class="p-2.5 text-right font-black text-blue-950 text-sm" id="totalBilletesCard">$ 0.00</td></tr>
+                  <tr>
+                    <td colspan="2" class="p-2.5 font-black text-blue-900 uppercase text-[11px]">Total Papeletas:</td>
+                    <td class="p-2.5 text-right font-black text-blue-950 text-sm" id="totalBilletesCard">$ 0.00</td>
+                  </tr>
                 </tfoot>
               </table>
             </div>
+
             <!-- Monedas -->
             <div class="border border-slate-200 rounded-xl overflow-hidden bg-slate-50/50 flex flex-col justify-between">
               <div>
-                <div class="bg-amber-600 text-white px-3 py-2 text-xs font-black uppercase tracking-wide flex justify-between"><span>🪙 Monedas Físicas</span></div>
+                <div class="bg-amber-600 text-white px-3 py-2 text-xs font-black uppercase tracking-wide flex justify-between">
+                  <span>🪙 Monedas Físicas</span>
+                </div>
                 <table class="w-full text-xs text-left">
                   <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
-                    <tr><th class="p-2.5">Denominación</th><th class="p-2.5 text-center w-24">Cantidad</th><th class="p-2.5 text-right">Subtotal</th></tr>
+                    <tr>
+                      <th class="p-2.5">Denominación</th>
+                      <th class="p-2.5 text-center w-24">Cantidad</th>
+                      <th class="p-2.5 text-right">Subtotal</th>
+                    </tr>
                   </thead>
                   <tbody class="divide-y divide-slate-100 bg-white">
                     <tr><td class="p-2 font-bold text-slate-700">$ 25</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="m25" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subM25">$ 0.00</td></tr>
@@ -607,13 +657,17 @@
                   </tbody>
                 </table>
               </div>
+
               <div class="bg-amber-50 border-t border-amber-200 p-2.5 flex justify-between items-center">
-                <span class="font-black text-amber-900 uppercase text-[11px]">Total Monedas:</span><span class="font-black text-amber-950 text-sm" id="totalMonedasFisicasCard">$ 0.00</span>
+                <span class="font-black text-amber-900 uppercase text-[11px]">Total Monedas:</span>
+                <span class="font-black text-amber-950 text-sm" id="totalMonedasFisicasCard">$ 0.00</span>
               </div>
             </div>
           </div>
+
           <div class="bg-slate-100 p-3.5 rounded-xl border border-slate-200 flex justify-between items-center font-bold text-xs">
-            <span class="text-slate-700 uppercase">Total Dinero Físico en Mano:</span><span class="text-slate-900 text-base font-black" id="totalFisicoEnManoCard">$ 0.00</span>
+            <span class="text-slate-700 uppercase">Total Dinero Físico en Mano:</span>
+            <span class="text-slate-900 text-base font-black" id="totalFisicoEnManoCard">$ 0.00</span>
           </div>
         </div>
 
@@ -621,22 +675,40 @@
         <div id="contenedorAuditoria" class="p-5 rounded-2xl shadow-lg border space-y-3 bg-slate-900 text-white border-slate-800">
           <div class="flex justify-between items-center">
             <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold block">Liquidación de Depósito</span>
-            <span id="badgeEstadoCuadre" class="px-2.5 py-0.5 rounded-full text-xs font-black uppercase bg-slate-800 text-slate-300">Pendiente</span>
+            <span id="badgeEstadoCuadre" class="px-2.5 py-0.5 rounded-full text-xs font-black uppercase bg-slate-800 text-slate-300">
+              Pendiente
+            </span>
           </div>
+
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 border-t border-slate-800">
-            <div><span class="text-[11px] uppercase text-slate-400 block font-semibold">Total a Depositar (Esperado)</span><p class="text-lg font-black text-blue-300" id="auditoriaTotalSistema">$ 0.00</p></div>
-            <div><span class="text-[11px] uppercase text-slate-400 block font-semibold">Efectivo Físico Contado</span><p class="text-lg font-black text-slate-100" id="auditoriaTotalContado">$ 0.00</p></div>
-            <div class="sm:border-l sm:border-slate-800 sm:pl-3"><span class="text-[11px] uppercase text-slate-400 block font-semibold">Diferencia de Cuadre</span><p class="text-2xl font-black text-slate-300" id="auditoriaDiferencia">$ 0.00</p></div>
+            <div>
+              <span class="text-[11px] uppercase text-slate-400 block font-semibold">Total a Depositar (Esperado)</span>
+              <p class="text-lg font-black text-blue-300" id="auditoriaTotalSistema">$ 0.00</p>
+            </div>
+            <div>
+              <span class="text-[11px] uppercase text-slate-400 block font-semibold">Efectivo Físico Contado</span>
+              <p class="text-lg font-black text-slate-100" id="auditoriaTotalContado">$ 0.00</p>
+            </div>
+            <div class="sm:border-l sm:border-slate-800 sm:pl-3">
+              <span class="text-[11px] uppercase text-slate-400 block font-semibold">Diferencia de Cuadre</span>
+              <p class="text-2xl font-black text-slate-300" id="auditoriaDiferencia">$ 0.00</p>
+            </div>
           </div>
+
           <p id="mensajeAuditoria" class="text-xs font-bold text-center pt-2 text-slate-400"></p>
+
           <div class="flex flex-wrap gap-2 pt-2 border-t border-slate-800">
-            <button type="button" id="btnGuardarArqueoMaster" onclick="guardarArqueoSemanaActual(true)" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs uppercase px-4 py-3 shadow transition flex items-center justify-center gap-1.5"><span>💾</span> Guardar Arqueo</button>
-            <button type="button" onclick="exportarDepositoDocumento()" class="flex-1 py-3 bg-blue-700 hover:bg-blue-800 text-white font-black rounded-xl text-xs uppercase shadow transition flex items-center justify-center gap-2"><span>📄 Exportar Comprobante</span></button>
+            <button type="button" id="btnGuardarArqueoMaster" onclick="guardarArqueoSemanaActual(true)" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs uppercase px-4 py-3 shadow transition flex items-center justify-center gap-1.5">
+              <span>💾</span> Guardar Arqueo
+            </button>
+            <button type="button" onclick="exportarDepositoDocumento()" class="flex-1 py-3 bg-blue-700 hover:bg-blue-800 text-white font-black rounded-xl text-xs uppercase shadow transition flex items-center justify-center gap-2">
+              <span>📄 Exportar Comprobante</span>
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- VISTA CONSOLIDADA (Ambas Rutas) -->
+      <!-- VISTA CONSOLIDADA (Ambas Rutas, Solo Visible si se selecciona Consolidado General) -->
       <div id="vistaDepositoConsolidado" class="hidden space-y-4">
         <h2 class="text-base sm:text-lg font-black text-slate-800 uppercase tracking-wide text-center pt-2">Resumen Consolidado Semanal</h2>
         
@@ -645,12 +717,15 @@
           <div class="bg-white p-5 rounded-2xl shadow-sm border border-blue-200 flex flex-col items-center relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
             <h3 class="text-sm font-black text-blue-900 uppercase">📍 Ruta Cibao</h3>
+            
             <div class="w-32 h-32 my-5 rounded-full border-4 border-blue-200 shadow-sm" id="graficoCibao"></div>
+
             <div class="w-full space-y-2 text-xs font-bold pt-2 border-t border-slate-100">
               <div class="flex justify-between items-center text-blue-600"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 border border-blue-600 bg-white"></div> Recolección Total:</span><span id="consCibaoRec">$ 0.00</span></div>
               <div class="flex justify-between items-center text-rose-500"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 bg-rose-500"></div> Gastos (Rojo):</span><span id="consCibaoGas">$ 0.00</span></div>
               <div class="flex justify-between items-center text-emerald-700 bg-emerald-50 p-2 rounded-lg mt-1"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 bg-emerald-500"></div> Depósito (Verde):</span><span id="consCibaoDep" class="text-sm font-black">$ 0.00</span></div>
             </div>
+            
             <button onclick="abrirDetallesZona('cibao')" class="mt-4 w-full bg-blue-50 hover:bg-blue-100 text-blue-700 py-2 rounded-lg text-xs font-bold uppercase transition">Ver Detalles</button>
           </div>
 
@@ -658,12 +733,15 @@
           <div class="bg-white p-5 rounded-2xl shadow-sm border border-amber-200 flex flex-col items-center relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1 bg-amber-500"></div>
             <h3 class="text-sm font-black text-amber-900 uppercase">📍 Ruta Sur</h3>
+            
             <div class="w-32 h-32 my-5 rounded-full border-4 border-amber-200 shadow-sm" id="graficoSur"></div>
+
             <div class="w-full space-y-2 text-xs font-bold pt-2 border-t border-slate-100">
               <div class="flex justify-between items-center text-blue-600"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 border border-blue-600 bg-white"></div> Recolección Total:</span><span id="consSurRec">$ 0.00</span></div>
               <div class="flex justify-between items-center text-rose-500"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 bg-rose-500"></div> Gastos (Rojo):</span><span id="consSurGas">$ 0.00</span></div>
               <div class="flex justify-between items-center text-emerald-700 bg-emerald-50 p-2 rounded-lg mt-1"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 bg-emerald-500"></div> Depósito (Verde):</span><span id="consSurDep" class="text-sm font-black">$ 0.00</span></div>
             </div>
+            
             <button onclick="abrirDetallesZona('sur')" class="mt-4 w-full bg-amber-50 hover:bg-amber-100 text-amber-800 py-2 rounded-lg text-xs font-bold uppercase transition">Ver Detalles</button>
           </div>
 
@@ -671,12 +749,15 @@
           <div class="bg-slate-900 p-5 rounded-2xl shadow-xl border border-slate-800 flex flex-col items-center relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1 bg-slate-500"></div>
             <h3 class="text-sm font-black text-white uppercase">🌐 Total General Esperado</h3>
+            
             <div class="w-32 h-32 my-5 rounded-full border-4 border-slate-600 shadow-sm" id="graficoGen"></div>
+
             <div class="w-full space-y-2 text-xs font-bold pt-2 border-t border-slate-800">
               <div class="flex justify-between items-center text-blue-300"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 border border-blue-300 bg-transparent"></div> Recolección Global:</span><span id="consGenRec">$ 0.00</span></div>
               <div class="flex justify-between items-center text-rose-400"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 bg-rose-500"></div> Gastos Globales:</span><span id="consGenGas">$ 0.00</span></div>
               <div class="flex justify-between items-center text-emerald-400 bg-slate-800 p-2 rounded-lg mt-1"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 bg-emerald-500"></div> Gran Total a Depositar:</span><span id="consGenDep" class="text-base font-black">$ 0.00</span></div>
             </div>
+            
             <button onclick="abrirDetallesZona('todas')" class="mt-4 w-full bg-slate-800 hover:bg-slate-700 text-slate-300 py-2 rounded-lg text-xs font-bold uppercase transition">Ver Detalles Generales</button>
           </div>
         </div>
@@ -693,14 +774,26 @@
       <div class="w-full bg-slate-900 text-white p-4 sm:p-5 rounded-xl shadow border border-slate-800 space-y-3 box-border overflow-hidden">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
-            <h2 class="text-sm font-bold flex items-center gap-2"><span>💾</span> Copias de Seguridad Locales</h2>
-            <p class="text-xs text-slate-300 mt-0.5">Tus cambios se guardan automáticamente en la nube.</p>
+            <h2 class="text-sm font-bold flex items-center gap-2">
+              <span>💾</span> Copias de Seguridad Locales
+            </h2>
+            <p class="text-xs text-slate-300 mt-0.5">
+              Tus cambios se guardan automáticamente en la nube.
+            </p>
           </div>
-          <span id="badgeNube" class="px-3 py-1 bg-emerald-500/20 text-emerald-300 text-[11px] font-semibold rounded-full border border-emerald-500/30">Autoguardado Activo</span>
+          <span id="badgeNube" class="px-3 py-1 bg-emerald-500/20 text-emerald-300 text-[11px] font-semibold rounded-full border border-emerald-500/30">
+            Autoguardado Activo
+          </span>
         </div>
+
         <div class="flex flex-wrap gap-2 pt-1">
-          <button type="button" onclick="descargarCopiaSeguridad()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-lg text-xs font-bold shadow border border-slate-700 flex items-center gap-1"><span>📥 Descargar Archivo Respaldo (.json)</span></button>
-          <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-lg text-xs font-bold shadow border border-slate-700 inline-flex items-center gap-1"><span>📤 Restaurar Archivo Respaldo</span><input type="file" accept=".json" onchange="restaurarCopiaSeguridad(this)" class="hidden"></label>
+          <button type="button" onclick="descargarCopiaSeguridad()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-lg text-xs font-bold shadow border border-slate-700 flex items-center gap-1">
+            <span>📥 Descargar Archivo Respaldo (.json)</span>
+          </button>
+          <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-lg text-xs font-bold shadow border border-slate-700 inline-flex items-center gap-1">
+            <span>📤 Restaurar Archivo Respaldo</span>
+            <input type="file" accept=".json" onchange="restaurarCopiaSeguridad(this)" class="hidden">
+          </label>
         </div>
       </div>
 
@@ -709,120 +802,129 @@
         <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">Crear y Administrar Rutas</h2>
         <div class="flex gap-2">
           <input type="text" id="nuevaRutaNombre" placeholder="Ej: RUTA AZUA, RUTA LA VEGA..." class="flex-1 p-2.5 border rounded-xl text-sm font-bold bg-slate-50 border-slate-300 focus:bg-white outline-none">
-          <button type="button" onclick="agregarRuta()" class="bg-blue-900 text-white px-4 py-2.5 rounded-xl text-xs font-bold uppercase hover:bg-blue-800 transition">Crear</button>
+          <button type="button" onclick="agregarRuta()" class="bg-blue-900 text-white px-4 py-2.5 rounded-xl text-xs font-bold uppercase hover:bg-blue-800 transition">
+            Crear
+          </button>
         </div>
         <div class="pt-2">
-          <ul id="listaRutasAdministrar" class="divide-y divide-slate-100 text-xs font-medium border border-slate-100 rounded-xl overflow-hidden bg-white"></ul>
+          <ul id="listaRutasAdministrar" class="divide-y divide-slate-100 text-xs font-medium border border-slate-100 rounded-xl overflow-hidden bg-white">
+          </ul>
         </div>
       </div>
 
       <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div class="flex justify-between items-center">
           <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">Agregar Cliente a la Ruta</h2>
-          <select id="selectRutaParaCliente" onchange="renderizarListaClientesConfig()" class="p-2 border rounded-lg text-xs font-bold bg-slate-50 border-slate-300 outline-none"></select>
+          <select id="selectRutaParaCliente" onchange="renderizarListaClientesConfig()" class="p-2 border rounded-lg text-xs font-bold bg-slate-50 border-slate-300 outline-none">
+          </select>
         </div>
 
         <form onsubmit="agregarClienteCatalogo(event)" class="space-y-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
-          <div><label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Nombre del Negocio / Cliente</label><input type="text" id="nuevoClienteNombre" placeholder="Ej: Colmado El Progreso" required class="w-full p-2.5 border rounded-lg text-sm font-bold bg-white border-slate-300 outline-none"></div>
+          <div>
+            <label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Nombre del Negocio / Cliente</label>
+            <input type="text" id="nuevoClienteNombre" placeholder="Ej: Colmado El Progreso" required class="w-full p-2.5 border rounded-lg text-sm font-bold bg-white border-slate-300 outline-none">
+          </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Concepto / Máquina</label>
               <select id="nuevoClienteConcepto" class="w-full p-2.5 border rounded-lg text-sm font-bold bg-white border-slate-300 outline-none">
-                <option value="Dulces">Dulces</option><option value="Peluches">Peluches</option><option value="Kiddie Rides">Kiddie Rides</option><option value="Boxing Machine">Boxing Machine</option><option value="General">General / Otra</option>
+                <option value="Dulces">Dulces</option>
+                <option value="Peluches">Peluches</option>
+                <option value="Kiddie Rides">Kiddie Rides</option>
+                <option value="Boxing Machine">Boxing Machine</option>
+                <option value="General">General / Otra</option>
               </select>
             </div>
-            <div><label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">% Comisión Acordado</label><input type="number" id="nuevoClientePorcentaje" min="0" max="100" value="25" required class="w-full p-2.5 border rounded-lg text-sm font-bold bg-white border-slate-300 outline-none"></div>
+            <div>
+              <label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">% Comisión Acordado</label>
+              <input type="number" id="nuevoClientePorcentaje" min="0" max="100" value="25" required class="w-full p-2.5 border rounded-lg text-sm font-bold bg-white border-slate-300 outline-none">
+            </div>
           </div>
-          <button type="submit" class="w-full py-2.5 bg-blue-900 hover:bg-blue-800 text-white text-xs font-bold uppercase rounded-lg shadow transition">+ Guardar Cliente en Catálogo</button>
+          <button type="submit" class="w-full py-2.5 bg-blue-900 hover:bg-blue-800 text-white text-xs font-bold uppercase rounded-lg shadow transition">
+            + Guardar Cliente en Catálogo
+          </button>
         </form>
 
         <div class="pt-2">
           <h3 class="text-xs font-bold text-slate-600 mb-2 uppercase">Clientes en esta Ruta:</h3>
-          <ul id="listaClientesConfig" class="divide-y divide-slate-100 text-xs font-medium border border-slate-100 rounded-xl overflow-hidden bg-white"></ul>
+          <ul id="listaClientesConfig" class="divide-y divide-slate-100 text-xs font-medium border border-slate-100 rounded-xl overflow-hidden bg-white">
+          </ul>
         </div>
       </div>
 
-    </section>
-
-    <!-- ========================================== -->
-    <!-- VISTA 5: LISTA GENERAL DE CLIENTES         -->
-    <!-- ========================================== -->
-    <section id="vistaClientesGeneral" class="seccion-oculta space-y-4">
-      <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
-        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-          <h2 class="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-1.5">
-            <span>📋</span> Base de Datos de Clientes
-          </h2>
-          <div class="flex gap-2">
-            <button type="button" onclick="exportarListaClientesExcel()" class="text-xs bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-lg font-bold hover:bg-emerald-200 transition">📊 Exportar</button>
-          </div>
-        </div>
-        
-        <div class="overflow-x-auto w-full pb-2">
-          <table class="w-full text-left text-xs border-collapse whitespace-nowrap min-w-[800px]">
-            <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
-              <tr>
-                <th class="p-2">ID</th>
-                <th class="p-2">Nombre del Cliente</th>
-                <th class="p-2">Ruta</th>
-                <th class="p-2 text-center">Tipo</th>
-                <th class="p-2 text-center">%</th>
-                <th class="p-2">Dirección</th>
-                <th class="p-2">Sector</th>
-                <th class="p-2">Provincia</th>
-                <th class="p-2">Representante</th>
-                <th class="p-2">Teléfono</th>
-                <th class="p-2 text-center">Acción</th>
-              </tr>
-            </thead>
-            <tbody id="cuerpoListaClientes" class="divide-y divide-slate-100 text-slate-700">
-            </tbody>
-          </table>
-        </div>
-      </div>
     </section>
 
     <!-- ======================================================== -->
-    <!-- VISTA 6: USUARIOS REGISTRADOS Y PERMISOS (SOLO MASTER)   -->
+    <!-- VISTA 5: USUARIOS REGISTRADOS Y PERMISOS (SOLO MASTER)   -->
     <!-- ======================================================== -->
     <section id="vistaAdminMaster" class="seccion-oculta space-y-4">
       
-      <!-- LISTA DE USUARIOS -->
+      <!-- LISTA DE USUARIOS EN TARJETAS ADAPTABLES AL CELULAR -->
       <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-amber-300 space-y-3">
         <div class="flex justify-between items-center border-b border-slate-100 pb-2">
           <div>
-            <h2 class="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-1.5"><span>👥</span> Usuarios Registrados</h2>
+            <h2 class="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-1.5">
+              <span>👥</span> Usuarios Registrados
+            </h2>
             <p class="text-xs text-slate-500">Toca "Configurar" en cualquier usuario para otorgarle acceso</p>
           </div>
-          <button type="button" onclick="cargarListaUsuariosRegistrados()" class="text-xs font-bold text-blue-700 hover:underline">🔄 Refrescar</button>
+          <button type="button" onclick="cargarListaUsuariosRegistrados()" class="text-xs font-bold text-blue-700 hover:underline">
+            🔄 Refrescar
+          </button>
         </div>
-        <div id="listaTarjetasUsuarios" class="space-y-2.5 pt-1"><p class="text-center py-4 text-xs text-slate-400">Cargando usuarios registrados...</p></div>
-        <p id="mensajeSinUsuarios" class="text-center py-4 text-xs text-slate-400 hidden">No hay otros usuarios registrados aún.</p>
+
+        <div id="listaTarjetasUsuarios" class="space-y-2.5 pt-1">
+          <p class="text-center py-4 text-xs text-slate-400">Cargando usuarios registrados...</p>
+        </div>
+        <p id="mensajeSinUsuarios" class="text-center py-4 text-xs text-slate-400 hidden">
+          No hay otros usuarios registrados aún.
+        </p>
       </div>
 
-      <!-- FORMULARIO DE ASIGNACIÓN -->
+      <!-- FORMULARIO DE ASIGNACIÓN INDEPENDIENTE POR ZONA -->
       <div id="panelFormularioPermisos" class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div class="border-b border-slate-100 pb-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
-            <h3 class="text-xs font-black text-slate-900 uppercase tracking-wide">Configurando a: <span id="labelUsuarioSeleccionado" class="text-blue-900 font-bold normal-case">Ninguno seleccionado</span></h3>
+            <h3 class="text-xs font-black text-slate-900 uppercase tracking-wide">
+              Configurando a: <span id="labelUsuarioSeleccionado" class="text-blue-900 font-bold normal-case">Ninguno seleccionado</span>
+            </h3>
             <p class="text-[11px] text-slate-500">Activa zonas y permisos independientes para este usuario</p>
           </div>
-          <button type="button" onclick="marcarModoDuenoRapido()" class="bg-amber-100 hover:bg-amber-200 text-amber-900 px-3 py-1.5 rounded-lg text-xs font-bold transition">👔 Atajo: Modo Dueño</button>
+          <button type="button" onclick="marcarModoDuenoRapido()" class="bg-amber-100 hover:bg-amber-200 text-amber-900 px-3 py-1.5 rounded-lg text-xs font-bold transition">
+            👔 Atajo: Modo Dueño
+          </button>
         </div>
+
         <input type="hidden" id="inputUserIdSeleccionado">
+
         <div class="space-y-3">
           <!-- BLOQUE ZONA CIBAO -->
           <div class="p-3.5 rounded-xl border border-blue-200 bg-blue-50/50 space-y-2.5">
             <div class="flex items-center justify-between border-b border-blue-200 pb-2">
               <label class="flex items-center gap-2 font-black text-xs text-blue-950 uppercase cursor-pointer">
-                <input type="checkbox" id="chkCibaoActivo" onchange="alternarBloqueZona('cibao')" class="w-4 h-4 text-blue-600 rounded"><span>Acceso a Ruta Cibao</span>
+                <input type="checkbox" id="chkCibaoActivo" onchange="alternarBloqueZona('cibao')" class="w-4 h-4 text-blue-600 rounded">
+                <span>Acceso a Ruta Cibao</span>
               </label>
+              <span class="text-[10px] text-blue-700 font-semibold uppercase">Provincias Norte</span>
             </div>
+
             <div id="permisosCibaoContainer" class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 opacity-50 pointer-events-none">
-              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer"><input type="checkbox" id="chkCibaoLeer" checked class="w-4 h-4 text-blue-600 rounded"><span>Lectura</span></label>
-              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer"><input type="checkbox" id="chkCibaoCrear" class="w-4 h-4 text-blue-600 rounded"><span>Crear</span></label>
-              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer"><input type="checkbox" id="chkCibaoEditar" class="w-4 h-4 text-blue-600 rounded"><span>Editar</span></label>
-              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer"><input type="checkbox" id="chkCibaoEliminar" class="w-4 h-4 text-rose-600 rounded"><span>Eliminar</span></label>
+              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer">
+                <input type="checkbox" id="chkCibaoLeer" checked class="w-4 h-4 text-blue-600 rounded">
+                <span>Lectura</span>
+              </label>
+              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer">
+                <input type="checkbox" id="chkCibaoCrear" class="w-4 h-4 text-blue-600 rounded">
+                <span>Crear</span>
+              </label>
+              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer">
+                <input type="checkbox" id="chkCibaoEditar" class="w-4 h-4 text-blue-600 rounded">
+                <span>Editar</span>
+              </label>
+              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer">
+                <input type="checkbox" id="chkCibaoEliminar" class="w-4 h-4 text-rose-600 rounded">
+                <span>Eliminar</span>
+              </label>
             </div>
           </div>
 
@@ -830,45 +932,86 @@
           <div class="p-3.5 rounded-xl border border-emerald-200 bg-emerald-50/50 space-y-2.5">
             <div class="flex items-center justify-between border-b border-emerald-200 pb-2">
               <label class="flex items-center gap-2 font-black text-xs text-emerald-950 uppercase cursor-pointer">
-                <input type="checkbox" id="chkSurActivo" onchange="alternarBloqueZona('sur')" class="w-4 h-4 text-emerald-600 rounded"><span>Acceso a Ruta Sur</span>
+                <input type="checkbox" id="chkSurActivo" onchange="alternarBloqueZona('sur')" class="w-4 h-4 text-emerald-600 rounded">
+                <span>Acceso a Ruta Sur</span>
               </label>
+              <span class="text-[10px] text-emerald-700 font-semibold uppercase">Sur / SD Oeste</span>
             </div>
+
             <div id="permisosSurContainer" class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 opacity-50 pointer-events-none">
-              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer"><input type="checkbox" id="chkSurLeer" checked class="w-4 h-4 text-emerald-600 rounded"><span>Lectura</span></label>
-              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer"><input type="checkbox" id="chkSurCrear" class="w-4 h-4 text-emerald-600 rounded"><span>Crear</span></label>
-              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer"><input type="checkbox" id="chkSurEditar" class="w-4 h-4 text-emerald-600 rounded"><span>Editar</span></label>
-              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer"><input type="checkbox" id="chkSurEliminar" class="w-4 h-4 text-rose-600 rounded"><span>Eliminar</span></label>
+              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer">
+                <input type="checkbox" id="chkSurLeer" checked class="w-4 h-4 text-emerald-600 rounded">
+                <span>Lectura</span>
+              </label>
+              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer">
+                <input type="checkbox" id="chkSurCrear" class="w-4 h-4 text-emerald-600 rounded">
+                <span>Crear</span>
+              </label>
+              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer">
+                <input type="checkbox" id="chkSurEditar" class="w-4 h-4 text-emerald-600 rounded">
+                <span>Editar</span>
+              </label>
+              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer">
+                <input type="checkbox" id="chkSurEliminar" class="w-4 h-4 text-rose-600 rounded">
+                <span>Eliminar</span>
+              </label>
             </div>
           </div>
 
-          <button type="button" onclick="guardarPermisosGranulares()" class="w-full py-3.5 bg-blue-900 hover:bg-blue-800 text-white font-black rounded-xl text-xs uppercase tracking-wider shadow transition">💾 Guardar Permisos</button>
+          <button type="button" onclick="guardarPermisosGranulares()" class="w-full py-3.5 bg-blue-900 hover:bg-blue-800 text-white font-black rounded-xl text-xs uppercase tracking-wider shadow transition">
+            💾 Guardar Permisos
+          </button>
         </div>
       </div>
 
-      <!-- PAPELERA -->
+      <!-- PAPELERA DE RECICLAJE (SOFT-DELETE) -->
       <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
         <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-          <div><h2 class="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-1.5"><span>🗑️</span> Papelera de Registros Eliminados</h2></div>
-          <button type="button" onclick="cargarPapelera()" class="text-xs font-bold text-blue-700 hover:underline">🔄 Refrescar</button>
+          <div>
+            <h2 class="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-1.5">
+              <span>🗑️</span> Papelera de Registros Eliminados
+            </h2>
+            <p class="text-xs text-slate-500">Restaura liquidaciones que los usuarios hayan borrado</p>
+          </div>
+          <button type="button" onclick="cargarPapelera()" class="text-xs font-bold text-blue-700 hover:underline">
+            🔄 Refrescar
+          </button>
         </div>
-        <div class="border border-slate-100 rounded-xl overflow-x-auto w-full">
-          <table class="w-full text-left text-xs border-collapse whitespace-nowrap min-w-[500px]">
+
+        <div class="border border-slate-100 rounded-xl overflow-hidden">
+          <table class="w-full text-left text-xs border-collapse">
             <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
-              <tr><th class="p-2.5">Detalle / Cliente</th><th class="p-2.5 text-center">Zona</th><th class="p-2.5 text-center">Fecha Borrado</th><th class="p-2.5 text-right">Monto</th><th class="p-2.5 text-center">Acciones</th></tr>
+              <tr>
+                <th class="p-2.5">Detalle / Cliente</th>
+                <th class="p-2.5 text-center">Zona</th>
+                <th class="p-2.5 text-center">Fecha Borrado</th>
+                <th class="p-2.5 text-right">Monto</th>
+                <th class="p-2.5 text-center">Acciones</th>
+              </tr>
             </thead>
-            <tbody id="cuerpoPapelera" class="divide-y divide-slate-100 text-slate-700"></tbody>
+            <tbody id="cuerpoPapelera" class="divide-y divide-slate-100 text-slate-700">
+            </tbody>
           </table>
-          <p id="mensajePapeleraVacia" class="text-center py-6 text-xs text-slate-400">La papelera está vacía.</p>
+          <p id="mensajePapeleraVacia" class="text-center py-6 text-xs text-slate-400">
+            La papelera está vacía. No hay registros pendientes.
+          </p>
         </div>
       </div>
 
-      <!-- BITÁCORA -->
+      <!-- BITÁCORA DE AUDITORÍA -->
       <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
         <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-          <h2 class="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-1.5"><span>📜</span> Bitácora de Operaciones (Auditoría)</h2>
-          <button type="button" onclick="cargarAuditoria()" class="text-xs font-bold text-blue-700 hover:underline">🔄 Refrescar</button>
+          <h2 class="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-1.5">
+            <span>📜</span> Bitácora de Operaciones (Auditoría)
+          </h2>
+          <button type="button" onclick="cargarAuditoria()" class="text-xs font-bold text-blue-700 hover:underline">
+            🔄 Refrescar
+          </button>
         </div>
-        <div id="listaAuditoria" class="space-y-2 max-h-80 overflow-y-auto text-xs font-medium"><p class="text-center py-4 text-slate-400">Cargando registros...</p></div>
+
+        <div id="listaAuditoria" class="space-y-2 max-h-80 overflow-y-auto text-xs font-medium">
+          <p class="text-center py-4 text-slate-400">Cargando registros de auditoría...</p>
+        </div>
       </div>
 
     </section>
@@ -881,25 +1024,8 @@
     // ==========================================
     const SUPABASE_URL = "https://nfgnyvdjolpowdpybuvw.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mZ255dmRqb2xwb3dkcHlidXZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4MTE5MzEsImV4cCI6MjEwNDM4NzkzMX0.bnNuDhGmIx04GoSEbmgHi_EJPv7Q4XixiCel-3owKSo";
+
     const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    // ==========================================
-    // VARIABLES GLOBALES
-    // ==========================================
-    let usuarioActual = null;
-    let esSuperAdmin = false;
-    let permisosUsuario = [];
-    let zonaActiva = 'cibao';
-    window.nombreMostrar = "Usuario";
-
-    let rutasGuardadas = [];
-    let rutasApp = [];
-    let catalogoClientes = [];
-    let liquidacionesGuardadas = [];
-    let gastosGuardados = [];
-    let arqueosSemanalesGuardados = {};
-    let totalNetoDepositoCalculado = 0;
-    let debounceTimerArqueo = null;
 
     function mostrarMensaje(texto, icono = "✅", duracion = 2500) {
       const box = document.getElementById('notificacionFlotante');
@@ -932,8 +1058,15 @@
 
         modal.classList.remove('hidden');
 
-        const onAceptar = () => { limpiar(); resolve(true); };
-        const onCancelar = () => { limpiar(); resolve(false); };
+        const onAceptar = () => {
+          limpiar();
+          resolve(true);
+        };
+
+        const onCancelar = () => {
+          limpiar();
+          resolve(false);
+        };
 
         const limpiar = () => {
           modal.classList.add('hidden');
@@ -946,11 +1079,33 @@
       });
     }
 
+    // ==========================================
+    // ESTADO GLOBAL Y PERMISOS MULTI-ZONA
+    // ==========================================
+    let usuarioActual = null;
+    let esSuperAdmin = false;
+    let permisosUsuario = [];
+    let zonaActiva = 'cibao';
+    window.nombreMostrar = "Usuario";
+
+    let rutasGuardadas = [];
+    let rutasApp = [];
+    let catalogoClientes = [];
+    let liquidacionesGuardadas = [];
+    let gastosGuardados = [];
+    let arqueosSemanalesGuardados = {};
+
+    let totalNetoDepositoCalculado = 0;
+    let debounceTimerArqueo = null;
+
     function formatearMontoLimpio(valor) {
       const num = Number(valor) || 0;
       let str = num.toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      if (str.endsWith('.00')) str = str.slice(0, -3);
-      else if (str.endsWith('0')) str = str.slice(0, -1);
+      if (str.endsWith('.00')) {
+        str = str.slice(0, -3);
+      } else if (str.endsWith('0')) {
+        str = str.slice(0, -1);
+      }
       return `$ ${str}`;
     }
 
@@ -966,9 +1121,12 @@
     }
 
     window.addEventListener('DOMContentLoaded', async () => {
-      if ('serviceWorker' in navigator) { try { await navigator.serviceWorker.register('./sw.js'); } catch (err) {} }
+      if ('serviceWorker' in navigator) {
+        try {
+          await navigator.serviceWorker.register('./sw.js');
+        } catch (err) {}
+      }
 
-      // Cargar arqueos de memoria local inmediatamente
       const arqueosLocales = localStorage.getItem('pb_arqueos_local');
       if (arqueosLocales) {
         try { arqueosSemanalesGuardados = JSON.parse(arqueosLocales); } catch(e){}
@@ -1078,7 +1236,6 @@
 
       esSuperAdmin = (usuarioActual.email.trim().toLowerCase() === 'elieldejesusml@gmail.com');
       
-      // Obtener el nombre registrado o caer al email si es cuenta vieja
       window.nombreMostrar = usuarioActual.user_metadata?.primer_nombre || usuarioActual.email.split('@')[0];
       document.getElementById('labelUsuarioActivo').textContent = window.nombreMostrar;
 
@@ -1155,22 +1312,11 @@
       const formGasto = document.getElementById('formGastoEfectivo');
       const btnGuardarArqueo = document.getElementById('btnGuardarArqueoMaster');
       const btnReiniciarConteo = document.getElementById('btnReiniciarConteo');
-      const tabCuadre = document.getElementById('tabCuadre');
-      const tabClientes = document.getElementById('tabClientes');
-      const tabAdmin = document.getElementById('tabAdminMaster');
 
       if (esModoConsulta) {
         if (formGasto) formGasto.classList.add('hidden');
         if (btnGuardarArqueo) btnGuardarArqueo.classList.add('hidden');
         if (btnReiniciarConteo) btnReiniciarConteo.classList.add('hidden');
-        
-        tabCuadre.classList.add('hidden');
-        tabAdmin.classList.add('hidden');
-        if (tabClientes) tabClientes.classList.remove('hidden');
-        
-        if (!document.getElementById('vistaCuadre').classList.contains('seccion-oculta') || !document.getElementById('vistaAdminMaster').classList.contains('seccion-oculta')) {
-           cambiarPestana('historial');
-        }
         
         ['b2000','b1000','b500','b200','b100','b50','m25','m10','m5','m1'].forEach(id => {
             const input = document.getElementById(id);
@@ -1180,15 +1326,6 @@
         if (formGasto) formGasto.classList.remove('hidden');
         if (btnGuardarArqueo) btnGuardarArqueo.classList.remove('hidden');
         if (btnReiniciarConteo) btnReiniciarConteo.classList.remove('hidden');
-        
-        tabCuadre.classList.remove('hidden');
-        if (esSuperAdmin) {
-           if(tabClientes) tabClientes.classList.remove('hidden');
-           tabAdmin.classList.remove('hidden');
-        } else {
-           if(tabClientes) tabClientes.classList.add('hidden');
-           tabAdmin.classList.add('hidden');
-        }
         
         ['b2000','b1000','b500','b200','b100','b50','m25','m10','m5','m1'].forEach(id => {
             const input = document.getElementById(id);
@@ -1216,9 +1353,7 @@
         qGastos = qGastos.eq('creado_por', usuarioActual.id);
       } else if (zonaActiva !== 'todas') {
         qRutas = qRutas.eq('zona_id', zonaActiva);
-        if (!esSuperAdmin && !esModoConsulta) {
-           qClientes = qClientes.eq('zona_id', zonaActiva);
-        }
+        qClientes = qClientes.eq('zona_id', zonaActiva);
         qLiq = qLiq.eq('zona_id', zonaActiva);
         qGastos = qGastos.eq('zona_id', zonaActiva);
       }
@@ -1236,12 +1371,7 @@
         nombre: c.nombre, 
         concepto: c.concepto, 
         porcentaje: c.porcentaje,
-        zona_id: c.zona_id,
-        direccion: c.direccion || '',
-        sector: c.sector || '',
-        provincia: c.provincia || '',
-        representante: c.representante || '',
-        telefono: c.telefono || ''
+        zona_id: c.zona_id
       }));
 
       if (catalogoClientes.length === 0 && (resLiq.data || []).length > 0) {
@@ -1254,8 +1384,7 @@
               nombre: l.cliente_nombre,
               concepto: l.concepto,
               porcentaje: l.porcentaje,
-              zona_id: l.zona_id || 'cibao',
-              direccion: '', sector: '', provincia: '', representante: '', telefono: ''
+              zona_id: l.zona_id || 'cibao'
             });
           }
         });
@@ -1297,11 +1426,6 @@
       renderizarHistorial();
       renderizarListaClientesConfig();
       alCambiarRangoSemana();
-      
-      const vistaCli = document.getElementById('vistaClientesGeneral');
-      if(vistaCli && !vistaCli.classList.contains('seccion-oculta')) {
-         renderizarListaGlobalClientes();
-      }
     }
 
     function poblarFiltroColectores() {
@@ -1573,16 +1697,1239 @@
     }
 
     // ==========================================
+    // SECCIÓN DE PERMISOS SUPERADMIN 
+    // ==========================================
+    async function cargarListaUsuariosRegistrados() {
+      if (!esSuperAdmin) return;
+      const cont = document.getElementById('listaTarjetasUsuarios');
+      const msgVacio = document.getElementById('mensajeSinUsuarios');
+      cont.innerHTML = '<p class="text-center py-4 text-xs text-slate-400">Buscando usuarios registrados...</p>';
+
+      const { data: usuarios, error } = await sbClient.rpc('listar_usuarios_registrados');
+
+      if (error) {
+        cont.innerHTML = `<p class="text-center py-4 text-xs text-rose-500 font-bold">Error: ${error.message}</p>`;
+        return;
+      }
+
+      cont.innerHTML = '';
+
+      if (!usuarios || usuarios.length === 0) {
+        msgVacio.classList.remove('hidden');
+        return;
+      }
+
+      msgVacio.classList.add('hidden');
+      usuarios.forEach(u => {
+        let zonasEtiqueta = [];
+        if (u.tiene_cibao) zonasEtiqueta.push('<span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-[10px] font-bold">Cibao</span>');
+        if (u.tiene_sur) zonasEtiqueta.push('<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[10px] font-bold">Sur</span>');
+        if (zonasEtiqueta.length === 0) zonasEtiqueta.push('<span class="bg-slate-100 text-slate-500 px-2 py-0.5 rounded text-[10px] font-medium">Sin acceso</span>');
+
+        const card = document.createElement('div');
+        card.className = "bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2.5 shadow-sm";
+        card.innerHTML = `
+          <div class="space-y-1 w-full sm:w-auto">
+            <span class="font-bold text-slate-900 text-xs block break-all">${u.email}</span>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] text-slate-400">Registrado: ${u.creado_en ? u.creado_en.split('T')[0] : '--'}</span>
+              <div class="flex items-center gap-1">${zonasEtiqueta.join(' ')}</div>
+            </div>
+          </div>
+          <button type="button" onclick="seleccionarUsuarioParaPermisos('${u.id}', '${u.email}')" class="w-full sm:w-auto bg-blue-900 hover:bg-blue-800 active:bg-blue-950 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase transition flex items-center justify-center gap-1">
+            <span>⚙️ Configurar</span>
+          </button>
+        `;
+        cont.appendChild(card);
+      });
+    }
+
+    async function seleccionarUsuarioParaPermisos(userId, email) {
+      document.getElementById('inputUserIdSeleccionado').value = userId;
+      document.getElementById('labelUsuarioSeleccionado').textContent = email;
+
+      const { data: perms } = await sbClient.from('pb_permisos_zona').select('*').eq('user_id', userId);
+
+      document.getElementById('chkCibaoActivo').checked = false;
+      document.getElementById('chkSurActivo').checked = false;
+      alternarBloqueZona('cibao');
+      alternarBloqueZona('sur');
+
+      if (perms) {
+        perms.forEach(p => {
+          if (p.zona_id === 'cibao') {
+            document.getElementById('chkCibaoActivo').checked = true;
+            document.getElementById('chkCibaoLeer').checked = p.puede_leer;
+            document.getElementById('chkCibaoCrear').checked = p.puede_crear;
+            document.getElementById('chkCibaoEditar').checked = p.puede_editar;
+            document.getElementById('chkCibaoEliminar').checked = p.puede_eliminar;
+            alternarBloqueZona('cibao');
+          } else if (p.zona_id === 'sur') {
+            document.getElementById('chkSurActivo').checked = true;
+            document.getElementById('chkSurLeer').checked = p.puede_leer;
+            document.getElementById('chkSurCrear').checked = p.puede_crear;
+            document.getElementById('chkSurEditar').checked = p.puede_editar;
+            document.getElementById('chkSurEliminar').checked = p.puede_eliminar;
+            alternarBloqueZona('sur');
+          }
+        });
+      }
+
+      document.getElementById('panelFormularioPermisos').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function alternarBloqueZona(zona) {
+      const activo = document.getElementById(zona === 'cibao' ? 'chkCibaoActivo' : 'chkSurActivo').checked;
+      const cont = document.getElementById(zona === 'cibao' ? 'permisosCibaoContainer' : 'permisosSurContainer');
+
+      if (activo) {
+        cont.classList.remove('opacity-50', 'pointer-events-none');
+      } else {
+        cont.classList.add('opacity-50', 'pointer-events-none');
+        document.getElementById(zona === 'cibao' ? 'chkCibaoCrear' : 'chkSurCrear').checked = false;
+        document.getElementById(zona === 'cibao' ? 'chkCibaoEditar' : 'chkSurEditar').checked = false;
+        document.getElementById(zona === 'cibao' ? 'chkCibaoEliminar' : 'chkSurEliminar').checked = false;
+      }
+    }
+
+    function marcarModoDuenoRapido() {
+      const userId = document.getElementById('inputUserIdSeleccionado').value;
+      if (!userId) {
+        mostrarMensaje("Primero toca 'Configurar' en un usuario de la lista.", "⚠️");
+        return;
+      }
+
+      document.getElementById('chkCibaoActivo').checked = true;
+      document.getElementById('chkCibaoLeer').checked = true;
+      document.getElementById('chkCibaoCrear').checked = false;
+      document.getElementById('chkCibaoEditar').checked = false;
+      document.getElementById('chkCibaoEliminar').checked = false;
+      alternarBloqueZona('cibao');
+
+      document.getElementById('chkSurActivo').checked = true;
+      document.getElementById('chkSurLeer').checked = true;
+      document.getElementById('chkSurCrear').checked = false;
+      document.getElementById('chkSurEditar').checked = false;
+      document.getElementById('chkSurEliminar').checked = false;
+      alternarBloqueZona('sur');
+    }
+
+    async function guardarPermisosGranulares() {
+      const userId = document.getElementById('inputUserIdSeleccionado').value;
+      const email = document.getElementById('labelUsuarioSeleccionado').textContent;
+
+      if (!userId) {
+        mostrarMensaje("Selecciona un usuario de la lista.", "⚠️");
+        return;
+      }
+
+      const cibaoActivo = document.getElementById('chkCibaoActivo').checked;
+      const surActivo = document.getElementById('chkSurActivo').checked;
+
+      try {
+        const { error } = await sbClient.rpc('guardar_permisos_usuario_granular', {
+          p_user_id: userId,
+          p_cibao_activo: cibaoActivo,
+          p_cibao_leer: document.getElementById('chkCibaoLeer').checked,
+          p_cibao_crear: document.getElementById('chkCibaoCrear').checked,
+          p_cibao_editar: document.getElementById('chkCibaoEditar').checked,
+          p_cibao_eliminar: document.getElementById('chkCibaoEliminar').checked,
+          p_sur_activo: surActivo,
+          p_sur_leer: document.getElementById('chkSurLeer').checked,
+          p_sur_crear: document.getElementById('chkSurCrear').checked,
+          p_sur_editar: document.getElementById('chkSurEditar').checked,
+          p_sur_eliminar: document.getElementById('chkSurEliminar').checked
+        });
+
+        if (error) {
+          mostrarMensaje("Error al guardar permisos.", "❌");
+        } else {
+          mostrarMensaje(`Permisos actualizados para ${email}.`, "✅");
+          cargarListaUsuariosRegistrados();
+          cargarAuditoria();
+        }
+      } catch (err) {
+        mostrarMensaje("Fallo al conectar con la base de datos.", "❌");
+      }
+    }
+
+    // ==========================================
+    // PAPELERA DE RECICLAJE Y RESTAURACIÓN
+    // ==========================================
+    async function cargarPapelera() {
+      if (!esSuperAdmin) return;
+      const cuerpo = document.getElementById('cuerpoPapelera');
+      const msgVacio = document.getElementById('mensajePapeleraVacia');
+      cuerpo.innerHTML = '';
+
+      const { data: eliminados } = await sbClient
+        .from('pb_liquidaciones')
+        .select('*')
+        .eq('eliminado', true)
+        .order('eliminado_en', { ascending: false });
+
+      if (!eliminados || eliminados.length === 0) {
+        msgVacio.classList.remove('hidden');
+        return;
+      }
+
+      msgVacio.classList.add('hidden');
+      eliminados.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 border-b border-slate-100";
+        tr.innerHTML = `
+          <td class="p-2.5">
+            <span class="font-bold text-slate-800">${item.cliente_nombre}</span>
+            <span class="text-[10px] text-slate-400 block">${item.ruta_nombre} (${item.concepto})</span>
+          </td>
+          <td class="p-2.5 text-center uppercase font-bold text-[10px] text-blue-900">${item.zona_id}</td>
+          <td class="p-2.5 text-center text-slate-500">${item.eliminado_en ? item.eliminado_en.split('T')[0] : '--'}</td>
+          <td class="p-2.5 text-right font-black text-slate-800">${formatearMontoLimpio(item.ganancia_empresa)}</td>
+          <td class="p-2.5 text-center space-x-1">
+            <button onclick="restaurarRegistro(${item.id})" class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-[11px] font-bold hover:bg-emerald-200">Restaurar</button>
+            <button onclick="eliminarDefinitivo(${item.id})" class="bg-rose-100 text-rose-800 px-2 py-1 rounded text-[11px] font-bold hover:bg-rose-200">Destruir</button>
+          </td>
+        `;
+        cuerpo.appendChild(tr);
+      });
+    }
+
+    async function restaurarRegistro(id) {
+      const confirmado = await pedirConfirmacion("¿Estás seguro de que quieres restaurarlo?", "Restaurar Registro", "♻️");
+      if (confirmado) {
+        await sbClient.from('pb_liquidaciones').update({ eliminado: false, eliminado_en: null, eliminado_por: null }).eq('id', id);
+        await sbClient.from('pb_auditoria').insert({
+          tabla: 'pb_liquidaciones',
+          registro_id: id,
+          accion: 'RESTAURAR',
+          usuario_id: usuarioActual.id,
+          usuario_email: window.nombreMostrar
+        });
+        cargarPapelera();
+        cargarDatosZonaActiva();
+        cargarAuditoria();
+        mostrarMensaje("Registro restaurado con éxito.", "✅");
+      }
+    }
+
+    async function eliminarDefinitivo(id) {
+      const confirmado = await pedirConfirmacion("¿Estás seguro de que quieres eliminarlo definitivamente?", "Eliminación Definitiva", "⚠️");
+      if (confirmado) {
+        await sbClient.from('pb_liquidaciones').delete().eq('id', id);
+        await sbClient.from('pb_auditoria').insert({
+          tabla: 'pb_liquidaciones',
+          registro_id: id,
+          accion: 'ELIMINAR_DEFINITIVO',
+          usuario_id: usuarioActual.id,
+          usuario_email: window.nombreMostrar
+        });
+        cargarPapelera();
+        cargarAuditoria();
+        mostrarMensaje("Registro destruido permanentemente.", "🗑️");
+      }
+    }
+
+    async function cargarAuditoria() {
+      if (!esSuperAdmin) return;
+      const cont = document.getElementById('listaAuditoria');
+      cont.innerHTML = '';
+
+      const { data: logs } = await sbClient
+        .from('pb_auditoria')
+        .select('*')
+        .order('fecha', { ascending: false })
+        .limit(25);
+
+      if (!logs || logs.length === 0) {
+        cont.innerHTML = '<p class="text-center py-4 text-slate-400">No hay registros de auditoría aún.</p>';
+        return;
+      }
+
+      logs.forEach(log => {
+        const item = document.createElement('div');
+        item.className = "p-2.5 bg-slate-50 rounded-lg border border-slate-200 flex justify-between items-center";
+        item.innerHTML = `
+          <div>
+            <span class="font-bold text-slate-800">${log.usuario_email || 'Sistema'}</span>
+            <span class="text-slate-500"> ejecutó <strong>${log.accion}</strong> en <em>${log.tabla}</em></span>
+          </div>
+          <span class="text-[10px] text-slate-400 font-mono">${new Date(log.fecha).toLocaleString()}</span>
+        `;
+        cont.appendChild(item);
+      });
+    }
+
+    // ==========================================
+    // IMPRESIÓN DE TICKETS TÉRMICOS (BLUETOOTH)
+    // ==========================================
+    function poblarYDispararTicket(data) {
+      let textoRutaEncabezado = "RUTA CIBAO";
+      const zona = (data.zona_id || zonaActiva || "").toLowerCase();
+      if (zona.includes("sur") || (data.ruta && data.ruta.toLowerCase().includes("sur"))) {
+        textoRutaEncabezado = "RUTA SUR";
+      } else {
+        textoRutaEncabezado = "RUTA CIBAO";
+      }
+
+      document.getElementById('ticketZonaRuta').textContent = textoRutaEncabezado;
+      document.getElementById('ticketNoComprobante').textContent = `No. ${data.id ? String(data.id).slice(-4) : Math.floor(1000 + Math.random() * 9000)}`;
+      document.getElementById('ticketFecha').textContent = data.fecha;
+      document.getElementById('ticketCliente').textContent = data.cliente;
+
+      document.getElementById('ticketCant5').textContent = data.cant5 || 0;
+      document.getElementById('ticketSub5').textContent = formatearMontoLimpio((data.cant5 || 0) * 5);
+
+      document.getElementById('ticketCant10').textContent = data.cant10 || 0;
+      document.getElementById('ticketSub10').textContent = formatearMontoLimpio((data.cant10 || 0) * 10);
+
+      document.getElementById('ticketCant25').textContent = data.cant25 || 0;
+      document.getElementById('ticketSub25').textContent = formatearMontoLimpio((data.cant25 || 0) * 25);
+
+      document.getElementById('ticketTotalBruto').textContent = formatearMontoLimpio(data.bruto);
+      document.getElementById('ticketLabelComision').textContent = `Comisión (${data.porcentaje}%):`;
+      document.getElementById('ticketComision').textContent = formatearMontoLimpio(data.comision);
+      document.getElementById('ticketDiferencia').textContent = formatearMontoLimpio(data.gananciaEmpresa);
+
+      const c = (data.concepto || "").toLowerCase();
+      document.getElementById('checkDulces').textContent = c.includes('dulce') ? '☑ Dulces' : '☐ Dulces';
+      document.getElementById('checkKiddie').textContent = c.includes('kiddie') ? '☑ Kiddie Rides' : '☐ Kiddie Rides';
+      document.getElementById('checkPeluches').textContent = c.includes('peluche') ? '☑ Peluches' : '☐ Peluches';
+      document.getElementById('checkBoxing').textContent = c.includes('boxing') ? '☑ Boxing Machine' : '☐ Boxing Machine';
+
+      window.print();
+    }
+
+    function imprimirTicketActual() {
+      const c25 = Number(document.getElementById('cant25').value) || 0;
+      const c10 = Number(document.getElementById('cant10').value) || 0;
+      const c5 = Number(document.getElementById('cant5').value) || 0;
+      const bruto = (c25 * 25) + (c10 * 10) + (c5 * 5);
+
+      if (bruto <= 0) {
+        mostrarMensaje("Ingresa al menos una moneda para imprimir.", "⚠️");
+        return;
+      }
+
+      const clienteNombre = document.getElementById('inputCliente').value.trim();
+      if (!clienteNombre) {
+        mostrarMensaje("Escribe el nombre del cliente.", "⚠️");
+        return;
+      }
+
+      const porc = Number(document.getElementById('porcentajeComision').value) || 25;
+      const comision = (bruto * porc) / 100;
+      const ganancia = bruto - comision;
+
+      poblarYDispararTicket({
+        id: Math.floor(1000 + Math.random() * 9000),
+        fecha: document.getElementById('fechaCuadre').value,
+        ruta: document.getElementById('selectRutaForm').value,
+        cliente: clienteNombre,
+        concepto: document.getElementById('concepto').value,
+        porcentaje: porc,
+        cant25: c25,
+        cant10: c10,
+        cant5: c5,
+        bruto: bruto,
+        comision: comision,
+        gananciaEmpresa: ganancia
+      });
+    }
+
+    function reimprimirLiquidacion(id) {
+      const liq = liquidacionesGuardadas.find(item => item.id === id);
+      if (liq) {
+        poblarYDispararTicket(liq);
+      }
+    }
+
+    // ==========================================
+    // OPERACIONES (LIQUIDAR, RUTAS, GASTOS)
+    // ==========================================
+    function poblarSelectoresRuta() {
+      const s1 = document.getElementById('selectRutaForm');
+      const s2 = document.getElementById('filtroRuta');
+      const s3 = document.getElementById('selectRutaParaCliente');
+
+      const val1 = s1.value;
+      const val2 = s2.value;
+      const val3 = s3.value;
+
+      if (rutasApp.length === 0) {
+        s1.innerHTML = '<option value="">(Sin rutas en esta zona)</option>';
+        s3.innerHTML = '<option value="">(Crea una ruta en esta zona)</option>';
+        s2.innerHTML = '<option value="TODAS">TODAS LAS RUTAS</option>';
+        return;
+      }
+
+      const opciones = rutasApp.map(r => `<option value="${r}">${r}</option>`).join('');
+      s1.innerHTML = opciones;
+      s3.innerHTML = opciones;
+      s2.innerHTML = `<option value="TODAS">TODAS LAS RUTAS (CONSOLIDADO)</option>` + opciones;
+
+      if (val1 && rutasApp.includes(val1)) s1.value = val1;
+      if (val2 && (rutasApp.includes(val2) || val2 === 'TODAS')) s2.value = val2;
+      if (val3 && rutasApp.includes(val3)) s3.value = val3;
+    }
+
+    function renderizarAdminRutas() {
+       const cont = document.getElementById('listaRutasAdministrar');
+       if(!cont) return;
+       cont.innerHTML = '';
+       if(rutasGuardadas.length === 0) {
+          cont.innerHTML = '<li class="p-3 text-slate-400 text-center">No hay rutas creadas en esta zona.</li>';
+          return;
+       }
+       rutasGuardadas.forEach(r => {
+          cont.innerHTML += `
+            <li class="p-3 flex justify-between items-center hover:bg-slate-50 border-b border-slate-100">
+              <strong class="text-slate-800 text-xs">${r.nombre}</strong>
+              <div class="flex gap-2">
+                <button onclick="editarRuta(${r.id}, '${r.nombre}')" class="text-blue-600 hover:text-blue-800 font-bold text-xs bg-blue-50 px-2 py-1 rounded">Editar</button>
+                <button onclick="eliminarRuta(${r.id}, '${r.nombre}')" class="text-rose-500 hover:text-rose-700 font-bold text-xs bg-rose-50 px-2 py-1 rounded accion-eliminar-col">Eliminar</button>
+              </div>
+            </li>
+          `;
+       });
+       
+       const permisoActual = permisosUsuario.find(p => p.zona_id === zonaActiva) || { puede_eliminar: esSuperAdmin, puede_editar: esSuperAdmin };
+       document.querySelectorAll('.accion-eliminar-col').forEach(el => {
+          if (!permisoActual.puede_eliminar && !esSuperAdmin) el.style.display = 'none';
+       });
+    }
+
+    function actualizarClientesSegunRuta() {
+      const ruta = document.getElementById('selectRutaForm').value;
+      const datalist = document.getElementById('listaClientesDatalist');
+      
+      const filtrados = catalogoClientes.filter(c => c.ruta === ruta);
+      datalist.innerHTML = filtrados.map(c => `<option value="${c.nombre}">`).join('');
+      document.getElementById('inputCliente').value = '';
+      document.getElementById('cant25').value = '';
+      document.getElementById('cant10').value = '';
+      document.getElementById('cant5').value = '';
+      document.getElementById('porcentajeComision').value = '25';
+      calcularTodo();
+    }
+
+    function alCambiarCliente() {
+      const ruta = document.getElementById('selectRutaForm').value;
+      const nombre = document.getElementById('inputCliente').value.trim().toLowerCase();
+      const c = catalogoClientes.find(item => item.ruta === ruta && item.nombre.trim().toLowerCase() === nombre);
+
+      if (c) {
+        document.getElementById('concepto').value = c.concepto;
+        document.getElementById('porcentajeComision').value = c.porcentaje;
+      }
+      calcularTodo();
+    }
+
+    function alCambiarConcepto() {
+      const ruta = document.getElementById('selectRutaForm').value;
+      const nombre = document.getElementById('inputCliente').value.trim().toLowerCase();
+      const conceptoSel = document.getElementById('concepto').value;
+
+      const c = catalogoClientes.find(item => item.ruta === ruta && item.nombre.trim().toLowerCase() === nombre && item.concepto === conceptoSel);
+
+      if (c) {
+        document.getElementById('porcentajeComision').value = c.porcentaje;
+      }
+      calcularTodo();
+    }
+
+    function calcularTodo() {
+      const c25 = Number(document.getElementById('cant25').value) || 0;
+      const c10 = Number(document.getElementById('cant10').value) || 0;
+      const c5 = Number(document.getElementById('cant5').value) || 0;
+
+      const sub25 = c25 * 25;
+      const sub10 = c10 * 10;
+      const sub5 = c5 * 5;
+
+      document.getElementById('sub25').textContent = `$ ${sub25.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      document.getElementById('sub10').textContent = `$ ${sub10.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      document.getElementById('sub5').textContent = `$ ${sub5.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+
+      const totalMonedas = c25 + c10 + c5;
+      document.getElementById('totalMonedasLabel').textContent = `${totalMonedas} Monedas`;
+
+      const totalBruto = sub25 + sub10 + sub5;
+      const porc = Number(document.getElementById('porcentajeComision').value) || 0;
+      const totalComision = (totalBruto * porc) / 100;
+      const totalEmpresa = totalBruto - totalComision;
+
+      document.getElementById('labelComisionCliente').textContent = `Comisión Cliente (${porc}%)`;
+      document.getElementById('totalBrutoCard').textContent = `$ ${totalBruto.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      document.getElementById('totalComisionCard').textContent = `$ ${totalComision.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      document.getElementById('totalEmpresaCard').textContent = `$ ${totalEmpresa.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+    }
+
+    function limpiarFormulario() {
+      document.getElementById('inputCliente').value = '';
+      document.getElementById('cant25').value = '';
+      document.getElementById('cant10').value = '';
+      document.getElementById('cant5').value = '';
+      document.getElementById('porcentajeComision').value = '25';
+      calcularTodo();
+    }
+
+    async function guardarCuadre(e) {
+      e.preventDefault();
+      registrarActividad();
+
+      const c25 = Number(document.getElementById('cant25').value) || 0;
+      const c10 = Number(document.getElementById('cant10').value) || 0;
+      const c5 = Number(document.getElementById('cant5').value) || 0;
+      const bruto = (c25 * 25) + (c10 * 10) + (c5 * 5);
+
+      if (bruto <= 0) {
+        mostrarMensaje("Ingresa al menos una moneda para guardar.", "⚠️");
+        return;
+      }
+
+      const clienteNombre = document.getElementById('inputCliente').value.trim();
+      const rutaActual = document.getElementById('selectRutaForm').value;
+      const conceptoActual = document.getElementById('concepto').value;
+      const porc = Number(document.getElementById('porcentajeComision').value) || 25;
+      const comision = (bruto * porc) / 100;
+      const ganancia = bruto - comision;
+
+      const zonaDestino = (zonaActiva === 'todas' || zonaActiva === 'personal') ? 'cibao' : zonaActiva;
+
+      const { data: nuevaLiq, error } = await sbClient.from('pb_liquidaciones').insert({
+        zona_id: zonaDestino,
+        fecha: document.getElementById('fechaCuadre').value,
+        ruta_nombre: rutaActual,
+        cliente_nombre: clienteNombre,
+        concepto: conceptoActual,
+        porcentaje: porc,
+        cant25: c25,
+        cant10: c10,
+        cant5: c5,
+        total_monedas: c25 + c10 + c5,
+        bruto: bruto,
+        comision: comision,
+        ganancia_empresa: ganancia,
+        creado_por: usuarioActual.id,
+        creado_por_email: window.nombreMostrar
+      }).select().single();
+
+      if (error) {
+        mostrarMensaje("Error al guardar: " + error.message, "❌");
+        return;
+      }
+
+      await sbClient.from('pb_auditoria').insert({
+        tabla: 'pb_liquidaciones',
+        registro_id: nuevaLiq.id,
+        accion: 'CREAR',
+        datos_nuevos: nuevaLiq,
+        usuario_id: usuarioActual.id,
+        usuario_email: window.nombreMostrar
+      });
+
+      limpiarFormulario();
+      await cargarDatosZonaActiva();
+      mostrarMensaje("Guardado correctamente.", "✅");
+    }
+
+    async function eliminarRegistro(id) {
+      const confirmado = await pedirConfirmacion("¿Estás seguro de que quieres eliminarlo?", "ELIMINAR REGISTRO", "🗑️");
+      if (confirmado) {
+        await sbClient.from('pb_liquidaciones').update({
+          eliminado: true,
+          eliminado_por: usuarioActual.id,
+          eliminado_en: new Date().toISOString()
+        }).eq('id', id);
+
+        await sbClient.from('pb_auditoria').insert({
+          tabla: 'pb_liquidaciones',
+          registro_id: id,
+          accion: 'ELIMINAR_PAPELERA',
+          usuario_id: usuarioActual.id,
+          usuario_email: window.nombreMostrar
+        });
+
+        await cargarDatosZonaActiva();
+        mostrarMensaje("Registro eliminado correctamente.", "🗑️");
+      }
+    }
+
+    async function editarFechaRegistro(id, fechaActual) {
+      const nuevaFecha = prompt("Corrige la fecha de este registro (Formato AAAA-MM-DD):", fechaActual);
+      if (nuevaFecha && nuevaFecha.trim() !== fechaActual) {
+        const nf = nuevaFecha.trim();
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(nf)) {
+          mostrarMensaje("Formato incorrecto. Usa Año-Mes-Día.", "⚠️");
+          return;
+        }
+        const { error } = await sbClient.from('pb_liquidaciones').update({ fecha: nf }).eq('id', id);
+        if (error) {
+          mostrarMensaje("Error: " + error.message, "❌");
+        } else {
+          await cargarDatosZonaActiva();
+          mostrarMensaje("Fecha actualizada.", "✅");
+        }
+      }
+    }
+
+    // ==========================================
+    // HISTORIAL Y EXPORTACIONES AGRUPADAS
+    // ==========================================
+    function alternarFiltroFecha() {
+      const tipo = document.getElementById('filtroTipoPeriodo').value;
+      const cDia = document.getElementById('contenedorFiltroDia');
+      const cSemana = document.getElementById('contenedorFiltroSemana');
+
+      cDia.classList.add('hidden');
+      cSemana.classList.add('hidden');
+
+      if (tipo === 'dia') cDia.classList.remove('hidden');
+      if (tipo === 'semana') cSemana.classList.remove('hidden');
+      renderizarHistorial();
+    }
+
+    function filtrarLiquidaciones() {
+      const ruta = document.getElementById('filtroRuta').value;
+      const colector = document.getElementById('filtroColector').value;
+      const tipo = document.getElementById('filtroTipoPeriodo').value;
+
+      return liquidacionesGuardadas.filter(item => {
+        if (colector === "MIO" && !item.esMio) return false;
+        if (colector !== "TODOS" && colector !== "MIO" && item.creadoPorEmail !== colector) return false;
+        if (ruta !== "TODAS" && item.ruta !== ruta) return false;
+
+        if (tipo === 'dia') return item.fecha === document.getElementById('filtroFechaDia').value;
+        if (tipo === 'semana') {
+          const d = document.getElementById('filtroFechaDesde').value;
+          const h = document.getElementById('filtroFechaHasta').value;
+          if (d && h) return item.fecha >= d && item.fecha <= h;
+        }
+        return true;
+      });
+    }
+
+    function agruparPorRuta(lista) {
+      const grupos = {};
+      lista.forEach(i => {
+        if (!grupos[i.ruta]) grupos[i.ruta] = [];
+        grupos[i.ruta].push(i);
+      });
+      return grupos;
+    }
+
+    function renderizarHistorial() {
+      const lista = filtrarLiquidaciones();
+      const cuerpo = document.getElementById('cuerpoHistorial');
+      const msgVacio = document.getElementById('mensajeHistorialVacio');
+      cuerpo.innerHTML = '';
+
+      let totalMonedas = 0;
+      let totalComisiones = 0;
+      let totalEmpresa = 0;
+
+      if (lista.length === 0) {
+        msgVacio.classList.remove('hidden');
+      } else {
+        msgVacio.classList.add('hidden');
+        lista.forEach(item => {
+          totalMonedas += item.totalMonedas;
+          totalComisiones += item.comision;
+          totalEmpresa += item.gananciaEmpresa;
+
+          const badgeColector = item.esMio 
+            ? `<span class="text-[9px] bg-blue-100 text-blue-900 px-1.5 py-0.2 rounded font-bold">Mío</span>` 
+            : `<span class="text-[9px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded font-bold">${item.creadoPorEmail}</span>`;
+
+          const fila = document.createElement('tr');
+          fila.className = "hover:bg-slate-50 transition border-b border-slate-100";
+          fila.innerHTML = `
+            <td class="p-3">
+              <span class="font-bold text-slate-800 block text-xs">${item.cliente}</span>
+              <span class="text-[10px] text-slate-400 font-semibold uppercase">${item.concepto} (${item.porcentaje}%)</span>
+            </td>
+            <td class="p-3 text-center text-slate-500 font-semibold text-[10px] uppercase">
+              ${item.ruta} <br/> ${badgeColector}
+            </td>
+            <td class="p-3 text-center text-slate-500 font-medium text-[11px] whitespace-nowrap">${item.fecha}</td>
+            <td class="p-3 text-center font-mono font-medium text-slate-600">${item.cant25} / ${item.cant10} / ${item.cant5}</td>
+            <td class="p-3 text-right font-medium text-slate-600">$ ${item.bruto.toLocaleString('es-DO', { minimumFractionDigits: 2 })}</td>
+            <td class="p-3 text-right font-black text-emerald-700">$ ${item.gananciaEmpresa.toLocaleString('es-DO', { minimumFractionDigits: 2 })}</td>
+            <td class="p-3 text-center">
+              <button onclick="reimprimirLiquidacion(${item.id})" title="Reimprimir Comprobante" class="bg-blue-50 text-blue-700 hover:bg-blue-100 p-1.5 rounded-lg border border-blue-200 font-bold transition">
+                🖨️
+              </button>
+            </td>
+            <td class="p-3 text-center accion-eliminar-col">
+              <div class="flex items-center justify-center gap-2">
+                <button onclick="editarFechaRegistro(${item.id}, '${item.fecha}')" title="Editar Fecha" class="text-blue-500 hover:text-blue-700 font-bold text-sm bg-blue-50 px-2 py-1 rounded">📅</button>
+                <button onclick="eliminarRegistro(${item.id})" title="Eliminar" class="text-rose-500 hover:text-rose-700 font-bold text-sm bg-rose-50 px-2 py-1 rounded">✕</button>
+              </div>
+            </td>
+          `;
+          cuerpo.appendChild(fila);
+        });
+      }
+
+      document.getElementById('resumenCantRegistros').textContent = lista.length;
+      document.getElementById('resumenTotalMonedas').textContent = totalMonedas;
+      document.getElementById('resumenComisiones').textContent = `$ ${totalComisiones.toLocaleString('es-DO', { minimumFractionDigits: 0 })}`;
+      document.getElementById('resumenGananciaEmpresa').textContent = `$ ${totalEmpresa.toLocaleString('es-DO', { minimumFractionDigits: 0 })}`;
+    }
+
+    // EXCEL: Formato HTML exportado como .xls
+    function exportarExcel() {
+      const lista = filtrarLiquidaciones();
+      if (lista.length === 0) { mostrarMensaje("No hay datos para exportar.", "⚠️"); return; }
+
+      const fechaReporte = document.getElementById('filtroTipoPeriodo').value === 'dia' ? document.getElementById('filtroFechaDia').value : new Date().toISOString().split('T')[0];
+
+      let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"></head><body>`;
+      html += `<table border="1" style="border-collapse: collapse; font-family: sans-serif;">`;
+      
+      const grupos = agruparPorRuta(lista);
+      let granTotal = 0;
+
+      Object.keys(grupos).forEach(ruta => {
+        html += `<tr><td colspan="2" style="background-color:#1e3a8a; color:#ffffff; font-size:16px; font-weight:bold; text-align:center; padding:10px;">${ruta.toUpperCase()} - Fecha: ${fechaReporte}</td></tr>`;
+        
+        let subtotalRuta = 0;
+        grupos[ruta].forEach(item => {
+          subtotalRuta += item.gananciaEmpresa;
+          granTotal += item.gananciaEmpresa;
+          const conceptoLimpio = item.concepto ? ` (${item.concepto})` : "";
+          html += `<tr><td style="padding:5px;">${item.cliente}${conceptoLimpio}</td><td style="text-align:right; padding:5px;">${formatearMontoLimpio(item.gananciaEmpresa)}</td></tr>`;
+        });
+        
+        html += `<tr><td style="font-weight:bold; text-align:right; padding:5px; background-color:#f1f5f9;">Subtotal ${ruta}:</td><td style="font-weight:bold; text-align:right; padding:5px; background-color:#f1f5f9;">${formatearMontoLimpio(subtotalRuta)}</td></tr>`;
+        html += `<tr><td colspan="2" style="height:20px; border:none;"></td></tr>`;
+      });
+
+      if (Object.keys(grupos).length > 1) {
+         html += `<tr><td style="font-weight:bold; font-size:14px; text-align:right; background-color:#cbd5e1; padding:8px;">TOTAL GENERAL TODAS LAS RUTAS:</td><td style="font-weight:bold; font-size:14px; text-align:right; background-color:#cbd5e1; padding:8px;">${formatearMontoLimpio(granTotal)}</td></tr>`;
+      }
+      
+      html += `</table></body></html>`;
+
+      const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `Liquidacion_${zonaActiva.toUpperCase()}_${fechaReporte}.xls`;
+      link.click();
+    }
+
+    // DOCUMENTO HTML MÓVIL: Agrupado por rutas
+    function exportarDocumento() {
+      const lista = filtrarLiquidaciones();
+      if (lista.length === 0) { mostrarMensaje("No hay datos para exportar.", "⚠️"); return; }
+
+      const fechaReporte = document.getElementById('filtroTipoPeriodo').value === 'dia' ? document.getElementById('filtroFechaDia').value : new Date().toISOString().split('T')[0];
+
+      let filasHTML = "";
+      let granTotal = 0;
+      const grupos = agruparPorRuta(lista);
+
+      Object.keys(grupos).forEach(ruta => {
+        filasHTML += `<tr><td colspan="2" style="padding:12px; font-weight:bold; background-color:#e2e8f0; color:#1e293b; font-size:14px; text-transform:uppercase; text-align:center;">📍 ${ruta} - ${fechaReporte}</td></tr>`;
+        
+        let subtotalRuta = 0;
+        grupos[ruta].forEach(item => {
+          subtotalRuta += item.gananciaEmpresa;
+          granTotal += item.gananciaEmpresa;
+          const conceptoLimpio = item.concepto ? ` (${item.concepto})` : "";
+          filasHTML += `<tr><td style="padding:8px 12px;font-size:13px;border-bottom:1px solid #f1f5f9;">${item.cliente}${conceptoLimpio}</td><td style="padding:8px 12px;text-align:right;font-weight:bold;border-bottom:1px solid #f1f5f9;">${formatearMontoLimpio(item.gananciaEmpresa)}</td></tr>`;
+        });
+        
+        filasHTML += `<tr><td style="padding:8px 12px; text-align:right; font-size:12px; color:#64748b;">Subtotal ${ruta}:</td><td style="padding:8px 12px; text-align:right; font-weight:bold; color:#0f172a;">${formatearMontoLimpio(subtotalRuta)}</td></tr>`;
+        filasHTML += `<tr><td colspan="2" style="height:15px; border-bottom:2px dashed #cbd5e1;"></td></tr>`;
+      });
+
+      const totalHtml = Object.keys(grupos).length > 1 ? `<tr style="background-color:#f8fafc;"><td style="padding:12px;font-weight:bold;font-size:14px; text-align:right;">TOTAL GENERAL:</td><td style="padding:12px;text-align:right;font-weight:900;color:#1e3a8a;font-size:16px;">${formatearMontoLimpio(granTotal)}</td></tr>` : '';
+
+      const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Liquidación</title></head><body style="font-family:sans-serif;padding:20px;background:#f8fafc;"><div style="max-width:600px;margin:auto;background:#fff;border:1px solid #cbd5e1;padding:20px;border-radius:12px;box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1);"><h2 style="color:#1e3a8a;margin-top:0;font-size:18px;text-align:center;">REPORTE DE RECOLECCIÓN</h2><table style="width:100%;border-collapse:collapse;"><tbody>${filasHTML}${totalHtml}</tbody></table></div></body></html>`;
+
+      const blob = new Blob(["\uFEFF" + html], { type: 'text/html;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `Liquidacion_${zonaActiva.toUpperCase()}_${fechaReporte}.html`;
+      link.click();
+    }
+
+    // ==========================================
+    // DEPÓSITO SEMANAL Y GRÁFICOS
+    // ==========================================
+    function fijarEstaSemanaDeposito() {
+      const ahora = new Date();
+      const dia = ahora.getDay();
+      const distLunes = (dia === 0 ? -6 : 1) - dia;
+      
+      const lunes = new Date(ahora);
+      lunes.setDate(ahora.getDate() + distLunes);
+      
+      const sabado = new Date(lunes);
+      sabado.setDate(lunes.getDate() + 5);
+
+      document.getElementById('depositoFechaDesde').value = lunes.toISOString().split('T')[0];
+      document.getElementById('depositoFechaHasta').value = sabado.toISOString().split('T')[0];
+      alCambiarRangoSemana();
+    }
+
+    function alCambiarRangoSemana() {
+      calcularDepositoSemanal();
+      cargarArqueoSemanaActual();
+    }
+
+    function calcularDepositoSemanal() {
+      const desde = document.getElementById('depositoFechaDesde').value;
+      const hasta = document.getElementById('depositoFechaHasta').value;
+      if (!desde || !hasta) return;
+
+      if (zonaActiva === 'todas') {
+        document.getElementById('vistaDepositoNormal').classList.add('hidden');
+        document.getElementById('vistaDepositoConsolidado').classList.remove('hidden');
+
+        const liqsGen = liquidacionesGuardadas.filter(i => i.fecha >= desde && i.fecha <= hasta);
+        const gastosGen = gastosGuardados.filter(g => g.fecha >= desde && g.fecha <= hasta);
+
+        const liqsCibao = liqsGen.filter(i => i.zona_id === 'cibao');
+        const gastosCibao = gastosGen.filter(i => i.zona_id === 'cibao');
+
+        const liqsSur = liqsGen.filter(i => i.zona_id === 'sur');
+        const gastosSur = gastosGen.filter(i => i.zona_id === 'sur');
+
+        const recCibao = liqsCibao.reduce((acc, i) => acc + i.gananciaEmpresa, 0);
+        const gasCibao = gastosCibao.reduce((acc, i) => acc + i.monto, 0);
+        const depCibao = Math.max(0, recCibao - gasCibao);
+
+        const recSur = liqsSur.reduce((acc, i) => acc + i.gananciaEmpresa, 0);
+        const gasSur = gastosSur.reduce((acc, i) => acc + i.monto, 0);
+        const depSur = Math.max(0, recSur - gasSur);
+
+        const recGen = recCibao + recSur;
+        const gasGen = gasCibao + gasSur;
+        const depGen = Math.max(0, recGen - gasGen);
+
+        document.getElementById('consCibaoRec').textContent = formatearMontoLimpio(recCibao);
+        document.getElementById('consCibaoGas').textContent = formatearMontoLimpio(gasCibao);
+        document.getElementById('consCibaoDep').textContent = formatearMontoLimpio(depCibao);
+        actualizarGraficoPieSolido('graficoCibao', recCibao, gasCibao);
+
+        document.getElementById('consSurRec').textContent = formatearMontoLimpio(recSur);
+        document.getElementById('consSurGas').textContent = formatearMontoLimpio(gasSur);
+        document.getElementById('consSurDep').textContent = formatearMontoLimpio(depSur);
+        actualizarGraficoPieSolido('graficoSur', recSur, gasSur);
+
+        document.getElementById('consGenRec').textContent = formatearMontoLimpio(recGen);
+        document.getElementById('consGenGas').textContent = formatearMontoLimpio(gasGen);
+        document.getElementById('consGenDep').textContent = formatearMontoLimpio(depGen);
+        actualizarGraficoPieSolido('graficoGen', recGen, gasGen);
+
+        return;
+      }
+
+      document.getElementById('vistaDepositoNormal').classList.remove('hidden');
+      document.getElementById('vistaDepositoConsolidado').classList.add('hidden');
+
+      const liqs = liquidacionesGuardadas.filter(i => i.fecha >= desde && i.fecha <= hasta);
+      const resumenPorColectorYRuta = {};
+      let totalRecoleccion = 0;
+
+      liqs.forEach(i => {
+        totalRecoleccion += i.gananciaEmpresa;
+        const clave = `${i.ruta_nombre || i.ruta}__${i.creadoPorEmail}`;
+        if (!resumenPorColectorYRuta[clave]) {
+          resumenPorColectorYRuta[clave] = {
+            ruta: i.ruta_nombre || i.ruta,
+            colector: i.creadoPorEmail,
+            esMio: i.esMio,
+            total: 0,
+            cant: 0
+          };
+        }
+        resumenPorColectorYRuta[clave].total += i.gananciaEmpresa;
+        resumenPorColectorYRuta[clave].cant += 1;
+      });
+
+      const cuerpoRutas = document.getElementById('cuerpoRutasSemana');
+      cuerpoRutas.innerHTML = '';
+      const claves = Object.keys(resumenPorColectorYRuta);
+      document.getElementById('totalRutasSemanaLabel').textContent = `${claves.length} rutas registradas`;
+
+      if (claves.length === 0) {
+        document.getElementById('sinRutasSemanaMsg').classList.remove('hidden');
+      } else {
+        document.getElementById('sinRutasSemanaMsg').classList.add('hidden');
+        claves.forEach(k => {
+          const item = resumenPorColectorYRuta[k];
+          const badgeColector = item.esMio 
+            ? `<span class="text-[10px] bg-blue-100 text-blue-900 px-2 py-0.5 rounded font-bold">Mi liquidación</span>` 
+            : `<span class="text-[10px] bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-bold">Liquidó: ${item.colector}</span>`;
+
+          cuerpoRutas.innerHTML += `
+            <tr class="border-b border-slate-100 hover:bg-slate-50">
+              <td class="p-3">
+                <span class="font-bold text-slate-800 uppercase block text-xs">${item.ruta}</span>
+                ${badgeColector}
+              </td>
+              <td class="p-3 text-center font-medium">${item.cant} clientes</td>
+              <td class="p-3 text-right font-black text-blue-950">${formatearMontoLimpio(item.total)}</td>
+            </tr>
+          `;
+        });
+      }
+      document.getElementById('subtotalRecoleccionSemanaCard').textContent = formatearMontoLimpio(totalRecoleccion);
+
+      const gastos = gastosGuardados.filter(g => g.fecha >= desde && g.fecha <= hasta);
+      const cuerpoG = document.getElementById('cuerpoGastosSemana');
+      cuerpoG.innerHTML = '';
+      let totalGastos = 0;
+
+      if (gastos.length === 0) {
+        document.getElementById('sinGastosSemanaMsg').classList.remove('hidden');
+      } else {
+        document.getElementById('sinGastosSemanaMsg').classList.add('hidden');
+        gastos.forEach(g => {
+          totalGastos += g.monto;
+          const badgeColector = g.esMio 
+            ? `<span class="text-[9px] bg-blue-50 text-blue-800 px-1 rounded">Mío</span>` 
+            : `<span class="text-[9px] bg-slate-100 text-slate-700 px-1 rounded">${g.creadoPorEmail}</span>`;
+
+          cuerpoG.innerHTML += `
+            <tr class="border-b border-slate-100">
+              <td class="p-3 font-bold text-slate-800">
+                ${g.concepto} ${badgeColector}
+              </td>
+              <td class="p-3 text-center">${g.fecha}</td>
+              <td class="p-3 text-right font-black text-rose-600">- ${formatearMontoLimpio(g.monto)}</td>
+              <td class="p-3 text-center accion-eliminar-col"><button onclick="eliminarGasto(${g.id})" class="text-rose-500 font-bold">✕</button></td>
+            </tr>
+          `;
+        });
+      }
+      document.getElementById('totalGastosSemanaCard').textContent = `- ${formatearMontoLimpio(totalGastos)}`;
+
+      totalNetoDepositoCalculado = Math.max(0, totalRecoleccion - totalGastos);
+      document.getElementById('auditoriaTotalSistema').textContent = formatearMontoLimpio(totalNetoDepositoCalculado);
+      calcularArqueoFisico();
+    }
+
+    async function agregarGasto(e) {
+      e.preventDefault();
+      registrarActividad();
+      const concepto = document.getElementById('gastoConcepto').value.trim();
+      const fecha = document.getElementById('gastoFecha').value;
+      const monto = Number(document.getElementById('gastoMonto').value) || 0;
+      if (!concepto || monto <= 0) return;
+
+      const zonaDestino = (zonaActiva === 'todas' || zonaActiva === 'personal') ? 'cibao' : zonaActiva;
+
+      const { error } = await sbClient.from('pb_gastos').insert({
+        zona_id: zonaDestino,
+        concepto, fecha, monto,
+        creado_por: usuarioActual.id,
+        creado_por_email: window.nombreMostrar
+      });
+
+      if (error) { mostrarMensaje("Error: " + error.message, "❌"); return; }
+
+      document.getElementById('gastoConcepto').value = '';
+      document.getElementById('gastoMonto').value = '';
+      await cargarDatosZonaActiva();
+      mostrarMensaje("Gasto registrado.", "✅");
+    }
+
+    async function eliminarGasto(id) {
+      const confirmado = await pedirConfirmacion("¿Estás seguro de que quieres eliminarlo?", "ELIMINAR GASTO", "🗑️");
+      if (confirmado) {
+        await sbClient.from('pb_gastos').update({ eliminado: true, eliminado_por: usuarioActual.id, eliminado_en: new Date().toISOString() }).eq('id', id);
+        await cargarDatosZonaActiva();
+        mostrarMensaje("Gasto eliminado correctamente.", "🗑️");
+      }
+    }
+
+    function cargarArqueoSemanaActual() {
+      const zonaStr = zonaActiva === 'todas' ? 'general' : zonaActiva;
+      const clave = `${zonaStr}_${document.getElementById('depositoFechaDesde').value}_${document.getElementById('depositoFechaHasta').value}`;
+      const guardado = arqueosSemanalesGuardados[clave] || {};
+      ['b2000','b1000','b500','b200','b100','b50','m25','m10','m5','m1'].forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.value = guardado[id] || '';
+      });
+      calcularArqueoFisico();
+    }
+
+    function alModificarArqueo() {
+      calcularArqueoFisico();
+      clearTimeout(debounceTimerArqueo);
+      debounceTimerArqueo = setTimeout(() => { guardarArqueoSemanaActual(false); }, 700);
+    }
+
+    function limpiarArqueoFisico() {
+       ['b2000','b1000','b500','b200','b100','b50','m25','m10','m5','m1'].forEach(id => {
+          document.getElementById(id).value = '';
+       });
+       guardarArqueoSemanaActual(false);
+       calcularArqueoFisico();
+    }
+
+    async function guardarArqueoSemanaActual(alerta = false) {
+      const zonaStr = zonaActiva === 'todas' ? 'general' : zonaActiva;
+      const clave = `${zonaStr}_${document.getElementById('depositoFechaDesde').value}_${document.getElementById('depositoFechaHasta').value}`;
+      const conteo = {};
+      ['b2000','b1000','b500','b200','b100','b50','m25','m10','m5','m1'].forEach(id => {
+        const el = document.getElementById(id);
+        if(el) conteo[id] = el.value;
+      });
+      arqueosSemanalesGuardados[clave] = conteo;
+      
+      localStorage.setItem('pb_arqueos_local', JSON.stringify(arqueosSemanalesGuardados));
+
+      if (alerta) mostrarMensaje("Arqueo guardado localmente.", "💾");
+    }
+
+    function calcularArqueoFisico() {
+      const b2000 = (Number(document.getElementById('b2000').value) || 0) * 2000;
+      document.getElementById('subB2000').textContent = `$ ${b2000.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      
+      const b1000 = (Number(document.getElementById('b1000').value) || 0) * 1000;
+      document.getElementById('subB1000').textContent = `$ ${b1000.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      
+      const b500 = (Number(document.getElementById('b500').value) || 0) * 500;
+      document.getElementById('subB500').textContent = `$ ${b500.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      
+      const b200 = (Number(document.getElementById('b200').value) || 0) * 200;
+      document.getElementById('subB200').textContent = `$ ${b200.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      
+      const b100 = (Number(document.getElementById('b100').value) || 0) * 100;
+      document.getElementById('subB100').textContent = `$ ${b100.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      
+      const b50 = (Number(document.getElementById('b50').value) || 0) * 50;
+      document.getElementById('subB50').textContent = `$ ${b50.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+
+      const totalB = b2000 + b1000 + b500 + b200 + b100 + b50;
+      document.getElementById('totalBilletesCard').textContent = `$ ${totalB.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+
+      const m25 = (Number(document.getElementById('m25').value) || 0) * 25;
+      document.getElementById('subM25').textContent = `$ ${m25.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      
+      const m10 = (Number(document.getElementById('m10').value) || 0) * 10;
+      document.getElementById('subM10').textContent = `$ ${m10.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      
+      const m5 = (Number(document.getElementById('m5').value) || 0) * 5;
+      document.getElementById('subM5').textContent = `$ ${m5.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      
+      const m1 = (Number(document.getElementById('m1').value) || 0) * 1;
+      document.getElementById('subM1').textContent = `$ ${m1.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      
+      const totalM = m25 + m10 + m5 + m1;
+      document.getElementById('totalMonedasFisicasCard').textContent = `$ ${totalM.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+
+      const totalFisico = totalB + totalM;
+      document.getElementById('totalFisicoEnManoCard').textContent = `$ ${totalFisico.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+      document.getElementById('auditoriaTotalContado').textContent = `$ ${totalFisico.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
+
+      const dif = totalFisico - totalNetoDepositoCalculado;
+      const badge = document.getElementById('badgeEstadoCuadre');
+      const difElem = document.getElementById('auditoriaDiferencia');
+
+      if (totalFisico === 0 && totalNetoDepositoCalculado === 0) {
+        difElem.textContent = "$ 0.00";
+        badge.textContent = "Sin datos";
+      } else if (dif === 0) {
+        difElem.textContent = "$ 0.00";
+        difElem.className = "text-2xl font-black text-emerald-400";
+        badge.textContent = "✅ Caja Cuadrada";
+      } else if (dif < 0) {
+        difElem.textContent = `- ${formatearMontoLimpio(Math.abs(dif))}`;
+        difElem.className = "text-2xl font-black text-rose-400";
+        badge.textContent = "⚠️ Faltante";
+      } else {
+        difElem.textContent = `+ ${formatearMontoLimpio(dif)}`;
+        difElem.className = "text-2xl font-black text-amber-400";
+        badge.textContent = "ℹ️ Sobrante";
+      }
+    }
+
+    function exportarDepositoDocumento() {
+      const desde = document.getElementById('depositoFechaDesde').value;
+      const hasta = document.getElementById('depositoFechaHasta').value;
+      const totalRec = document.getElementById('subtotalRecoleccionSemanaCard').textContent;
+      const totalGas = document.getElementById('totalGastosSemanaCard').textContent;
+      const totalDep = document.getElementById('auditoriaTotalSistema').textContent;
+
+      const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Comprobante de Depósito</title></head><body style="font-family:sans-serif;padding:20px;"><div style="max-width:600px;margin:auto;border:1px solid #cbd5e1;padding:20px;border-radius:12px;"><h2 style="color:#1e3a8a;margin-top:0;">PLANET BRANDS - CIERRE Y DEPÓSITO</h2><p style="color:#64748b;">Período: <strong>${desde} al ${hasta}</strong> | Zona: <strong>${zonaActiva.toUpperCase()}</strong></p><p>Total Recolección: <strong>${totalRec}</strong></p><p>Gastos Deducidos: <strong>${totalGas}</strong></p><hr/><h3 style="color:#047857;">TOTAL A DEPOSITAR: ${totalDep}</h3></div></body></html>`;
+
+      const blob = new Blob(["\uFEFF" + html], { type: 'text/html;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `Deposito_${zonaActiva.toUpperCase()}_${desde}_al_${hasta}.html`;
+      link.click();
+    }
+
+    // ==========================================
+    // RESPALDOS FÍSICOS LOCALES (.JSON)
+    // ==========================================
+    function descargarCopiaSeguridad() {
+      registrarActividad();
+      const backup = {
+        usuario: usuarioActual ? window.nombreMostrar : "local",
+        zona: zonaActiva,
+        rutas: rutasApp,
+        clientes: catalogoClientes,
+        liquidaciones: liquidacionesGuardadas,
+        gastos: gastosGuardados,
+        arqueos_semanales: arqueosSemanalesGuardados,
+        fecha: new Date().toISOString()
+      };
+
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `Respaldo_PlanetBrands_${zonaActiva.toUpperCase()}_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+    }
+
+    function restaurarCopiaSeguridad(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (data.rutas && data.clientes) {
+            rutasApp = data.rutas;
+            catalogoClientes = data.clientes;
+            if (data.liquidaciones) liquidacionesGuardadas = data.liquidaciones;
+            if (data.gastos) gastosGuardados = data.gastos;
+            if (data.arqueos_semanales) arqueosSemanalesGuardados = data.arqueos_semanales;
+
+            poblarSelectoresRuta();
+            actualizarClientesSegunRuta();
+            renderizarHistorial();
+            renderizarListaClientesConfig();
+            alCambiarRangoSemana();
+
+            mostrarMensaje("Archivo de respaldo restaurado.", "✅");
+          } else {
+            mostrarMensaje("Formato de archivo no válido.", "❌");
+          }
+        } catch (err) {
+          mostrarMensaje("Error al leer el archivo de respaldo.", "❌");
+        }
+      };
+      reader.readAsText(file, "UTF-8");
+    }
+
+    // ==========================================
+    // RUTAS Y CLIENTES (CATÁLOGO)
+    // ==========================================
+    async function agregarRuta() {
+      const nombre = document.getElementById('nuevaRutaNombre').value.trim().toUpperCase();
+      if (!nombre) return;
+
+      const zonaDestino = (zonaActiva === 'todas' || zonaActiva === 'personal') ? 'cibao' : zonaActiva;
+
+      const { error } = await sbClient.from('pb_rutas').insert({
+        zona_id: zonaDestino,
+        nombre: nombre,
+        creado_por: usuarioActual.id,
+        creado_por_email: window.nombreMostrar
+      });
+
+      if (error) { mostrarMensaje("Error: " + error.message, "❌"); return; }
+      document.getElementById('nuevaRutaNombre').value = '';
+      await cargarDatosZonaActiva();
+      mostrarMensaje("Ruta creada correctamente.", "✅");
+    }
+
+    async function editarRuta(id, nombreActual) {
+      const nuevoNombre = prompt("Editar nombre de la ruta:", nombreActual);
+      if (nuevoNombre && nuevoNombre.trim().toUpperCase() !== nombreActual) {
+        const nombreFinal = nuevoNombre.trim().toUpperCase();
+        
+        const { error } = await sbClient.from('pb_rutas').update({ nombre: nombreFinal }).eq('id', id);
+        if (error) {
+            mostrarMensaje("Error al actualizar la base de datos.", "❌");
+            return;
+        }
+
+        await sbClient.from('pb_clientes').update({ ruta_nombre: nombreFinal }).eq('ruta_nombre', nombreActual);
+        await sbClient.from('pb_liquidaciones').update({ ruta_nombre: nombreFinal }).eq('ruta_nombre', nombreActual);
+        
+        await cargarDatosZonaActiva();
+        mostrarMensaje("Ruta y registros actualizados.", "✅");
+      }
+    }
+
+    async function eliminarRuta(id, nombreActual) {
+      const confirmado = await pedirConfirmacion(`¿Estás seguro de que deseas eliminar la ruta ${nombreActual}?`, "ELIMINAR RUTA", "⚠️");
+      if (confirmado) {
+        await sbClient.from('pb_rutas').update({ eliminado: true }).eq('id', id);
+        await cargarDatosZonaActiva();
+        mostrarMensaje("Ruta eliminada.", "🗑️");
+      }
+    }
+
+    async function agregarClienteCatalogo(e) {
+      e.preventDefault();
+      const ruta = document.getElementById('selectRutaParaCliente').value;
+      const nombre = document.getElementById('nuevoClienteNombre').value.trim();
+      const concepto = document.getElementById('nuevoClienteConcepto').value;
+      const porcentaje = Number(document.getElementById('nuevoClientePorcentaje').value) || 25;
+
+      const zonaDestino = (zonaActiva === 'todas' || zonaActiva === 'personal') ? 'cibao' : zonaActiva;
+
+      const { error } = await sbClient.from('pb_clientes').insert({
+        zona_id: zonaDestino,
+        ruta_nombre: ruta,
+        nombre: nombre,
+        concepto: concepto,
+        porcentaje: porcentaje,
+        creado_por: usuarioActual.id,
+        creado_por_email: window.nombreMostrar
+      });
+
+      if (error) { mostrarMensaje("Error: " + error.message, "❌"); return; }
+      document.getElementById('nuevoClienteNombre').value = '';
+      await cargarDatosZonaActiva();
+      mostrarMensaje("Guardado correctamente.", "✅");
+    }
+
+    function renderizarListaClientesConfig() {
+      const ruta = document.getElementById('selectRutaParaCliente').value;
+      const lista = catalogoClientes.filter(c => c.ruta === ruta);
+      const cont = document.getElementById('listaClientesConfig');
+      cont.innerHTML = '';
+      if (lista.length === 0) { cont.innerHTML = '<li class="p-3 text-slate-400 text-center">No hay clientes configurados en esta ruta.</li>'; return; }
+
+      lista.forEach(c => {
+        cont.innerHTML += `<li class="p-3 flex justify-between items-center hover:bg-slate-50 border-b border-slate-100"><div><strong class="text-slate-800 text-xs block">${c.nombre}</strong><span class="text-[11px] text-slate-500 font-semibold">${c.concepto} - ${c.porcentaje}%</span></div><button onclick="eliminarClienteCatalogo(${c.id})" class="text-rose-500 font-bold text-xs accion-eliminar-col">Eliminar</button></li>`;
+      });
+    }
+
+    async function eliminarClienteCatalogo(id) {
+      const confirmado = await pedirConfirmacion("¿Estás seguro de que quieres eliminarlo?", "ELIMINAR CLIENTE", "🗑️");
+      if (confirmado) {
+        await sbClient.from('pb_clientes').update({ eliminado: true, eliminado_por: usuarioActual.id, eliminado_en: new Date().toISOString() }).eq('id', id);
+        await cargarDatosZonaActiva();
+        mostrarMensaje("Cliente eliminado correctamente.", "🗑️");
+      }
+    }
+
+    // ==========================================
     // CAMBIO DE PESTAÑAS
     // ==========================================
     function cambiarPestana(p) {
       if (p === 'adminMaster' && !esSuperAdmin) return;
 
-      ['vistaCuadre','vistaHistorial','vistaDeposito','vistaRutas','vistaAdminMaster','vistaClientesGeneral'].forEach(id => {
-        const el = document.getElementById(id);
-        if(el) el.classList.add('seccion-oculta');
+      ['vistaCuadre','vistaHistorial','vistaDeposito','vistaRutas','vistaAdminMaster'].forEach(id => {
+        document.getElementById(id).classList.add('seccion-oculta');
       });
-      ['tabCuadre','tabHistorial','tabDeposito','tabRutas','tabAdminMaster','tabClientes'].forEach(id => {
+      ['tabCuadre','tabHistorial','tabDeposito','tabRutas','tabAdminMaster'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.className = "py-2.5 rounded-lg text-slate-600 hover:text-slate-900 transition text-[11px] sm:text-xs";
       });
@@ -1609,10 +2956,6 @@
         cargarListaUsuariosRegistrados();
         cargarPapelera();
         cargarAuditoria();
-      } else if (p === 'clientes') {
-        document.getElementById('vistaClientesGeneral').classList.remove('seccion-oculta');
-        document.getElementById('tabClientes').className = "col-span-2 sm:col-span-4 py-2.5 rounded-lg bg-indigo-500 text-white font-black shadow transition text-xs";
-        renderizarListaGlobalClientes();
       }
     }
 
@@ -1620,113 +2963,6 @@
       localStorage.removeItem('pb_ultima_actividad');
       await sbClient.auth.signOut();
       location.reload();
-    }
-
-    // ==========================================
-    // LISTA GENERAL DE CLIENTES (DUEÑO/ADMIN)
-    // ==========================================
-    function renderizarListaGlobalClientes() {
-       const cuerpo = document.getElementById('cuerpoListaClientes');
-       cuerpo.innerHTML = '';
-       
-       if(catalogoClientes.length === 0) {
-          cuerpo.innerHTML = '<tr><td colspan="11" class="p-3 text-center text-slate-400">No hay clientes registrados.</td></tr>';
-          return;
-       }
-
-       catalogoClientes.forEach(c => {
-          cuerpo.innerHTML += `
-             <tr class="hover:bg-slate-50 border-b border-slate-100">
-               <td class="p-2 font-mono text-slate-500 text-[10px]">${c.id}</td>
-               <td class="p-2 font-bold text-slate-800">${c.nombre}</td>
-               <td class="p-2 font-semibold text-blue-900">${c.ruta}</td>
-               <td class="p-2 text-center text-[10px] uppercase font-bold text-slate-500">${c.concepto}</td>
-               <td class="p-2 text-center font-black text-rose-600">${c.porcentaje}%</td>
-               <td class="p-2 text-[10px] text-slate-600 truncate max-w-[120px]" title="${c.direccion}">${c.direccion || '-'}</td>
-               <td class="p-2 text-[10px] text-slate-600">${c.sector || '-'}</td>
-               <td class="p-2 text-[10px] text-slate-600">${c.provincia || '-'}</td>
-               <td class="p-2 text-[10px] font-semibold text-slate-700">${c.representante || '-'}</td>
-               <td class="p-2 text-[10px] text-slate-600">${c.telefono || '-'}</td>
-               <td class="p-2 text-center">
-                 <button onclick="abrirModalEditarInfoCliente(${c.id})" class="text-blue-600 bg-blue-50 px-2 py-1 rounded font-bold hover:bg-blue-100 transition">Editar</button>
-               </td>
-             </tr>
-          `;
-       });
-    }
-
-    function abrirModalEditarInfoCliente(id) {
-       const c = catalogoClientes.find(item => item.id === id);
-       if(!c) return;
-
-       document.getElementById('editClienteId').value = c.id;
-       document.getElementById('editNombre').value = c.nombre;
-       document.getElementById('editConcepto').value = c.concepto;
-       document.getElementById('editPorc').value = c.porcentaje;
-       document.getElementById('editDir').value = c.direccion;
-       document.getElementById('editSector').value = c.sector;
-       document.getElementById('editProv').value = c.provincia;
-       document.getElementById('editRep').value = c.representante;
-       document.getElementById('editTel').value = c.telefono;
-
-       const sRuta = document.getElementById('editRuta');
-       sRuta.innerHTML = rutasApp.map(r => `<option value="${r}">${r}</option>`).join('');
-       sRuta.value = c.ruta;
-
-       document.getElementById('modalEditarCliente').classList.remove('hidden');
-    }
-
-    async function guardarInfoCliente(e) {
-       e.preventDefault();
-       const id = document.getElementById('editClienteId').value;
-       const nombre = document.getElementById('editNombre').value.trim();
-       const ruta = document.getElementById('editRuta').value;
-       const concepto = document.getElementById('editConcepto').value;
-       const porc = document.getElementById('editPorc').value;
-       
-       const payload = {
-          nombre: nombre,
-          ruta_nombre: ruta,
-          concepto: concepto,
-          porcentaje: Number(porc),
-          direccion: document.getElementById('editDir').value.trim(),
-          sector: document.getElementById('editSector').value.trim(),
-          provincia: document.getElementById('editProv').value.trim(),
-          representante: document.getElementById('editRep').value.trim(),
-          telefono: document.getElementById('editTel').value.trim()
-       };
-
-       const { error } = await sbClient.from('pb_clientes').update(payload).eq('id', id);
-       if(error) {
-          mostrarMensaje("Error al actualizar.", "❌");
-       } else {
-          document.getElementById('modalEditarCliente').classList.add('hidden');
-          await cargarDatosZonaActiva();
-          if(!document.getElementById('vistaClientesGeneral').classList.contains('seccion-oculta')){
-             renderizarListaGlobalClientes();
-          }
-          mostrarMensaje("Cliente actualizado.", "✅");
-       }
-    }
-
-    function exportarListaClientesExcel() {
-      if (catalogoClientes.length === 0) { mostrarMensaje("No hay datos para exportar.", "⚠️"); return; }
-      
-      let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"></head><body>`;
-      html += `<table border="1" style="border-collapse: collapse; font-family: sans-serif;">`;
-      html += `<tr><td colspan="10" style="background-color:#1e3a8a; color:#ffffff; font-size:16px; font-weight:bold; text-align:center; padding:10px;">BASE DE DATOS GENERAL DE CLIENTES</td></tr>`;
-      html += `<tr style="background-color:#cbd5e1; font-weight:bold;"><td>ID</td><td>Nombre del Cliente</td><td>Ruta</td><td>Tipo de Máquina</td><td>Porciento (%)</td><td>Dirección</td><td>Sector</td><td>Provincia</td><td>Representante</td><td>Teléfono</td></tr>`;
-      
-      catalogoClientes.forEach(c => {
-         html += `<tr><td>${c.id}</td><td>${c.nombre}</td><td>${c.ruta}</td><td>${c.concepto}</td><td>${c.porcentaje}%</td><td>${c.direccion}</td><td>${c.sector}</td><td>${c.provincia}</td><td>${c.representante}</td><td>${c.telefono}</td></tr>`;
-      });
-      html += `</table></body></html>`;
-
-      const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = `Base_Datos_Clientes.xls`;
-      link.click();
     }
   </script>
 </body>
