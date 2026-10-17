@@ -491,147 +491,116 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
           <div>
-            <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Desde</label>
+            <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Desde (Lunes)</label>
             <input type="date" id="depositoFechaDesde" onchange="alCambiarRangoSemana()" class="w-full p-2.5 border rounded-xl text-xs font-bold bg-slate-50 border-slate-300 outline-none">
           </div>
           <div>
-            <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Hasta</label>
+            <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Hasta (Sábado)</label>
             <input type="date" id="depositoFechaHasta" onchange="alCambiarRangoSemana()" class="w-full p-2.5 border rounded-xl text-xs font-bold bg-slate-50 border-slate-300 outline-none">
           </div>
         </div>
       </div>
 
-      <!-- DESGLOSE POR RUTAS Y POR USUARIO (COLECTOR) -->
-      <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
-        <div class="flex justify-between items-center">
-          <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">1. Rutas Trabajadas en esta Semana</h2>
-          <span class="text-xs font-bold text-slate-400" id="totalRutasSemanaLabel">0 rutas</span>
-        </div>
-
-        <div class="border border-slate-100 rounded-xl overflow-hidden">
-          <table class="w-full text-left text-xs border-collapse">
-            <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
-              <tr>
-                <th class="p-3">Ruta / Colector</th>
-                <th class="p-3 text-center">Liquidaciones</th>
-                <th class="p-3 text-right">Subtotal Recolectado</th>
-              </tr>
-            </thead>
-            <tbody id="cuerpoRutasSemana" class="divide-y divide-slate-100 text-slate-700">
-            </tbody>
-          </table>
-          <p id="sinRutasSemanaMsg" class="text-center py-5 text-xs text-slate-400 hidden">
-            No se realizaron liquidaciones en el rango de fechas seleccionado.
-          </p>
-        </div>
-
-        <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-200 font-bold text-xs">
-          <span class="text-slate-600 uppercase">Subtotal Recolección Semanal:</span>
-          <span class="text-blue-900 text-sm font-black" id="subtotalRecoleccionSemanaCard">$ 0.00</span>
-        </div>
-      </div>
-
-      <!-- GASTOS EN EFECTIVO -->
-      <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-        <div class="flex justify-between items-center">
-          <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">2. Gastos en Efectivo de la Semana</h2>
-          <span class="text-[11px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">Se resta del depósito</span>
-        </div>
-
-        <form id="formGastoEfectivo" onsubmit="agregarGasto(event)" class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-3">
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Concepto del Gasto</label>
-              <input type="text" id="gastoConcepto" placeholder="Ej: Combustible, Peajes..." required class="w-full p-2.5 border rounded-lg text-xs font-bold bg-white border-slate-300 outline-none">
-            </div>
-            <div>
-              <label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Fecha</label>
-              <input type="date" id="gastoFecha" required class="w-full p-2.5 border rounded-lg text-xs font-bold bg-white border-slate-300 outline-none">
-            </div>
-            <div>
-              <label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Monto en Efectivo ($)</label>
-              <input type="number" id="gastoMonto" min="1" step="any" placeholder="0.00" required class="w-full p-2.5 border rounded-lg text-xs font-bold bg-white border-slate-300 outline-none">
-            </div>
+      <!-- VISTA NORMAL (Ruta Cibao o Ruta Sur Seleccionadas) -->
+      <div id="vistaDepositoNormal" class="space-y-4">
+        <!-- DESGLOSE POR RUTAS -->
+        <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+          <div class="flex justify-between items-center">
+            <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">1. Rutas Trabajadas en esta Semana</h2>
+            <span class="text-xs font-bold text-slate-400" id="totalRutasSemanaLabel">0 rutas</span>
           </div>
-          <button type="submit" class="w-full py-2 bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold uppercase rounded-lg shadow transition">
-            - Registrar Gasto en Efectivo
-          </button>
-        </form>
 
-        <div class="border border-slate-100 rounded-xl overflow-hidden">
-          <table class="w-full text-left text-xs border-collapse">
-            <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
-              <tr>
-                <th class="p-3">Concepto / Colector</th>
-                <th class="p-3 text-center">Fecha</th>
-                <th class="p-3 text-right">Monto</th>
-                <th class="p-3 text-center accion-eliminar-col">Quitar</th>
-              </tr>
-            </thead>
-            <tbody id="cuerpoGastosSemana" class="divide-y divide-slate-100 text-slate-700">
-            </tbody>
-          </table>
-          <p id="sinGastosSemanaMsg" class="text-center py-4 text-xs text-slate-400">
-            No hay gastos registrados en esta semana.
-          </p>
-        </div>
-
-        <div class="flex justify-between items-center bg-rose-50 p-3 rounded-xl border border-rose-200 font-bold text-xs">
-          <span class="text-rose-800 uppercase">Total Gastos Restados:</span>
-          <span class="text-rose-700 text-sm font-black" id="totalGastosSemanaCard">- $ 0.00</span>
-        </div>
-      </div>
-
-      <!-- ARQUEO FÍSICO EN MANO -->
-      <div id="seccionArqueoFisico" class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-        <div class="flex justify-between items-center">
-          <div>
-            <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">3. Arqueo Físico en Mano</h2>
-            <p class="text-[11px] text-slate-500">Conteo de efectivo en tu poder para esta semana</p>
-          </div>
-          <button type="button" onclick="limpiarArqueoFisico()" class="text-xs text-slate-400 hover:text-rose-600 underline font-semibold">
-            Reiniciar Conteo
-          </button>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <!-- Billetes -->
-          <div class="border border-slate-200 rounded-xl overflow-hidden bg-slate-50/50">
-            <div class="bg-blue-900 text-white px-3 py-2 text-xs font-black uppercase tracking-wide flex justify-between">
-              <span>💵 Papeletas / Billetes</span>
-              <span id="labelTotalPapeletasContadas">0 Billetes</span>
-            </div>
-            <table class="w-full text-xs text-left">
-              <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
+          <div class="border border-slate-100 rounded-xl overflow-hidden">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
                 <tr>
-                  <th class="p-2.5">Denominación</th>
-                  <th class="p-2.5 text-center w-24">Cantidad</th>
-                  <th class="p-2.5 text-right">Subtotal</th>
+                  <th class="p-3">Ruta / Colector</th>
+                  <th class="p-3 text-center">Liquidaciones</th>
+                  <th class="p-3 text-right">Subtotal Recolectado</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-100 bg-white">
-                <tr><td class="p-2 font-bold text-slate-700">$ 2,000</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="b2000" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subB2000">$ 0.00</td></tr>
-                <tr><td class="p-2 font-bold text-slate-700">$ 1,000</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="b1000" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subB1000">$ 0.00</td></tr>
-                <tr><td class="p-2 font-bold text-slate-700">$ 500</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="b500" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subB500">$ 0.00</td></tr>
-                <tr><td class="p-2 font-bold text-slate-700">$ 200</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="b200" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subB200">$ 0.00</td></tr>
-                <tr><td class="p-2 font-bold text-slate-700">$ 100</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="b100" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subB100">$ 0.00</td></tr>
-                <tr><td class="p-2 font-bold text-slate-700">$ 50</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="b50" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subB50">$ 0.00</td></tr>
+              <tbody id="cuerpoRutasSemana" class="divide-y divide-slate-100 text-slate-700">
               </tbody>
-              <tfoot class="bg-blue-50 border-t border-blue-200">
-                <tr>
-                  <td colspan="2" class="p-2.5 font-black text-blue-900 uppercase text-[11px]">Total Papeletas:</td>
-                  <td class="p-2.5 text-right font-black text-blue-950 text-sm" id="totalBilletesCard">$ 0.00</td>
-                </tr>
-              </tfoot>
             </table>
+            <p id="sinRutasSemanaMsg" class="text-center py-5 text-xs text-slate-400 hidden">
+              No se realizaron liquidaciones en el rango de fechas seleccionado.
+            </p>
           </div>
 
-          <!-- Monedas -->
-          <div class="border border-slate-200 rounded-xl overflow-hidden bg-slate-50/50 flex flex-col justify-between">
+          <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-200 font-bold text-xs">
+            <span class="text-slate-600 uppercase">Subtotal Recolección Semanal:</span>
+            <span class="text-blue-900 text-sm font-black" id="subtotalRecoleccionSemanaCard">$ 0.00</span>
+          </div>
+        </div>
+
+        <!-- GASTOS EN EFECTIVO -->
+        <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+          <div class="flex justify-between items-center">
+            <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">2. Gastos en Efectivo de la Semana</h2>
+            <span class="text-[11px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">Se resta del depósito</span>
+          </div>
+
+          <form id="formGastoEfectivo" onsubmit="agregarGasto(event)" class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Concepto del Gasto</label>
+                <input type="text" id="gastoConcepto" placeholder="Ej: Combustible, Peajes..." required class="w-full p-2.5 border rounded-lg text-xs font-bold bg-white border-slate-300 outline-none">
+              </div>
+              <div>
+                <label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Fecha</label>
+                <input type="date" id="gastoFecha" required class="w-full p-2.5 border rounded-lg text-xs font-bold bg-white border-slate-300 outline-none">
+              </div>
+              <div>
+                <label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Monto en Efectivo ($)</label>
+                <input type="number" id="gastoMonto" min="1" step="any" placeholder="0.00" required class="w-full p-2.5 border rounded-lg text-xs font-bold bg-white border-slate-300 outline-none">
+              </div>
+            </div>
+            <button type="submit" class="w-full py-2 bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold uppercase rounded-lg shadow transition">
+              - Registrar Gasto en Efectivo
+            </button>
+          </form>
+
+          <div class="border border-slate-100 rounded-xl overflow-hidden">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
+                <tr>
+                  <th class="p-3">Concepto / Colector</th>
+                  <th class="p-3 text-center">Fecha</th>
+                  <th class="p-3 text-right">Monto</th>
+                  <th class="p-3 text-center accion-eliminar-col">Quitar</th>
+                </tr>
+              </thead>
+              <tbody id="cuerpoGastosSemana" class="divide-y divide-slate-100 text-slate-700">
+              </tbody>
+            </table>
+            <p id="sinGastosSemanaMsg" class="text-center py-4 text-xs text-slate-400">
+              No hay gastos registrados en esta semana.
+            </p>
+          </div>
+
+          <div class="flex justify-between items-center bg-rose-50 p-3 rounded-xl border border-rose-200 font-bold text-xs">
+            <span class="text-rose-800 uppercase">Total Gastos Restados:</span>
+            <span class="text-rose-700 text-sm font-black" id="totalGastosSemanaCard">- $ 0.00</span>
+          </div>
+        </div>
+
+        <!-- ARQUEO FÍSICO EN MANO -->
+        <div id="seccionArqueoFisico" class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+          <div class="flex justify-between items-center">
             <div>
-              <div class="bg-amber-600 text-white px-3 py-2 text-xs font-black uppercase tracking-wide flex justify-between">
-                <span>🪙 Monedas Físicas</span>
-                <span id="labelTotalMonedasContadas">0 Monedas</span>
+              <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">3. Arqueo Físico en Mano</h2>
+              <p class="text-[11px] text-slate-500">Conteo de efectivo en tu poder de esta zona</p>
+            </div>
+            <button type="button" id="btnReiniciarConteo" onclick="limpiarArqueoFisico()" class="text-xs text-slate-400 hover:text-rose-600 underline font-semibold">
+              Reiniciar Conteo
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Billetes -->
+            <div class="border border-slate-200 rounded-xl overflow-hidden bg-slate-50/50">
+              <div class="bg-blue-900 text-white px-3 py-2 text-xs font-black uppercase tracking-wide flex justify-between">
+                <span>💵 Papeletas / Billetes</span>
               </div>
               <table class="w-full text-xs text-left">
                 <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
@@ -642,61 +611,161 @@
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 bg-white">
-                  <tr><td class="p-2 font-bold text-slate-700">$ 25</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="m25" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subM25">$ 0.00</td></tr>
-                  <tr><td class="p-2 font-bold text-slate-700">$ 10</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="m10" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subM10">$ 0.00</td></tr>
-                  <tr><td class="p-2 font-bold text-slate-700">$ 5</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="m5" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subM5">$ 0.00</td></tr>
-                  <tr><td class="p-2 font-bold text-slate-700">$ 1</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="m1" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subM1">$ 0.00</td></tr>
+                  <tr><td class="p-2 font-bold text-slate-700">$ 2,000</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="b2000" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subB2000">$ 0.00</td></tr>
+                  <tr><td class="p-2 font-bold text-slate-700">$ 1,000</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="b1000" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subB1000">$ 0.00</td></tr>
+                  <tr><td class="p-2 font-bold text-slate-700">$ 500</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="b500" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subB500">$ 0.00</td></tr>
+                  <tr><td class="p-2 font-bold text-slate-700">$ 200</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="b200" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subB200">$ 0.00</td></tr>
+                  <tr><td class="p-2 font-bold text-slate-700">$ 100</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="b100" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subB100">$ 0.00</td></tr>
+                  <tr><td class="p-2 font-bold text-slate-700">$ 50</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="b50" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subB50">$ 0.00</td></tr>
                 </tbody>
+                <tfoot class="bg-blue-50 border-t border-blue-200">
+                  <tr>
+                    <td colspan="2" class="p-2.5 font-black text-blue-900 uppercase text-[11px]">Total Papeletas:</td>
+                    <td class="p-2.5 text-right font-black text-blue-950 text-sm" id="totalBilletesCard">$ 0.00</td>
+                  </tr>
+                </tfoot>
               </table>
             </div>
 
-            <div class="bg-amber-50 border-t border-amber-200 p-2.5 flex justify-between items-center">
-              <span class="font-black text-amber-900 uppercase text-[11px]">Total Monedas:</span>
-              <span class="font-black text-amber-950 text-sm" id="totalMonedasFisicasCard">$ 0.00</span>
+            <!-- Monedas -->
+            <div class="border border-slate-200 rounded-xl overflow-hidden bg-slate-50/50 flex flex-col justify-between">
+              <div>
+                <div class="bg-amber-600 text-white px-3 py-2 text-xs font-black uppercase tracking-wide flex justify-between">
+                  <span>🪙 Monedas Físicas</span>
+                </div>
+                <table class="w-full text-xs text-left">
+                  <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
+                    <tr>
+                      <th class="p-2.5">Denominación</th>
+                      <th class="p-2.5 text-center w-24">Cantidad</th>
+                      <th class="p-2.5 text-right">Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100 bg-white">
+                    <tr><td class="p-2 font-bold text-slate-700">$ 25</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="m25" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subM25">$ 0.00</td></tr>
+                    <tr><td class="p-2 font-bold text-slate-700">$ 10</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="m10" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subM10">$ 0.00</td></tr>
+                    <tr><td class="p-2 font-bold text-slate-700">$ 5</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="m5" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subM5">$ 0.00</td></tr>
+                    <tr><td class="p-2 font-bold text-slate-700">$ 1</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="m1" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subM1">$ 0.00</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="bg-amber-50 border-t border-amber-200 p-2.5 flex justify-between items-center">
+                <span class="font-black text-amber-900 uppercase text-[11px]">Total Monedas:</span>
+                <span class="font-black text-amber-950 text-sm" id="totalMonedasFisicasCard">$ 0.00</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-slate-100 p-3.5 rounded-xl border border-slate-200 flex justify-between items-center font-bold text-xs">
+            <span class="text-slate-700 uppercase">Total Dinero Físico en Mano:</span>
+            <span class="text-slate-900 text-base font-black" id="totalFisicoEnManoCard">$ 0.00</span>
+          </div>
+        </div>
+
+        <!-- COMPARADOR DE AUDITORÍA Y DEPÓSITO FINAL -->
+        <div id="contenedorAuditoria" class="p-5 rounded-2xl shadow-lg border space-y-3 bg-slate-900 text-white border-slate-800">
+          <div class="flex justify-between items-center">
+            <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold block">Liquidación de Depósito</span>
+            <span id="badgeEstadoCuadre" class="px-2.5 py-0.5 rounded-full text-xs font-black uppercase bg-slate-800 text-slate-300">
+              Pendiente
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 border-t border-slate-800">
+            <div>
+              <span class="text-[11px] uppercase text-slate-400 block font-semibold">Total a Depositar (Esperado)</span>
+              <p class="text-lg font-black text-blue-300" id="auditoriaTotalSistema">$ 0.00</p>
+            </div>
+            <div>
+              <span class="text-[11px] uppercase text-slate-400 block font-semibold">Efectivo Físico Contado</span>
+              <p class="text-lg font-black text-slate-100" id="auditoriaTotalContado">$ 0.00</p>
+            </div>
+            <div class="sm:border-l sm:border-slate-800 sm:pl-3">
+              <span class="text-[11px] uppercase text-slate-400 block font-semibold">Diferencia de Cuadre</span>
+              <p class="text-2xl font-black text-slate-300" id="auditoriaDiferencia">$ 0.00</p>
+            </div>
+          </div>
+
+          <p id="mensajeAuditoria" class="text-xs font-bold text-center pt-2 text-slate-400"></p>
+
+          <div class="flex flex-wrap gap-2 pt-2 border-t border-slate-800">
+            <button type="button" id="btnGuardarArqueoMaster" onclick="guardarArqueoSemanaActual(true)" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs uppercase px-4 py-3 shadow transition flex items-center justify-center gap-1.5">
+              <span>💾</span> Guardar Arqueo
+            </button>
+            <button type="button" onclick="exportarDepositoDocumento()" class="flex-1 py-3 bg-blue-700 hover:bg-blue-800 text-white font-black rounded-xl text-xs uppercase shadow transition flex items-center justify-center gap-2">
+              <span>📄 Exportar Comprobante</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- VISTA CONSOLIDADA (Ambas Rutas, Solo Visible si se selecciona Consolidado General) -->
+      <div id="vistaDepositoConsolidado" class="hidden space-y-4">
+        <h2 class="text-base sm:text-lg font-black text-slate-800 uppercase tracking-wide text-center pt-2">Resumen Consolidado Semanal</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- ZONA CIBAO -->
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-blue-200 flex flex-col items-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
+            <h3 class="text-sm font-black text-blue-900 uppercase">📍 Ruta Cibao (Norte)</h3>
+            
+            <div class="relative w-32 h-32 my-5 rounded-full flex items-center justify-center" id="graficoCibao">
+              <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-inner z-10">
+                <div class="text-center">
+                  <span class="text-[9px] font-bold text-slate-400 block uppercase">Recolección</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="w-full space-y-2 text-xs font-bold pt-2 border-t border-slate-100">
+              <div class="flex justify-between items-center text-blue-600"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 rounded-full bg-blue-400"></div> Recolección:</span><span id="consCibaoRec">$ 0.00</span></div>
+              <div class="flex justify-between items-center text-rose-500"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 rounded-full bg-rose-500"></div> Gastos Restados:</span><span id="consCibaoGas">$ 0.00</span></div>
+              <div class="flex justify-between items-center text-emerald-700 bg-emerald-50 p-2 rounded-lg mt-1"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div> Total a Depositar:</span><span id="consCibaoDep" class="text-sm font-black">$ 0.00</span></div>
+            </div>
+          </div>
+
+          <!-- ZONA SUR -->
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-amber-200 flex flex-col items-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-amber-500"></div>
+            <h3 class="text-sm font-black text-amber-900 uppercase">📍 Ruta Sur</h3>
+            
+            <div class="relative w-32 h-32 my-5 rounded-full flex items-center justify-center" id="graficoSur">
+              <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-inner z-10">
+                <div class="text-center">
+                  <span class="text-[9px] font-bold text-slate-400 block uppercase">Recolección</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="w-full space-y-2 text-xs font-bold pt-2 border-t border-slate-100">
+              <div class="flex justify-between items-center text-blue-600"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 rounded-full bg-blue-400"></div> Recolección:</span><span id="consSurRec">$ 0.00</span></div>
+              <div class="flex justify-between items-center text-rose-500"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 rounded-full bg-rose-500"></div> Gastos Restados:</span><span id="consSurGas">$ 0.00</span></div>
+              <div class="flex justify-between items-center text-emerald-700 bg-emerald-50 p-2 rounded-lg mt-1"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div> Total a Depositar:</span><span id="consSurDep" class="text-sm font-black">$ 0.00</span></div>
+            </div>
+          </div>
+
+          <!-- TOTAL GENERAL -->
+          <div class="bg-slate-900 p-5 rounded-2xl shadow-xl border border-slate-800 flex flex-col items-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-slate-500"></div>
+            <h3 class="text-sm font-black text-white uppercase">🌐 Total General Esperado</h3>
+            
+            <div class="relative w-32 h-32 my-5 rounded-full flex items-center justify-center" id="graficoGen">
+              <div class="w-20 h-20 bg-slate-900 rounded-full flex items-center justify-center shadow-inner z-10">
+                <div class="text-center">
+                  <span class="text-[9px] font-bold text-slate-400 block uppercase">Total</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="w-full space-y-2 text-xs font-bold pt-2 border-t border-slate-800">
+              <div class="flex justify-between items-center text-blue-300"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 rounded-full bg-blue-400"></div> Recolección Global:</span><span id="consGenRec">$ 0.00</span></div>
+              <div class="flex justify-between items-center text-rose-400"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 rounded-full bg-rose-500"></div> Gastos Globales:</span><span id="consGenGas">$ 0.00</span></div>
+              <div class="flex justify-between items-center text-emerald-400 bg-slate-800 p-2 rounded-lg mt-1"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div> Gran Total a Depositar:</span><span id="consGenDep" class="text-base font-black">$ 0.00</span></div>
             </div>
           </div>
         </div>
 
-        <div class="bg-slate-100 p-3.5 rounded-xl border border-slate-200 flex justify-between items-center font-bold text-xs">
-          <span class="text-slate-700 uppercase">Total Dinero Físico en Mano:</span>
-          <span class="text-slate-900 text-base font-black" id="totalFisicoEnManoCard">$ 0.00</span>
-        </div>
-      </div>
-
-      <!-- COMPARADOR DE AUDITORÍA Y DEPÓSITO FINAL -->
-      <div id="contenedorAuditoria" class="p-5 rounded-2xl shadow-lg border space-y-3 bg-slate-900 text-white border-slate-800">
-        <div class="flex justify-between items-center">
-          <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold block">Liquidación de Depósito</span>
-          <span id="badgeEstadoCuadre" class="px-2.5 py-0.5 rounded-full text-xs font-black uppercase bg-slate-800 text-slate-300">
-            Pendiente
-          </span>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 border-t border-slate-800">
-          <div>
-            <span class="text-[11px] uppercase text-slate-400 block font-semibold">Total a Depositar (Esperado)</span>
-            <p class="text-lg font-black text-blue-300" id="auditoriaTotalSistema">$ 0.00</p>
-          </div>
-          <div>
-            <span class="text-[11px] uppercase text-slate-400 block font-semibold">Efectivo Físico Contado</span>
-            <p class="text-lg font-black text-slate-100" id="auditoriaTotalContado">$ 0.00</p>
-          </div>
-          <div class="sm:border-l sm:border-slate-800 sm:pl-3">
-            <span class="text-[11px] uppercase text-slate-400 block font-semibold">Diferencia de Cuadre</span>
-            <p class="text-2xl font-black text-slate-300" id="auditoriaDiferencia">$ 0.00</p>
-          </div>
-        </div>
-
-        <p id="mensajeAuditoria" class="text-xs font-bold text-center pt-2 text-slate-400"></p>
-
-        <div class="flex flex-wrap gap-2 pt-2 border-t border-slate-800">
-          <button type="button" id="btnGuardarArqueoMaster" onclick="guardarArqueoSemanaActual(true)" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs uppercase px-4 py-3 shadow transition flex items-center justify-center gap-1.5">
-            <span>💾</span> Guardar Arqueo
-          </button>
-          <button type="button" onclick="exportarDepositoDocumento()" class="flex-1 py-3 bg-blue-700 hover:bg-blue-800 text-white font-black rounded-xl text-xs uppercase shadow transition flex items-center justify-center gap-2">
-            <span>📄 Exportar Comprobante</span>
-          </button>
-        </div>
       </div>
 
     </section>
@@ -1068,7 +1137,6 @@
         } catch (err) {}
       }
 
-      // Cargar arqueos de memoria local inmediatamente
       const arqueosLocales = localStorage.getItem('pb_arqueos_local');
       if (arqueosLocales) {
         try { arqueosSemanalesGuardados = JSON.parse(arqueosLocales); } catch(e){}
@@ -1178,7 +1246,6 @@
 
       esSuperAdmin = (usuarioActual.email.trim().toLowerCase() === 'elieldejesusml@gmail.com');
       
-      // Obtener el nombre registrado o caer al email si es cuenta vieja
       window.nombreMostrar = usuarioActual.user_metadata?.primer_nombre || usuarioActual.email.split('@')[0];
       document.getElementById('labelUsuarioActivo').textContent = window.nombreMostrar;
 
@@ -1253,17 +1320,27 @@
       const esModoConsulta = !permisoActual.puede_crear && permisosUsuario.length > 0;
 
       const formGasto = document.getElementById('formGastoEfectivo');
-      const seccionArqueo = document.getElementById('seccionArqueoFisico');
       const btnGuardarArqueo = document.getElementById('btnGuardarArqueoMaster');
+      const btnReiniciarConteo = document.getElementById('btnReiniciarConteo');
 
       if (esModoConsulta) {
         if (formGasto) formGasto.classList.add('hidden');
-        if (seccionArqueo) seccionArqueo.classList.add('hidden');
         if (btnGuardarArqueo) btnGuardarArqueo.classList.add('hidden');
+        if (btnReiniciarConteo) btnReiniciarConteo.classList.add('hidden');
+        
+        ['b2000','b1000','b500','b200','b100','b50','m25','m10','m5','m1'].forEach(id => {
+            const input = document.getElementById(id);
+            if (input) input.disabled = true;
+        });
       } else {
         if (formGasto) formGasto.classList.remove('hidden');
-        if (seccionArqueo) seccionArqueo.classList.remove('hidden');
         if (btnGuardarArqueo) btnGuardarArqueo.classList.remove('hidden');
+        if (btnReiniciarConteo) btnReiniciarConteo.classList.remove('hidden');
+        
+        ['b2000','b1000','b500','b200','b100','b50','m25','m10','m5','m1'].forEach(id => {
+            const input = document.getElementById(id);
+            if (input) input.disabled = false;
+        });
       }
 
       document.querySelectorAll('.accion-eliminar-col').forEach(el => {
@@ -1338,7 +1415,7 @@
         comision: Number(l.comision),
         gananciaEmpresa: Number(l.ganancia_empresa),
         zona_id: l.zona_id,
-        creadoPorEmail: l.creado_por_email || 'Usuario Oculto',
+        creadoPorEmail: l.creado_por_email || 'Usuario',
         esMio: l.creado_por === usuarioActual.id
       }));
 
@@ -1347,7 +1424,8 @@
         concepto: g.concepto,
         fecha: g.fecha,
         monto: Number(g.monto),
-        creadoPorEmail: g.creado_por_email || 'Usuario Oculto',
+        zona_id: g.zona_id,
+        creadoPorEmail: g.creado_por_email || 'Usuario',
         esMio: g.creado_por === usuarioActual.id
       }));
 
@@ -2007,7 +2085,7 @@
 
           const badgeColector = item.esMio 
             ? `<span class="text-[9px] bg-blue-100 text-blue-900 px-1.5 py-0.2 rounded font-bold">Mío</span>` 
-            : `<span class="text-[9px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded font-bold">${item.creadoPorEmail.split('@')[0]}</span>`;
+            : `<span class="text-[9px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded font-bold">${item.creadoPorEmail}</span>`;
 
           const fila = document.createElement('tr');
           fila.className = "hover:bg-slate-50 transition border-b border-slate-100";
@@ -2124,7 +2202,7 @@
     }
 
     // ==========================================
-    // DEPÓSITO SEMANAL
+    // DEPÓSITO SEMANAL Y GRÁFICOS
     // ==========================================
     function fijarEstaSemanaDeposito() {
       const ahora = new Date();
@@ -2147,10 +2225,69 @@
       cargarArqueoSemanaActual();
     }
 
+    function actualizarGrafico(id, rec, gas, dep) {
+      const el = document.getElementById(id);
+      if(!el) return;
+      if(rec === 0) {
+        el.style.background = '#e2e8f0';
+        el.style.border = '4px solid #cbd5e1';
+        return;
+      }
+      const porcGas = (gas / rec) * 100;
+      el.style.background = `conic-gradient(#ef4444 0% ${porcGas}%, #10b981 ${porcGas}% 100%)`;
+      el.style.border = '6px solid #60a5fa'; 
+    }
+
     function calcularDepositoSemanal() {
       const desde = document.getElementById('depositoFechaDesde').value;
       const hasta = document.getElementById('depositoFechaHasta').value;
       if (!desde || !hasta) return;
+
+      if (zonaActiva === 'todas') {
+        document.getElementById('vistaDepositoNormal').classList.add('hidden');
+        document.getElementById('vistaDepositoConsolidado').classList.remove('hidden');
+
+        const liqsGen = liquidacionesGuardadas.filter(i => i.fecha >= desde && i.fecha <= hasta);
+        const gastosGen = gastosGuardados.filter(g => g.fecha >= desde && g.fecha <= hasta);
+
+        const liqsCibao = liqsGen.filter(i => i.zona_id === 'cibao');
+        const gastosCibao = gastosGen.filter(i => i.zona_id === 'cibao');
+
+        const liqsSur = liqsGen.filter(i => i.zona_id === 'sur');
+        const gastosSur = gastosGen.filter(i => i.zona_id === 'sur');
+
+        const recCibao = liqsCibao.reduce((acc, i) => acc + i.gananciaEmpresa, 0);
+        const gasCibao = gastosCibao.reduce((acc, i) => acc + i.monto, 0);
+        const depCibao = Math.max(0, recCibao - gasCibao);
+
+        const recSur = liqsSur.reduce((acc, i) => acc + i.gananciaEmpresa, 0);
+        const gasSur = gastosSur.reduce((acc, i) => acc + i.monto, 0);
+        const depSur = Math.max(0, recSur - gasSur);
+
+        const recGen = recCibao + recSur;
+        const gasGen = gasCibao + gasSur;
+        const depGen = depCibao + depSur;
+
+        document.getElementById('consCibaoRec').textContent = formatearMontoLimpio(recCibao);
+        document.getElementById('consCibaoGas').textContent = formatearMontoLimpio(gasCibao);
+        document.getElementById('consCibaoDep').textContent = formatearMontoLimpio(depCibao);
+        actualizarGrafico('graficoCibao', recCibao, gasCibao, depCibao);
+
+        document.getElementById('consSurRec').textContent = formatearMontoLimpio(recSur);
+        document.getElementById('consSurGas').textContent = formatearMontoLimpio(gasSur);
+        document.getElementById('consSurDep').textContent = formatearMontoLimpio(depSur);
+        actualizarGrafico('graficoSur', recSur, gasSur, depSur);
+
+        document.getElementById('consGenRec').textContent = formatearMontoLimpio(recGen);
+        document.getElementById('consGenGas').textContent = formatearMontoLimpio(gasGen);
+        document.getElementById('consGenDep').textContent = formatearMontoLimpio(depGen);
+        actualizarGrafico('graficoGen', recGen, gasGen, depGen);
+
+        return;
+      }
+
+      document.getElementById('vistaDepositoNormal').classList.remove('hidden');
+      document.getElementById('vistaDepositoConsolidado').classList.add('hidden');
 
       const liqs = liquidacionesGuardadas.filter(i => i.fecha >= desde && i.fecha <= hasta);
       const resumenPorColectorYRuta = {};
@@ -2185,7 +2322,7 @@
           const item = resumenPorColectorYRuta[k];
           const badgeColector = item.esMio 
             ? `<span class="text-[10px] bg-blue-100 text-blue-900 px-2 py-0.5 rounded font-bold">Mi liquidación</span>` 
-            : `<span class="text-[10px] bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-bold">Liquidó: ${item.colector.split('@')[0]}</span>`;
+            : `<span class="text-[10px] bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-bold">Liquidó: ${item.colector}</span>`;
 
           cuerpoRutas.innerHTML += `
             <tr class="border-b border-slate-100 hover:bg-slate-50">
@@ -2214,7 +2351,7 @@
           totalGastos += g.monto;
           const badgeColector = g.esMio 
             ? `<span class="text-[9px] bg-blue-50 text-blue-800 px-1 rounded">Mío</span>` 
-            : `<span class="text-[9px] bg-slate-100 text-slate-700 px-1 rounded">${g.creadoPorEmail.split('@')[0]}</span>`;
+            : `<span class="text-[9px] bg-slate-100 text-slate-700 px-1 rounded">${g.creadoPorEmail}</span>`;
 
           cuerpoG.innerHTML += `
             <tr class="border-b border-slate-100">
@@ -2270,10 +2407,12 @@
     }
 
     function cargarArqueoSemanaActual() {
-      const clave = `${document.getElementById('depositoFechaDesde').value}_${document.getElementById('depositoFechaHasta').value}`;
+      const zonaStr = zonaActiva === 'todas' ? 'general' : zonaActiva;
+      const clave = `${zonaStr}_${document.getElementById('depositoFechaDesde').value}_${document.getElementById('depositoFechaHasta').value}`;
       const guardado = arqueosSemanalesGuardados[clave] || {};
       ['b2000','b1000','b500','b200','b100','b50','m25','m10','m5','m1'].forEach(id => {
-        document.getElementById(id).value = guardado[id] || '';
+        const el = document.getElementById(id);
+        if(el) el.value = guardado[id] || '';
       });
       calcularArqueoFisico();
     }
@@ -2284,11 +2423,21 @@
       debounceTimerArqueo = setTimeout(() => { guardarArqueoSemanaActual(false); }, 700);
     }
 
+    function limpiarArqueoFisico() {
+       ['b2000','b1000','b500','b200','b100','b50','m25','m10','m5','m1'].forEach(id => {
+          document.getElementById(id).value = '';
+       });
+       guardarArqueoSemanaActual(false);
+       calcularArqueoFisico();
+    }
+
     async function guardarArqueoSemanaActual(alerta = false) {
-      const clave = `${document.getElementById('depositoFechaDesde').value}_${document.getElementById('depositoFechaHasta').value}`;
+      const zonaStr = zonaActiva === 'todas' ? 'general' : zonaActiva;
+      const clave = `${zonaStr}_${document.getElementById('depositoFechaDesde').value}_${document.getElementById('depositoFechaHasta').value}`;
       const conteo = {};
       ['b2000','b1000','b500','b200','b100','b50','m25','m10','m5','m1'].forEach(id => {
-        conteo[id] = document.getElementById(id).value;
+        const el = document.getElementById(id);
+        if(el) conteo[id] = el.value;
       });
       arqueosSemanalesGuardados[clave] = conteo;
       
