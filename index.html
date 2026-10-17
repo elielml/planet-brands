@@ -38,7 +38,7 @@
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen pb-12">
 
-  <!-- NOTIFICACIÓN FLOTANTE (REEMPLAZO DE ALERT) -->
+  <!-- NOTIFICACIÓN FLOTANTE -->
   <div id="notificacionFlotante" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 hidden bg-slate-900/95 text-white px-5 py-3 rounded-2xl shadow-2xl border border-slate-700/80 text-xs font-bold transition-all duration-300 flex items-center gap-2 backdrop-blur-md">
     <span id="notificacionIcono">✅</span>
     <span id="notificacionTexto">Guardado correctamente.</span>
@@ -212,14 +212,14 @@
     </div>
   </header>
 
-  <!-- SELECTOR DE ZONA DISCRETO -->
+  <!-- SELECTOR DE RUTA DISCRETO -->
   <div id="barraSelectorZona" class="max-w-5xl mx-auto px-4 mt-2">
     <div class="bg-blue-950 text-white p-2.5 rounded-xl flex items-center justify-between text-xs">
       <div class="flex items-center gap-2">
-        <span class="text-blue-300 font-bold uppercase text-[11px]">📍 Zona:</span>
+        <span class="text-blue-300 font-bold uppercase text-[11px]">📍 Ruta:</span>
         <select id="selectZonaActiva" onchange="cambiarZonaOperativa()" class="bg-blue-900 border border-blue-700 text-white font-bold px-3 py-1.5 rounded-lg outline-none cursor-pointer">
-          <option value="cibao">Zona Cibao</option>
-          <option value="sur">Zona Sur</option>
+          <option value="cibao">Ruta Cibao</option>
+          <option value="sur">Ruta Sur</option>
           <option value="todas">🌐 Resumen General Consolidado</option>
         </select>
       </div>
@@ -976,7 +976,7 @@
     }
 
     // ==========================================
-    // MODAL DE CONFIRMACIÓN PROPIO
+    // MODAL DE CONFIRMACIÓN PROPIO (REEMPLAZO CONFIRM)
     // ==========================================
     function pedirConfirmacion(mensaje, titulo = "Confirmación", icono = "⚠️") {
       return new Promise((resolve) => {
@@ -1197,8 +1197,8 @@
       const tieneCibao = permisosUsuario.some(p => p.zona_id === 'cibao' && p.puede_leer);
       const tieneSur = permisosUsuario.some(p => p.zona_id === 'sur' && p.puede_leer);
 
-      if (tieneCibao) select.innerHTML += `<option value="cibao">Zona Cibao</option>`;
-      if (tieneSur) select.innerHTML += `<option value="sur">Zona Sur</option>`;
+      if (tieneCibao) select.innerHTML += `<option value="cibao">Ruta Cibao</option>`;
+      if (tieneSur) select.innerHTML += `<option value="sur">Ruta Sur</option>`;
 
       if ((tieneCibao && tieneSur) || esSuperAdmin) {
         select.innerHTML += `<option value="todas">🌐 Resumen General Consolidado</option>`;
@@ -1705,6 +1705,11 @@
       const s2 = document.getElementById('filtroRuta');
       const s3 = document.getElementById('selectRutaParaCliente');
 
+      // Guardar las selecciones actuales para no perderlas al recargar
+      const val1 = s1.value;
+      const val2 = s2.value;
+      const val3 = s3.value;
+
       if (rutasApp.length === 0) {
         s1.innerHTML = '<option value="">(Sin rutas en esta zona)</option>';
         s3.innerHTML = '<option value="">(Crea una ruta en esta zona)</option>';
@@ -1716,6 +1721,11 @@
       s1.innerHTML = opciones;
       s3.innerHTML = opciones;
       s2.innerHTML = `<option value="TODAS">TODAS LAS RUTAS (CONSOLIDADO)</option>` + opciones;
+
+      // Restaurar las selecciones si siguen existiendo
+      if (val1 && rutasApp.includes(val1)) s1.value = val1;
+      if (val2 && (rutasApp.includes(val2) || val2 === 'TODAS')) s2.value = val2;
+      if (val3 && rutasApp.includes(val3)) s3.value = val3;
     }
 
     function renderizarAdminRutas() {
@@ -2470,6 +2480,8 @@
     // CAMBIO DE PESTAÑAS
     // ==========================================
     function cambiarPestana(p) {
+      if (p === 'adminMaster' && !esSuperAdmin) return;
+
       ['vistaCuadre','vistaHistorial','vistaDeposito','vistaRutas','vistaAdminMaster'].forEach(id => {
         document.getElementById(id).classList.add('seccion-oculta');
       });
