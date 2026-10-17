@@ -13,7 +13,7 @@
   <style>
     .seccion-oculta { display: none !important; }
 
-    /* ESTILOS DE IMPRESIÓN TÉRMICA (BLUETOOTH 58mm / 80mm) */
+    /* ESTILOS DE IMPRESIÓN TÉRMICA */
     @media print {
       body * { visibility: hidden !important; }
       #ticketImpresion, #ticketImpresion * { visibility: visible !important; }
@@ -29,10 +29,7 @@
         color: #000 !important;
         background: #fff !important;
       }
-      @page {
-        margin: 0;
-        size: auto;
-      }
+      @page { margin: 0; size: auto; }
     }
   </style>
 </head>
@@ -44,7 +41,7 @@
     <span id="notificacionTexto">Guardado correctamente.</span>
   </div>
 
-  <!-- MODAL DE CONFIRMACIÓN PROPIO -->
+  <!-- MODAL DE CONFIRMACIÓN -->
   <div id="modalConfirmacionPropio" class="hidden fixed inset-0 bg-slate-900/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
     <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-5 border border-slate-200 space-y-4">
       <div class="flex items-start gap-3">
@@ -55,12 +52,23 @@
         </div>
       </div>
       <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
-        <button type="button" id="btnModalConfirmCancelar" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs uppercase transition">
-          Cancelar
-        </button>
-        <button type="button" id="btnModalConfirmAceptar" class="px-4 py-2 bg-blue-900 hover:bg-blue-800 text-white font-black rounded-xl text-xs uppercase shadow transition">
-          Aceptar
-        </button>
+        <button type="button" id="btnModalConfirmCancelar" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs uppercase transition">Cancelar</button>
+        <button type="button" id="btnModalConfirmAceptar" class="px-4 py-2 bg-blue-900 hover:bg-blue-800 text-white font-black rounded-xl text-xs uppercase shadow transition">Aceptar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE DETALLES CONSOLIDADOS (NUEVO) -->
+  <div id="modalDetallesZona" class="hidden fixed inset-0 bg-slate-900/90 z-50 overflow-y-auto p-4 backdrop-blur-sm">
+    <div class="bg-white w-full max-w-2xl mx-auto rounded-2xl shadow-2xl p-5 border border-slate-200 mt-6 mb-10 space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+        <h3 id="modalDetallesTitulo" class="font-black text-base uppercase text-slate-800 flex items-center gap-2">
+          <span>📊</span> Detalles de Zona
+        </h3>
+        <button onclick="cerrarDetallesZona()" class="text-rose-500 hover:bg-rose-50 rounded-lg px-3 py-1 font-bold transition">Cerrar ✕</button>
+      </div>
+      <div id="modalDetallesContenido" class="space-y-5">
+        <!-- El contenido detallado se inserta aquí con JS -->
       </div>
     </div>
   </div>
@@ -708,21 +716,18 @@
           <!-- ZONA CIBAO -->
           <div class="bg-white p-5 rounded-2xl shadow-sm border border-blue-200 flex flex-col items-center relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
-            <h3 class="text-sm font-black text-blue-900 uppercase">📍 Ruta Cibao (Norte)</h3>
+            <h3 class="text-sm font-black text-blue-900 uppercase">📍 Ruta Cibao</h3>
             
-            <div class="relative w-32 h-32 my-5 rounded-full flex items-center justify-center" id="graficoCibao">
-              <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-inner z-10">
-                <div class="text-center">
-                  <span class="text-[9px] font-bold text-slate-400 block uppercase">Recolección</span>
-                </div>
-              </div>
-            </div>
+            <!-- Gráfico Pie Sólido -->
+            <div class="w-32 h-32 my-5 rounded-full border-4 border-blue-200 shadow-sm" id="graficoCibao"></div>
 
             <div class="w-full space-y-2 text-xs font-bold pt-2 border-t border-slate-100">
-              <div class="flex justify-between items-center text-blue-600"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 rounded-full bg-blue-400"></div> Recolección:</span><span id="consCibaoRec">$ 0.00</span></div>
-              <div class="flex justify-between items-center text-rose-500"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 rounded-full bg-rose-500"></div> Gastos Restados:</span><span id="consCibaoGas">$ 0.00</span></div>
-              <div class="flex justify-between items-center text-emerald-700 bg-emerald-50 p-2 rounded-lg mt-1"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div> Total a Depositar:</span><span id="consCibaoDep" class="text-sm font-black">$ 0.00</span></div>
+              <div class="flex justify-between items-center text-blue-600"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 border border-blue-600 bg-white"></div> Recolección Total:</span><span id="consCibaoRec">$ 0.00</span></div>
+              <div class="flex justify-between items-center text-rose-500"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 bg-rose-500"></div> Gastos (Rojo):</span><span id="consCibaoGas">$ 0.00</span></div>
+              <div class="flex justify-between items-center text-emerald-700 bg-emerald-50 p-2 rounded-lg mt-1"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 bg-emerald-500"></div> Depósito (Verde):</span><span id="consCibaoDep" class="text-sm font-black">$ 0.00</span></div>
             </div>
+            
+            <button onclick="abrirDetallesZona('cibao')" class="mt-4 w-full bg-blue-50 hover:bg-blue-100 text-blue-700 py-2 rounded-lg text-xs font-bold uppercase transition">Ver Detalles</button>
           </div>
 
           <!-- ZONA SUR -->
@@ -730,19 +735,15 @@
             <div class="absolute top-0 left-0 w-full h-1 bg-amber-500"></div>
             <h3 class="text-sm font-black text-amber-900 uppercase">📍 Ruta Sur</h3>
             
-            <div class="relative w-32 h-32 my-5 rounded-full flex items-center justify-center" id="graficoSur">
-              <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-inner z-10">
-                <div class="text-center">
-                  <span class="text-[9px] font-bold text-slate-400 block uppercase">Recolección</span>
-                </div>
-              </div>
-            </div>
+            <div class="w-32 h-32 my-5 rounded-full border-4 border-amber-200 shadow-sm" id="graficoSur"></div>
 
             <div class="w-full space-y-2 text-xs font-bold pt-2 border-t border-slate-100">
-              <div class="flex justify-between items-center text-blue-600"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 rounded-full bg-blue-400"></div> Recolección:</span><span id="consSurRec">$ 0.00</span></div>
-              <div class="flex justify-between items-center text-rose-500"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 rounded-full bg-rose-500"></div> Gastos Restados:</span><span id="consSurGas">$ 0.00</span></div>
-              <div class="flex justify-between items-center text-emerald-700 bg-emerald-50 p-2 rounded-lg mt-1"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div> Total a Depositar:</span><span id="consSurDep" class="text-sm font-black">$ 0.00</span></div>
+              <div class="flex justify-between items-center text-blue-600"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 border border-blue-600 bg-white"></div> Recolección Total:</span><span id="consSurRec">$ 0.00</span></div>
+              <div class="flex justify-between items-center text-rose-500"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 bg-rose-500"></div> Gastos (Rojo):</span><span id="consSurGas">$ 0.00</span></div>
+              <div class="flex justify-between items-center text-emerald-700 bg-emerald-50 p-2 rounded-lg mt-1"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 bg-emerald-500"></div> Depósito (Verde):</span><span id="consSurDep" class="text-sm font-black">$ 0.00</span></div>
             </div>
+            
+            <button onclick="abrirDetallesZona('sur')" class="mt-4 w-full bg-amber-50 hover:bg-amber-100 text-amber-800 py-2 rounded-lg text-xs font-bold uppercase transition">Ver Detalles</button>
           </div>
 
           <!-- TOTAL GENERAL -->
@@ -750,19 +751,15 @@
             <div class="absolute top-0 left-0 w-full h-1 bg-slate-500"></div>
             <h3 class="text-sm font-black text-white uppercase">🌐 Total General Esperado</h3>
             
-            <div class="relative w-32 h-32 my-5 rounded-full flex items-center justify-center" id="graficoGen">
-              <div class="w-20 h-20 bg-slate-900 rounded-full flex items-center justify-center shadow-inner z-10">
-                <div class="text-center">
-                  <span class="text-[9px] font-bold text-slate-400 block uppercase">Total</span>
-                </div>
-              </div>
-            </div>
+            <div class="w-32 h-32 my-5 rounded-full border-4 border-slate-600 shadow-sm" id="graficoGen"></div>
 
             <div class="w-full space-y-2 text-xs font-bold pt-2 border-t border-slate-800">
-              <div class="flex justify-between items-center text-blue-300"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 rounded-full bg-blue-400"></div> Recolección Global:</span><span id="consGenRec">$ 0.00</span></div>
-              <div class="flex justify-between items-center text-rose-400"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 rounded-full bg-rose-500"></div> Gastos Globales:</span><span id="consGenGas">$ 0.00</span></div>
-              <div class="flex justify-between items-center text-emerald-400 bg-slate-800 p-2 rounded-lg mt-1"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div> Gran Total a Depositar:</span><span id="consGenDep" class="text-base font-black">$ 0.00</span></div>
+              <div class="flex justify-between items-center text-blue-300"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 border border-blue-300 bg-transparent"></div> Recolección Global:</span><span id="consGenRec">$ 0.00</span></div>
+              <div class="flex justify-between items-center text-rose-400"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 bg-rose-500"></div> Gastos Globales:</span><span id="consGenGas">$ 0.00</span></div>
+              <div class="flex justify-between items-center text-emerald-400 bg-slate-800 p-2 rounded-lg mt-1"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 bg-emerald-500"></div> Gran Total a Depositar:</span><span id="consGenDep" class="text-base font-black">$ 0.00</span></div>
             </div>
+            
+            <button onclick="abrirDetallesZona('todas')" class="mt-4 w-full bg-slate-800 hover:bg-slate-700 text-slate-300 py-2 rounded-lg text-xs font-bold uppercase transition">Ver Detalles Generales</button>
           </div>
         </div>
 
@@ -907,7 +904,7 @@
             <div class="flex items-center justify-between border-b border-blue-200 pb-2">
               <label class="flex items-center gap-2 font-black text-xs text-blue-950 uppercase cursor-pointer">
                 <input type="checkbox" id="chkCibaoActivo" onchange="alternarBloqueZona('cibao')" class="w-4 h-4 text-blue-600 rounded">
-                <span>Acceso a Zona Cibao</span>
+                <span>Acceso a Ruta Cibao</span>
               </label>
               <span class="text-[10px] text-blue-700 font-semibold uppercase">Provincias Norte</span>
             </div>
@@ -937,7 +934,7 @@
             <div class="flex items-center justify-between border-b border-emerald-200 pb-2">
               <label class="flex items-center gap-2 font-black text-xs text-emerald-950 uppercase cursor-pointer">
                 <input type="checkbox" id="chkSurActivo" onchange="alternarBloqueZona('sur')" class="w-4 h-4 text-emerald-600 rounded">
-                <span>Acceso a Zona Sur</span>
+                <span>Acceso a Ruta Sur</span>
               </label>
               <span class="text-[10px] text-emerald-700 font-semibold uppercase">Sur / SD Oeste</span>
             </div>
@@ -1031,9 +1028,6 @@
 
     const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // ==========================================
-    // NOTIFICACIÓN FLOTANTE INTEGRADA (TOAST)
-    // ==========================================
     function mostrarMensaje(texto, icono = "✅", duracion = 2500) {
       const box = document.getElementById('notificacionFlotante');
       const txt = document.getElementById('notificacionTexto');
@@ -1050,9 +1044,6 @@
       }, duracion);
     }
 
-    // ==========================================
-    // MODAL DE CONFIRMACIÓN PROPIO
-    // ==========================================
     function pedirConfirmacion(mensaje, titulo = "Confirmación", icono = "⚠️") {
       return new Promise((resolve) => {
         const modal = document.getElementById('modalConfirmacionPropio');
@@ -1169,7 +1160,7 @@
     });
 
     // ==========================================
-    // AUTENTICACIÓN Y NOMBRE DE USUARIO
+    // AUTENTICACIÓN
     // ==========================================
     function alternarModoAuth() {
       const btnSubmit = document.getElementById('btnAuthSubmit');
@@ -1455,6 +1446,179 @@
     }
 
     // ==========================================
+    // DETALLES DEL RESUMEN (NUEVA VENTANA MODAL)
+    // ==========================================
+    function abrirDetallesZona(zonaId) {
+      const desde = document.getElementById('depositoFechaDesde').value;
+      const hasta = document.getElementById('depositoFechaHasta').value;
+      
+      const liqs = liquidacionesGuardadas.filter(i => i.fecha >= desde && i.fecha <= hasta && (zonaId === 'todas' || i.zona_id === zonaId));
+      const gastos = gastosGuardados.filter(g => g.fecha >= desde && g.fecha <= hasta && (zonaId === 'todas' || g.zona_id === zonaId));
+      
+      const zonaStr = zonaId === 'todas' ? 'general' : zonaId;
+      const claveArqueo = `${zonaStr}_${desde}_${hasta}`;
+      const arqueo = arqueosSemanalesGuardados[claveArqueo] || {};
+      
+      const rutasMap = {};
+      let totalRecoleccion = 0;
+      liqs.forEach(l => {
+         if(!rutasMap[l.ruta]) rutasMap[l.ruta] = { total: 0, clientes: [] };
+         rutasMap[l.ruta].total += l.gananciaEmpresa;
+         rutasMap[l.ruta].clientes.push(l);
+         totalRecoleccion += l.gananciaEmpresa;
+      });
+
+      // Preparar el Pie Chart de Distribución de Rutas (Circular Pizza)
+      const colors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f43f5e'];
+      let conic = "";
+      let curr = 0;
+      let legendHtml = "";
+      let i = 0;
+      Object.keys(rutasMap).forEach(nombreRuta => {
+         const r = rutasMap[nombreRuta];
+         const porc = totalRecoleccion > 0 ? (r.total / totalRecoleccion) * 100 : 0;
+         const color = colors[i % colors.length];
+         conic += `${color} ${curr}% ${curr + porc}%, `;
+         curr += porc;
+         legendHtml += `
+           <div class="flex items-center justify-between text-xs mb-1.5 p-1 border-b border-slate-50">
+             <span class="flex items-center gap-1.5 font-semibold text-slate-700">
+                <div class="w-3 h-3 rounded-full shadow-sm" style="background:${color}"></div> ${nombreRuta}
+             </span>
+             <span class="font-black text-slate-800">${formatearMontoLimpio(r.total)}</span>
+           </div>`;
+         i++;
+      });
+      if(conic !== "") conic = conic.slice(0, -2);
+      
+      let html = `<div class="space-y-5">`;
+      
+      if(totalRecoleccion > 0) {
+          html += `
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+             <h4 class="font-black text-xs text-slate-500 text-center mb-4 uppercase tracking-wider">Aporte por Rutas</h4>
+             <div class="flex flex-col md:flex-row items-center gap-6 justify-center">
+                 <div class="w-32 h-32 rounded-full border border-slate-300 shadow-md flex-shrink-0" style="background: conic-gradient(${conic})"></div>
+                 <div class="flex-1 w-full bg-white p-3 rounded-lg border border-slate-100 shadow-sm">${legendHtml}</div>
+             </div>
+          </div>`;
+      }
+
+      // Clientes por Ruta (Desplegables)
+      html += `<div class="space-y-2">
+          <h4 class="font-black text-xs uppercase tracking-wider text-blue-900 border-b border-blue-100 pb-1 mb-2">Desglose de Clientes Visitados</h4>`;
+      
+      Object.keys(rutasMap).forEach(nombreRuta => {
+          const r = rutasMap[nombreRuta];
+          html += `<details class="bg-white border border-slate-200 rounded-lg shadow-sm group">
+             <summary class="font-bold text-xs p-3 cursor-pointer bg-slate-50 hover:bg-slate-100 flex justify-between items-center outline-none transition rounded-t-lg">
+                <span class="text-blue-900">📍 ${nombreRuta}</span>
+                <span class="text-blue-700 font-black">${formatearMontoLimpio(r.total)}</span>
+             </summary>
+             <div class="p-3 border-t border-slate-200 space-y-2 bg-white rounded-b-lg">`;
+             
+             r.clientes.forEach(c => {
+                 html += `<div class="flex justify-between items-center text-xs border-b border-slate-50 pb-1.5 last:border-0 last:pb-0">
+                    <div>
+                      <span class="font-bold text-slate-800 block">${c.cliente}</span> 
+                      <span class="text-[9px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider">${c.concepto}</span>
+                    </div>
+                    <span class="font-bold text-emerald-700">${formatearMontoLimpio(c.gananciaEmpresa)}</span>
+                 </div>`;
+             });
+             
+          html += `</div></details>`;
+      });
+      if(Object.keys(rutasMap).length === 0) html += `<p class="text-xs text-slate-500 italic">No hay recolecciones.</p>`;
+      html += `</div>`;
+
+      // Gastos
+      let totalGastos = 0;
+      html += `<div class="space-y-2 mt-4">
+          <h4 class="font-black text-xs uppercase tracking-wider text-rose-700 border-b border-rose-100 pb-1 mb-2">Gastos Registrados</h4>`;
+      gastos.forEach(g => {
+         totalGastos += g.monto;
+         html += `<div class="flex justify-between items-center text-xs bg-rose-50 border border-rose-100 p-2.5 rounded-lg">
+            <span class="font-semibold text-rose-900">${g.concepto}</span>
+            <span class="font-black text-rose-700">- ${formatearMontoLimpio(g.monto)}</span>
+         </div>`;
+      });
+      if(gastos.length === 0) html += `<p class="text-xs text-slate-500 italic">No se registraron gastos.</p>`;
+      html += `</div>`;
+
+      // Arqueo Físico
+      html += `<div class="space-y-2 mt-4">
+          <h4 class="font-black text-xs uppercase tracking-wider text-amber-700 border-b border-amber-100 pb-1 mb-2">Arqueo Físico de esta Zona</h4>
+          <div class="grid grid-cols-2 gap-2 text-xs">`;
+      const denomsB = [2000, 1000, 500, 200, 100, 50];
+      const denomsM = [25, 10, 5, 1];
+      let tFisico = 0;
+      
+      denomsB.forEach(d => {
+         const val = Number(arqueo[`b${d}`]) || 0;
+         if(val > 0) {
+             const sub = val * d;
+             tFisico += sub;
+             html += `<div class="flex justify-between items-center bg-slate-50 p-2 rounded-lg border border-slate-200"><span class="font-semibold text-slate-600">💵 $${d} x ${val}</span><span class="font-black text-slate-800">${formatearMontoLimpio(sub)}</span></div>`;
+         }
+      });
+      denomsM.forEach(d => {
+         const val = Number(arqueo[`m${d}`]) || 0;
+         if(val > 0) {
+             const sub = val * d;
+             tFisico += sub;
+             html += `<div class="flex justify-between items-center bg-slate-50 p-2 rounded-lg border border-slate-200"><span class="font-semibold text-slate-600">🪙 $${d} x ${val}</span><span class="font-black text-slate-800">${formatearMontoLimpio(sub)}</span></div>`;
+         }
+      });
+      if(tFisico === 0) html += `<p class="text-xs text-slate-500 col-span-2 italic">No se guardó arqueo físico.</p>`;
+      
+      html += `</div>
+        <div class="mt-3 flex justify-between items-center bg-slate-800 p-3 rounded-lg shadow-sm">
+          <span class="text-slate-300 font-bold text-xs uppercase tracking-wider">Total Contado:</span>
+          <span class="text-white font-black text-base">${formatearMontoLimpio(tFisico)}</span>
+        </div>
+      </div>`;
+
+      html += `</div>`;
+      
+      document.getElementById('modalDetallesContenido').innerHTML = html;
+      let titulo = "General Consolidado";
+      if(zonaId === 'cibao') titulo = "Ruta Cibao";
+      if(zonaId === 'sur') titulo = "Ruta Sur";
+      document.getElementById('modalDetallesTitulo').innerHTML = `<span>📊</span> Detalles: ${titulo}`;
+      
+      document.getElementById('modalDetallesZona').classList.remove('hidden');
+    }
+
+    function cerrarDetallesZona() {
+      document.getElementById('modalDetallesZona').classList.add('hidden');
+    }
+
+    // ==========================================
+    // GRÁFICO CIRCULAR SÓLIDO (PIE CHART)
+    // ==========================================
+    function actualizarGraficoPieSolido(id, rec, gas) {
+      const el = document.getElementById(id);
+      if(!el) return;
+      
+      if(rec === 0 && gas === 0) {
+        el.style.background = '#e2e8f0';
+        return;
+      }
+      
+      let pGas = 0;
+      
+      if(rec > 0) {
+         pGas = (gas / rec) * 100;
+         if (pGas > 100) pGas = 100; 
+      } else {
+         pGas = 100;
+      }
+      
+      el.style.background = `conic-gradient(#ef4444 0% ${pGas}%, #10b981 ${pGas}% 100%)`;
+    }
+
+    // ==========================================
     // SECCIÓN DE PERMISOS SUPERADMIN 
     // ==========================================
     async function cargarListaUsuariosRegistrados() {
@@ -1715,968 +1879,6 @@
         `;
         cont.appendChild(item);
       });
-    }
-
-    // ==========================================
-    // IMPRESIÓN DE TICKETS TÉRMICOS (BLUETOOTH)
-    // ==========================================
-    function poblarYDispararTicket(data) {
-      let textoRutaEncabezado = "RUTA CIBAO";
-      const zona = (data.zona_id || zonaActiva || "").toLowerCase();
-      if (zona.includes("sur") || (data.ruta && data.ruta.toLowerCase().includes("sur"))) {
-        textoRutaEncabezado = "RUTA SUR";
-      } else {
-        textoRutaEncabezado = "RUTA CIBAO";
-      }
-
-      document.getElementById('ticketZonaRuta').textContent = textoRutaEncabezado;
-      document.getElementById('ticketNoComprobante').textContent = `No. ${data.id ? String(data.id).slice(-4) : Math.floor(1000 + Math.random() * 9000)}`;
-      document.getElementById('ticketFecha').textContent = data.fecha;
-      document.getElementById('ticketCliente').textContent = data.cliente;
-
-      document.getElementById('ticketCant5').textContent = data.cant5 || 0;
-      document.getElementById('ticketSub5').textContent = formatearMontoLimpio((data.cant5 || 0) * 5);
-
-      document.getElementById('ticketCant10').textContent = data.cant10 || 0;
-      document.getElementById('ticketSub10').textContent = formatearMontoLimpio((data.cant10 || 0) * 10);
-
-      document.getElementById('ticketCant25').textContent = data.cant25 || 0;
-      document.getElementById('ticketSub25').textContent = formatearMontoLimpio((data.cant25 || 0) * 25);
-
-      document.getElementById('ticketTotalBruto').textContent = formatearMontoLimpio(data.bruto);
-      document.getElementById('ticketLabelComision').textContent = `Comisión (${data.porcentaje}%):`;
-      document.getElementById('ticketComision').textContent = formatearMontoLimpio(data.comision);
-      document.getElementById('ticketDiferencia').textContent = formatearMontoLimpio(data.gananciaEmpresa);
-
-      const c = (data.concepto || "").toLowerCase();
-      document.getElementById('checkDulces').textContent = c.includes('dulce') ? '☑ Dulces' : '☐ Dulces';
-      document.getElementById('checkKiddie').textContent = c.includes('kiddie') ? '☑ Kiddie Rides' : '☐ Kiddie Rides';
-      document.getElementById('checkPeluches').textContent = c.includes('peluche') ? '☑ Peluches' : '☐ Peluches';
-      document.getElementById('checkBoxing').textContent = c.includes('boxing') ? '☑ Boxing Machine' : '☐ Boxing Machine';
-
-      window.print();
-    }
-
-    function imprimirTicketActual() {
-      const c25 = Number(document.getElementById('cant25').value) || 0;
-      const c10 = Number(document.getElementById('cant10').value) || 0;
-      const c5 = Number(document.getElementById('cant5').value) || 0;
-      const bruto = (c25 * 25) + (c10 * 10) + (c5 * 5);
-
-      if (bruto <= 0) {
-        mostrarMensaje("Ingresa al menos una moneda para imprimir.", "⚠️");
-        return;
-      }
-
-      const clienteNombre = document.getElementById('inputCliente').value.trim();
-      if (!clienteNombre) {
-        mostrarMensaje("Escribe el nombre del cliente.", "⚠️");
-        return;
-      }
-
-      const porc = Number(document.getElementById('porcentajeComision').value) || 25;
-      const comision = (bruto * porc) / 100;
-      const ganancia = bruto - comision;
-
-      poblarYDispararTicket({
-        id: Math.floor(1000 + Math.random() * 9000),
-        fecha: document.getElementById('fechaCuadre').value,
-        ruta: document.getElementById('selectRutaForm').value,
-        cliente: clienteNombre,
-        concepto: document.getElementById('concepto').value,
-        porcentaje: porc,
-        cant25: c25,
-        cant10: c10,
-        cant5: c5,
-        bruto: bruto,
-        comision: comision,
-        gananciaEmpresa: ganancia
-      });
-    }
-
-    function reimprimirLiquidacion(id) {
-      const liq = liquidacionesGuardadas.find(item => item.id === id);
-      if (liq) {
-        poblarYDispararTicket(liq);
-      }
-    }
-
-    // ==========================================
-    // OPERACIONES (LIQUIDAR, RUTAS, GASTOS)
-    // ==========================================
-    function poblarSelectoresRuta() {
-      const s1 = document.getElementById('selectRutaForm');
-      const s2 = document.getElementById('filtroRuta');
-      const s3 = document.getElementById('selectRutaParaCliente');
-
-      const val1 = s1.value;
-      const val2 = s2.value;
-      const val3 = s3.value;
-
-      if (rutasApp.length === 0) {
-        s1.innerHTML = '<option value="">(Sin rutas en esta zona)</option>';
-        s3.innerHTML = '<option value="">(Crea una ruta en esta zona)</option>';
-        s2.innerHTML = '<option value="TODAS">TODAS LAS RUTAS</option>';
-        return;
-      }
-
-      const opciones = rutasApp.map(r => `<option value="${r}">${r}</option>`).join('');
-      s1.innerHTML = opciones;
-      s3.innerHTML = opciones;
-      s2.innerHTML = `<option value="TODAS">TODAS LAS RUTAS (CONSOLIDADO)</option>` + opciones;
-
-      if (val1 && rutasApp.includes(val1)) s1.value = val1;
-      if (val2 && (rutasApp.includes(val2) || val2 === 'TODAS')) s2.value = val2;
-      if (val3 && rutasApp.includes(val3)) s3.value = val3;
-    }
-
-    function renderizarAdminRutas() {
-       const cont = document.getElementById('listaRutasAdministrar');
-       if(!cont) return;
-       cont.innerHTML = '';
-       if(rutasGuardadas.length === 0) {
-          cont.innerHTML = '<li class="p-3 text-slate-400 text-center">No hay rutas creadas en esta zona.</li>';
-          return;
-       }
-       rutasGuardadas.forEach(r => {
-          cont.innerHTML += `
-            <li class="p-3 flex justify-between items-center hover:bg-slate-50 border-b border-slate-100">
-              <strong class="text-slate-800 text-xs">${r.nombre}</strong>
-              <div class="flex gap-2">
-                <button onclick="editarRuta(${r.id}, '${r.nombre}')" class="text-blue-600 hover:text-blue-800 font-bold text-xs bg-blue-50 px-2 py-1 rounded">Editar</button>
-                <button onclick="eliminarRuta(${r.id}, '${r.nombre}')" class="text-rose-500 hover:text-rose-700 font-bold text-xs bg-rose-50 px-2 py-1 rounded accion-eliminar-col">Eliminar</button>
-              </div>
-            </li>
-          `;
-       });
-       
-       const permisoActual = permisosUsuario.find(p => p.zona_id === zonaActiva) || { puede_eliminar: esSuperAdmin, puede_editar: esSuperAdmin };
-       document.querySelectorAll('.accion-eliminar-col').forEach(el => {
-          if (!permisoActual.puede_eliminar && !esSuperAdmin) el.style.display = 'none';
-       });
-    }
-
-    function actualizarClientesSegunRuta() {
-      const ruta = document.getElementById('selectRutaForm').value;
-      const datalist = document.getElementById('listaClientesDatalist');
-      
-      const filtrados = catalogoClientes.filter(c => c.ruta === ruta);
-      datalist.innerHTML = filtrados.map(c => `<option value="${c.nombre}">`).join('');
-      // No borramos la ruta seleccionada ni la fecha aquí para mantenerlas fijas.
-      document.getElementById('inputCliente').value = '';
-      document.getElementById('cant25').value = '';
-      document.getElementById('cant10').value = '';
-      document.getElementById('cant5').value = '';
-      document.getElementById('porcentajeComision').value = '25';
-      calcularTodo();
-    }
-
-    function alCambiarCliente() {
-      const ruta = document.getElementById('selectRutaForm').value;
-      const nombre = document.getElementById('inputCliente').value.trim().toLowerCase();
-      const c = catalogoClientes.find(item => item.ruta === ruta && item.nombre.trim().toLowerCase() === nombre);
-
-      if (c) {
-        document.getElementById('concepto').value = c.concepto;
-        document.getElementById('porcentajeComision').value = c.porcentaje;
-      }
-      calcularTodo();
-    }
-
-    function calcularTodo() {
-      const c25 = Number(document.getElementById('cant25').value) || 0;
-      const c10 = Number(document.getElementById('cant10').value) || 0;
-      const c5 = Number(document.getElementById('cant5').value) || 0;
-
-      const sub25 = c25 * 25;
-      const sub10 = c10 * 10;
-      const sub5 = c5 * 5;
-
-      document.getElementById('sub25').textContent = `$ ${sub25.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
-      document.getElementById('sub10').textContent = `$ ${sub10.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
-      document.getElementById('sub5').textContent = `$ ${sub5.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
-
-      const totalMonedas = c25 + c10 + c5;
-      document.getElementById('totalMonedasLabel').textContent = `${totalMonedas} Monedas`;
-
-      const totalBruto = sub25 + sub10 + sub5;
-      const porc = Number(document.getElementById('porcentajeComision').value) || 0;
-      const totalComision = (totalBruto * porc) / 100;
-      const totalEmpresa = totalBruto - totalComision;
-
-      document.getElementById('labelComisionCliente').textContent = `Comisión Cliente (${porc}%)`;
-      document.getElementById('totalBrutoCard').textContent = `$ ${totalBruto.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
-      document.getElementById('totalComisionCard').textContent = `$ ${totalComision.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
-      document.getElementById('totalEmpresaCard').textContent = `$ ${totalEmpresa.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
-    }
-
-    function limpiarFormulario() {
-      document.getElementById('inputCliente').value = '';
-      document.getElementById('cant25').value = '';
-      document.getElementById('cant10').value = '';
-      document.getElementById('cant5').value = '';
-      document.getElementById('porcentajeComision').value = '25';
-      calcularTodo();
-    }
-
-    async function guardarCuadre(e) {
-      e.preventDefault();
-      registrarActividad();
-
-      const c25 = Number(document.getElementById('cant25').value) || 0;
-      const c10 = Number(document.getElementById('cant10').value) || 0;
-      const c5 = Number(document.getElementById('cant5').value) || 0;
-      const bruto = (c25 * 25) + (c10 * 10) + (c5 * 5);
-
-      if (bruto <= 0) {
-        mostrarMensaje("Ingresa al menos una moneda para guardar.", "⚠️");
-        return;
-      }
-
-      const clienteNombre = document.getElementById('inputCliente').value.trim();
-      const rutaActual = document.getElementById('selectRutaForm').value;
-      const conceptoActual = document.getElementById('concepto').value;
-      const porc = Number(document.getElementById('porcentajeComision').value) || 25;
-      const comision = (bruto * porc) / 100;
-      const ganancia = bruto - comision;
-
-      const zonaDestino = (zonaActiva === 'todas' || zonaActiva === 'personal') ? 'cibao' : zonaActiva;
-
-      const { data: nuevaLiq, error } = await sbClient.from('pb_liquidaciones').insert({
-        zona_id: zonaDestino,
-        fecha: document.getElementById('fechaCuadre').value,
-        ruta_nombre: rutaActual,
-        cliente_nombre: clienteNombre,
-        concepto: conceptoActual,
-        porcentaje: porc,
-        cant25: c25,
-        cant10: c10,
-        cant5: c5,
-        total_monedas: c25 + c10 + c5,
-        bruto: bruto,
-        comision: comision,
-        ganancia_empresa: ganancia,
-        creado_por: usuarioActual.id,
-        creado_por_email: window.nombreMostrar
-      }).select().single();
-
-      if (error) {
-        mostrarMensaje("Error al guardar: " + error.message, "❌");
-        return;
-      }
-
-      await sbClient.from('pb_auditoria').insert({
-        tabla: 'pb_liquidaciones',
-        registro_id: nuevaLiq.id,
-        accion: 'CREAR',
-        datos_nuevos: nuevaLiq,
-        usuario_id: usuarioActual.id,
-        usuario_email: window.nombreMostrar
-      });
-
-      limpiarFormulario();
-      await cargarDatosZonaActiva();
-      mostrarMensaje("Guardado correctamente.", "✅");
-    }
-
-    async function eliminarRegistro(id) {
-      const confirmado = await pedirConfirmacion("¿Estás seguro de que quieres eliminarlo?", "ELIMINAR REGISTRO", "🗑️");
-      if (confirmado) {
-        await sbClient.from('pb_liquidaciones').update({
-          eliminado: true,
-          eliminado_por: usuarioActual.id,
-          eliminado_en: new Date().toISOString()
-        }).eq('id', id);
-
-        await sbClient.from('pb_auditoria').insert({
-          tabla: 'pb_liquidaciones',
-          registro_id: id,
-          accion: 'ELIMINAR_PAPELERA',
-          usuario_id: usuarioActual.id,
-          usuario_email: window.nombreMostrar
-        });
-
-        await cargarDatosZonaActiva();
-        mostrarMensaje("Registro eliminado correctamente.", "🗑️");
-      }
-    }
-
-    async function editarFechaRegistro(id, fechaActual) {
-      const nuevaFecha = prompt("Corrige la fecha de este registro (Formato AAAA-MM-DD):", fechaActual);
-      if (nuevaFecha && nuevaFecha.trim() !== fechaActual) {
-        const nf = nuevaFecha.trim();
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(nf)) {
-          mostrarMensaje("Formato incorrecto. Usa Año-Mes-Día.", "⚠️");
-          return;
-        }
-        const { error } = await sbClient.from('pb_liquidaciones').update({ fecha: nf }).eq('id', id);
-        if (error) {
-          mostrarMensaje("Error: " + error.message, "❌");
-        } else {
-          await cargarDatosZonaActiva();
-          mostrarMensaje("Fecha actualizada.", "✅");
-        }
-      }
-    }
-
-    // ==========================================
-    // HISTORIAL Y EXPORTACIONES AGRUPADAS
-    // ==========================================
-    function alternarFiltroFecha() {
-      const tipo = document.getElementById('filtroTipoPeriodo').value;
-      const cDia = document.getElementById('contenedorFiltroDia');
-      const cSemana = document.getElementById('contenedorFiltroSemana');
-
-      cDia.classList.add('hidden');
-      cSemana.classList.add('hidden');
-
-      if (tipo === 'dia') cDia.classList.remove('hidden');
-      if (tipo === 'semana') cSemana.classList.remove('hidden');
-      renderizarHistorial();
-    }
-
-    function filtrarLiquidaciones() {
-      const ruta = document.getElementById('filtroRuta').value;
-      const colector = document.getElementById('filtroColector').value;
-      const tipo = document.getElementById('filtroTipoPeriodo').value;
-
-      return liquidacionesGuardadas.filter(item => {
-        if (colector === "MIO" && !item.esMio) return false;
-        if (colector !== "TODOS" && colector !== "MIO" && item.creadoPorEmail !== colector) return false;
-        if (ruta !== "TODAS" && item.ruta !== ruta) return false;
-
-        if (tipo === 'dia') return item.fecha === document.getElementById('filtroFechaDia').value;
-        if (tipo === 'semana') {
-          const d = document.getElementById('filtroFechaDesde').value;
-          const h = document.getElementById('filtroFechaHasta').value;
-          if (d && h) return item.fecha >= d && item.fecha <= h;
-        }
-        return true;
-      });
-    }
-
-    function agruparPorRuta(lista) {
-      const grupos = {};
-      lista.forEach(i => {
-        if (!grupos[i.ruta]) grupos[i.ruta] = [];
-        grupos[i.ruta].push(i);
-      });
-      return grupos;
-    }
-
-    function renderizarHistorial() {
-      const lista = filtrarLiquidaciones();
-      const cuerpo = document.getElementById('cuerpoHistorial');
-      const msgVacio = document.getElementById('mensajeHistorialVacio');
-      cuerpo.innerHTML = '';
-
-      let totalMonedas = 0;
-      let totalComisiones = 0;
-      let totalEmpresa = 0;
-
-      if (lista.length === 0) {
-        msgVacio.classList.remove('hidden');
-      } else {
-        msgVacio.classList.add('hidden');
-        lista.forEach(item => {
-          totalMonedas += item.totalMonedas;
-          totalComisiones += item.comision;
-          totalEmpresa += item.gananciaEmpresa;
-
-          const badgeColector = item.esMio 
-            ? `<span class="text-[9px] bg-blue-100 text-blue-900 px-1.5 py-0.2 rounded font-bold">Mío</span>` 
-            : `<span class="text-[9px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded font-bold">${item.creadoPorEmail}</span>`;
-
-          const fila = document.createElement('tr');
-          fila.className = "hover:bg-slate-50 transition border-b border-slate-100";
-          fila.innerHTML = `
-            <td class="p-3">
-              <span class="font-bold text-slate-800 block text-xs">${item.cliente}</span>
-              <span class="text-[10px] text-slate-400 font-semibold uppercase">${item.concepto} (${item.porcentaje}%)</span>
-            </td>
-            <td class="p-3 text-center text-slate-500 font-semibold text-[10px] uppercase">
-              ${item.ruta} <br/> ${badgeColector}
-            </td>
-            <td class="p-3 text-center text-slate-500 font-medium text-[11px] whitespace-nowrap">${item.fecha}</td>
-            <td class="p-3 text-center font-mono font-medium text-slate-600">${item.cant25} / ${item.cant10} / ${item.cant5}</td>
-            <td class="p-3 text-right font-medium text-slate-600">$ ${item.bruto.toLocaleString('es-DO', { minimumFractionDigits: 2 })}</td>
-            <td class="p-3 text-right font-black text-emerald-700">$ ${item.gananciaEmpresa.toLocaleString('es-DO', { minimumFractionDigits: 2 })}</td>
-            <td class="p-3 text-center">
-              <button onclick="reimprimirLiquidacion(${item.id})" title="Reimprimir Comprobante" class="bg-blue-50 text-blue-700 hover:bg-blue-100 p-1.5 rounded-lg border border-blue-200 font-bold transition">
-                🖨️
-              </button>
-            </td>
-            <td class="p-3 text-center accion-eliminar-col">
-              <div class="flex items-center justify-center gap-2">
-                <button onclick="editarFechaRegistro(${item.id}, '${item.fecha}')" title="Editar Fecha" class="text-blue-500 hover:text-blue-700 font-bold text-sm bg-blue-50 px-2 py-1 rounded">📅</button>
-                <button onclick="eliminarRegistro(${item.id})" title="Eliminar" class="text-rose-500 hover:text-rose-700 font-bold text-sm bg-rose-50 px-2 py-1 rounded">✕</button>
-              </div>
-            </td>
-          `;
-          cuerpo.appendChild(fila);
-        });
-      }
-
-      document.getElementById('resumenCantRegistros').textContent = lista.length;
-      document.getElementById('resumenTotalMonedas').textContent = totalMonedas;
-      document.getElementById('resumenComisiones').textContent = `$ ${totalComisiones.toLocaleString('es-DO', { minimumFractionDigits: 0 })}`;
-      document.getElementById('resumenGananciaEmpresa').textContent = `$ ${totalEmpresa.toLocaleString('es-DO', { minimumFractionDigits: 0 })}`;
-    }
-
-    // EXCEL: Formato HTML exportado como .xls
-    function exportarExcel() {
-      const lista = filtrarLiquidaciones();
-      if (lista.length === 0) { mostrarMensaje("No hay datos para exportar.", "⚠️"); return; }
-
-      const fechaReporte = document.getElementById('filtroTipoPeriodo').value === 'dia' ? document.getElementById('filtroFechaDia').value : new Date().toISOString().split('T')[0];
-
-      let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"></head><body>`;
-      html += `<table border="1" style="border-collapse: collapse; font-family: sans-serif;">`;
-      
-      const grupos = agruparPorRuta(lista);
-      let granTotal = 0;
-
-      Object.keys(grupos).forEach(ruta => {
-        html += `<tr><td colspan="2" style="background-color:#1e3a8a; color:#ffffff; font-size:16px; font-weight:bold; text-align:center; padding:10px;">${ruta.toUpperCase()} - Fecha: ${fechaReporte}</td></tr>`;
-        
-        let subtotalRuta = 0;
-        grupos[ruta].forEach(item => {
-          subtotalRuta += item.gananciaEmpresa;
-          granTotal += item.gananciaEmpresa;
-          const conceptoLimpio = item.concepto ? ` (${item.concepto})` : "";
-          html += `<tr><td style="padding:5px;">${item.cliente}${conceptoLimpio}</td><td style="text-align:right; padding:5px;">${formatearMontoLimpio(item.gananciaEmpresa)}</td></tr>`;
-        });
-        
-        html += `<tr><td style="font-weight:bold; text-align:right; padding:5px; background-color:#f1f5f9;">Subtotal ${ruta}:</td><td style="font-weight:bold; text-align:right; padding:5px; background-color:#f1f5f9;">${formatearMontoLimpio(subtotalRuta)}</td></tr>`;
-        html += `<tr><td colspan="2" style="height:20px; border:none;"></td></tr>`;
-      });
-
-      if (Object.keys(grupos).length > 1) {
-         html += `<tr><td style="font-weight:bold; font-size:14px; text-align:right; background-color:#cbd5e1; padding:8px;">TOTAL GENERAL TODAS LAS RUTAS:</td><td style="font-weight:bold; font-size:14px; text-align:right; background-color:#cbd5e1; padding:8px;">${formatearMontoLimpio(granTotal)}</td></tr>`;
-      }
-      
-      html += `</table></body></html>`;
-
-      const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = `Liquidacion_${zonaActiva.toUpperCase()}_${fechaReporte}.xls`;
-      link.click();
-    }
-
-    // DOCUMENTO HTML MÓVIL: Agrupado por rutas
-    function exportarDocumento() {
-      const lista = filtrarLiquidaciones();
-      if (lista.length === 0) { mostrarMensaje("No hay datos para exportar.", "⚠️"); return; }
-
-      const fechaReporte = document.getElementById('filtroTipoPeriodo').value === 'dia' ? document.getElementById('filtroFechaDia').value : new Date().toISOString().split('T')[0];
-
-      let filasHTML = "";
-      let granTotal = 0;
-      const grupos = agruparPorRuta(lista);
-
-      Object.keys(grupos).forEach(ruta => {
-        filasHTML += `<tr><td colspan="2" style="padding:12px; font-weight:bold; background-color:#e2e8f0; color:#1e293b; font-size:14px; text-transform:uppercase; text-align:center;">📍 ${ruta} - ${fechaReporte}</td></tr>`;
-        
-        let subtotalRuta = 0;
-        grupos[ruta].forEach(item => {
-          subtotalRuta += item.gananciaEmpresa;
-          granTotal += item.gananciaEmpresa;
-          const conceptoLimpio = item.concepto ? ` (${item.concepto})` : "";
-          filasHTML += `<tr><td style="padding:8px 12px;font-size:13px;border-bottom:1px solid #f1f5f9;">${item.cliente}${conceptoLimpio}</td><td style="padding:8px 12px;text-align:right;font-weight:bold;border-bottom:1px solid #f1f5f9;">${formatearMontoLimpio(item.gananciaEmpresa)}</td></tr>`;
-        });
-        
-        filasHTML += `<tr><td style="padding:8px 12px; text-align:right; font-size:12px; color:#64748b;">Subtotal ${ruta}:</td><td style="padding:8px 12px; text-align:right; font-weight:bold; color:#0f172a;">${formatearMontoLimpio(subtotalRuta)}</td></tr>`;
-        filasHTML += `<tr><td colspan="2" style="height:15px; border-bottom:2px dashed #cbd5e1;"></td></tr>`;
-      });
-
-      const totalHtml = Object.keys(grupos).length > 1 ? `<tr style="background-color:#f8fafc;"><td style="padding:12px;font-weight:bold;font-size:14px; text-align:right;">TOTAL GENERAL:</td><td style="padding:12px;text-align:right;font-weight:900;color:#1e3a8a;font-size:16px;">${formatearMontoLimpio(granTotal)}</td></tr>` : '';
-
-      const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Liquidación</title></head><body style="font-family:sans-serif;padding:20px;background:#f8fafc;"><div style="max-width:600px;margin:auto;background:#fff;border:1px solid #cbd5e1;padding:20px;border-radius:12px;box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1);"><h2 style="color:#1e3a8a;margin-top:0;font-size:18px;text-align:center;">REPORTE DE RECOLECCIÓN</h2><table style="width:100%;border-collapse:collapse;"><tbody>${filasHTML}${totalHtml}</tbody></table></div></body></html>`;
-
-      const blob = new Blob(["\uFEFF" + html], { type: 'text/html;charset=utf-8;' });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = `Liquidacion_${zonaActiva.toUpperCase()}_${fechaReporte}.html`;
-      link.click();
-    }
-
-    // ==========================================
-    // DEPÓSITO SEMANAL Y GRÁFICOS
-    // ==========================================
-    function fijarEstaSemanaDeposito() {
-      const ahora = new Date();
-      const dia = ahora.getDay();
-      const distLunes = (dia === 0 ? -6 : 1) - dia;
-      
-      const lunes = new Date(ahora);
-      lunes.setDate(ahora.getDate() + distLunes);
-      
-      const sabado = new Date(lunes);
-      sabado.setDate(lunes.getDate() + 5);
-
-      document.getElementById('depositoFechaDesde').value = lunes.toISOString().split('T')[0];
-      document.getElementById('depositoFechaHasta').value = sabado.toISOString().split('T')[0];
-      alCambiarRangoSemana();
-    }
-
-    function alCambiarRangoSemana() {
-      calcularDepositoSemanal();
-      cargarArqueoSemanaActual();
-    }
-
-    function actualizarGrafico(id, rec, gas, dep) {
-      const el = document.getElementById(id);
-      if(!el) return;
-      if(rec === 0) {
-        el.style.background = '#e2e8f0';
-        el.style.border = '4px solid #cbd5e1';
-        return;
-      }
-      const porcGas = (gas / rec) * 100;
-      el.style.background = `conic-gradient(#ef4444 0% ${porcGas}%, #10b981 ${porcGas}% 100%)`;
-      el.style.border = '6px solid #60a5fa'; 
-    }
-
-    function calcularDepositoSemanal() {
-      const desde = document.getElementById('depositoFechaDesde').value;
-      const hasta = document.getElementById('depositoFechaHasta').value;
-      if (!desde || !hasta) return;
-
-      if (zonaActiva === 'todas') {
-        document.getElementById('vistaDepositoNormal').classList.add('hidden');
-        document.getElementById('vistaDepositoConsolidado').classList.remove('hidden');
-
-        const liqsGen = liquidacionesGuardadas.filter(i => i.fecha >= desde && i.fecha <= hasta);
-        const gastosGen = gastosGuardados.filter(g => g.fecha >= desde && g.fecha <= hasta);
-
-        const liqsCibao = liqsGen.filter(i => i.zona_id === 'cibao');
-        const gastosCibao = gastosGen.filter(i => i.zona_id === 'cibao');
-
-        const liqsSur = liqsGen.filter(i => i.zona_id === 'sur');
-        const gastosSur = gastosGen.filter(i => i.zona_id === 'sur');
-
-        const recCibao = liqsCibao.reduce((acc, i) => acc + i.gananciaEmpresa, 0);
-        const gasCibao = gastosCibao.reduce((acc, i) => acc + i.monto, 0);
-        const depCibao = Math.max(0, recCibao - gasCibao);
-
-        const recSur = liqsSur.reduce((acc, i) => acc + i.gananciaEmpresa, 0);
-        const gasSur = gastosSur.reduce((acc, i) => acc + i.monto, 0);
-        const depSur = Math.max(0, recSur - gasSur);
-
-        const recGen = recCibao + recSur;
-        const gasGen = gasCibao + gasSur;
-        const depGen = depCibao + depSur;
-
-        document.getElementById('consCibaoRec').textContent = formatearMontoLimpio(recCibao);
-        document.getElementById('consCibaoGas').textContent = formatearMontoLimpio(gasCibao);
-        document.getElementById('consCibaoDep').textContent = formatearMontoLimpio(depCibao);
-        actualizarGrafico('graficoCibao', recCibao, gasCibao, depCibao);
-
-        document.getElementById('consSurRec').textContent = formatearMontoLimpio(recSur);
-        document.getElementById('consSurGas').textContent = formatearMontoLimpio(gasSur);
-        document.getElementById('consSurDep').textContent = formatearMontoLimpio(depSur);
-        actualizarGrafico('graficoSur', recSur, gasSur, depSur);
-
-        document.getElementById('consGenRec').textContent = formatearMontoLimpio(recGen);
-        document.getElementById('consGenGas').textContent = formatearMontoLimpio(gasGen);
-        document.getElementById('consGenDep').textContent = formatearMontoLimpio(depGen);
-        actualizarGrafico('graficoGen', recGen, gasGen, depGen);
-
-        return;
-      }
-
-      document.getElementById('vistaDepositoNormal').classList.remove('hidden');
-      document.getElementById('vistaDepositoConsolidado').classList.add('hidden');
-
-      const liqs = liquidacionesGuardadas.filter(i => i.fecha >= desde && i.fecha <= hasta);
-      const resumenPorColectorYRuta = {};
-      let totalRecoleccion = 0;
-
-      liqs.forEach(i => {
-        totalRecoleccion += i.gananciaEmpresa;
-        const clave = `${i.ruta_nombre || i.ruta}__${i.creadoPorEmail}`;
-        if (!resumenPorColectorYRuta[clave]) {
-          resumenPorColectorYRuta[clave] = {
-            ruta: i.ruta_nombre || i.ruta,
-            colector: i.creadoPorEmail,
-            esMio: i.esMio,
-            total: 0,
-            cant: 0
-          };
-        }
-        resumenPorColectorYRuta[clave].total += i.gananciaEmpresa;
-        resumenPorColectorYRuta[clave].cant += 1;
-      });
-
-      const cuerpoRutas = document.getElementById('cuerpoRutasSemana');
-      cuerpoRutas.innerHTML = '';
-      const claves = Object.keys(resumenPorColectorYRuta);
-      document.getElementById('totalRutasSemanaLabel').textContent = `${claves.length} rutas registradas`;
-
-      if (claves.length === 0) {
-        document.getElementById('sinRutasSemanaMsg').classList.remove('hidden');
-      } else {
-        document.getElementById('sinRutasSemanaMsg').classList.add('hidden');
-        claves.forEach(k => {
-          const item = resumenPorColectorYRuta[k];
-          const badgeColector = item.esMio 
-            ? `<span class="text-[10px] bg-blue-100 text-blue-900 px-2 py-0.5 rounded font-bold">Mi liquidación</span>` 
-            : `<span class="text-[10px] bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-bold">Liquidó: ${item.colector}</span>`;
-
-          cuerpoRutas.innerHTML += `
-            <tr class="border-b border-slate-100 hover:bg-slate-50">
-              <td class="p-3">
-                <span class="font-bold text-slate-800 uppercase block text-xs">${item.ruta}</span>
-                ${badgeColector}
-              </td>
-              <td class="p-3 text-center font-medium">${item.cant} clientes</td>
-              <td class="p-3 text-right font-black text-blue-950">${formatearMontoLimpio(item.total)}</td>
-            </tr>
-          `;
-        });
-      }
-      document.getElementById('subtotalRecoleccionSemanaCard').textContent = formatearMontoLimpio(totalRecoleccion);
-
-      const gastos = gastosGuardados.filter(g => g.fecha >= desde && g.fecha <= hasta);
-      const cuerpoG = document.getElementById('cuerpoGastosSemana');
-      cuerpoG.innerHTML = '';
-      let totalGastos = 0;
-
-      if (gastos.length === 0) {
-        document.getElementById('sinGastosSemanaMsg').classList.remove('hidden');
-      } else {
-        document.getElementById('sinGastosSemanaMsg').classList.add('hidden');
-        gastos.forEach(g => {
-          totalGastos += g.monto;
-          const badgeColector = g.esMio 
-            ? `<span class="text-[9px] bg-blue-50 text-blue-800 px-1 rounded">Mío</span>` 
-            : `<span class="text-[9px] bg-slate-100 text-slate-700 px-1 rounded">${g.creadoPorEmail}</span>`;
-
-          cuerpoG.innerHTML += `
-            <tr class="border-b border-slate-100">
-              <td class="p-3 font-bold text-slate-800">
-                ${g.concepto} ${badgeColector}
-              </td>
-              <td class="p-3 text-center">${g.fecha}</td>
-              <td class="p-3 text-right font-black text-rose-600">- ${formatearMontoLimpio(g.monto)}</td>
-              <td class="p-3 text-center accion-eliminar-col"><button onclick="eliminarGasto(${g.id})" class="text-rose-500 font-bold">✕</button></td>
-            </tr>
-          `;
-        });
-      }
-      document.getElementById('totalGastosSemanaCard').textContent = `- ${formatearMontoLimpio(totalGastos)}`;
-
-      totalNetoDepositoCalculado = Math.max(0, totalRecoleccion - totalGastos);
-      document.getElementById('auditoriaTotalSistema').textContent = formatearMontoLimpio(totalNetoDepositoCalculado);
-      calcularArqueoFisico();
-    }
-
-    async function agregarGasto(e) {
-      e.preventDefault();
-      registrarActividad();
-      const concepto = document.getElementById('gastoConcepto').value.trim();
-      const fecha = document.getElementById('gastoFecha').value;
-      const monto = Number(document.getElementById('gastoMonto').value) || 0;
-      if (!concepto || monto <= 0) return;
-
-      const zonaDestino = (zonaActiva === 'todas' || zonaActiva === 'personal') ? 'cibao' : zonaActiva;
-
-      const { error } = await sbClient.from('pb_gastos').insert({
-        zona_id: zonaDestino,
-        concepto, fecha, monto,
-        creado_por: usuarioActual.id,
-        creado_por_email: window.nombreMostrar
-      });
-
-      if (error) { mostrarMensaje("Error: " + error.message, "❌"); return; }
-
-      document.getElementById('gastoConcepto').value = '';
-      document.getElementById('gastoMonto').value = '';
-      await cargarDatosZonaActiva();
-      mostrarMensaje("Gasto registrado.", "✅");
-    }
-
-    async function eliminarGasto(id) {
-      const confirmado = await pedirConfirmacion("¿Estás seguro de que quieres eliminarlo?", "ELIMINAR GASTO", "🗑️");
-      if (confirmado) {
-        await sbClient.from('pb_gastos').update({ eliminado: true, eliminado_por: usuarioActual.id, eliminado_en: new Date().toISOString() }).eq('id', id);
-        await cargarDatosZonaActiva();
-        mostrarMensaje("Gasto eliminado correctamente.", "🗑️");
-      }
-    }
-
-    function cargarArqueoSemanaActual() {
-      const zonaStr = zonaActiva === 'todas' ? 'general' : zonaActiva;
-      const clave = `${zonaStr}_${document.getElementById('depositoFechaDesde').value}_${document.getElementById('depositoFechaHasta').value}`;
-      const guardado = arqueosSemanalesGuardados[clave] || {};
-      ['b2000','b1000','b500','b200','b100','b50','m25','m10','m5','m1'].forEach(id => {
-        const el = document.getElementById(id);
-        if(el) el.value = guardado[id] || '';
-      });
-      calcularArqueoFisico();
-    }
-
-    function alModificarArqueo() {
-      calcularArqueoFisico();
-      clearTimeout(debounceTimerArqueo);
-      debounceTimerArqueo = setTimeout(() => { guardarArqueoSemanaActual(false); }, 700);
-    }
-
-    function limpiarArqueoFisico() {
-       ['b2000','b1000','b500','b200','b100','b50','m25','m10','m5','m1'].forEach(id => {
-          document.getElementById(id).value = '';
-       });
-       guardarArqueoSemanaActual(false);
-       calcularArqueoFisico();
-    }
-
-    async function guardarArqueoSemanaActual(alerta = false) {
-      const zonaStr = zonaActiva === 'todas' ? 'general' : zonaActiva;
-      const clave = `${zonaStr}_${document.getElementById('depositoFechaDesde').value}_${document.getElementById('depositoFechaHasta').value}`;
-      const conteo = {};
-      ['b2000','b1000','b500','b200','b100','b50','m25','m10','m5','m1'].forEach(id => {
-        const el = document.getElementById(id);
-        if(el) conteo[id] = el.value;
-      });
-      arqueosSemanalesGuardados[clave] = conteo;
-      
-      localStorage.setItem('pb_arqueos_local', JSON.stringify(arqueosSemanalesGuardados));
-
-      if (alerta) mostrarMensaje("Arqueo guardado localmente.", "💾");
-    }
-
-    function calcularArqueoFisico() {
-      const b2000 = (Number(document.getElementById('b2000').value) || 0) * 2000;
-      document.getElementById('subB2000').textContent = `$ ${b2000.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
-      
-      const b1000 = (Number(document.getElementById('b1000').value) || 0) * 1000;
-      document.getElementById('subB1000').textContent = `$ ${b1000.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
-      
-      const b500 = (Number(document.getElementById('b500').value) || 0) * 500;
-      document.getElementById('subB500').textContent = `$ ${b500.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
-      
-      const b200 = (Number(document.getElementById('b200').value) || 0) * 200;
-      document.getElementById('subB200').textContent = `$ ${b200.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
-      
-      const b100 = (Number(document.getElementById('b100').value) || 0) * 100;
-      document.getElementById('subB100').textContent = `$ ${b100.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
-      
-      const b50 = (Number(document.getElementById('b50').value) || 0) * 50;
-      document.getElementById('subB50').textContent = `$ ${b50.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
-
-      const totalB = b2000 + b1000 + b500 + b200 + b100 + b50;
-      document.getElementById('totalBilletesCard').textContent = `$ ${totalB.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
-
-      const m25 = (Number(document.getElementById('m25').value) || 0) * 25;
-      document.getElementById('subM25').textContent = `$ ${m25.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
-      
-      const m10 = (Number(document.getElementById('m10').value) || 0) * 10;
-      document.getElementById('subM10').textContent = `$ ${m10.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
-      
-      const m5 = (Number(document.getElementById('m5').value) || 0) * 5;
-      document.getElementById('subM5').textContent = `$ ${m5.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
-      
-      const m1 = (Number(document.getElementById('m1').value) || 0) * 1;
-      document.getElementById('subM1').textContent = `$ ${m1.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
-      
-      const totalM = m25 + m10 + m5 + m1;
-      document.getElementById('totalMonedasFisicasCard').textContent = `$ ${totalM.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
-
-      const totalFisico = totalB + totalM;
-      document.getElementById('totalFisicoEnManoCard').textContent = `$ ${totalFisico.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
-      document.getElementById('auditoriaTotalContado').textContent = `$ ${totalFisico.toLocaleString('es-DO', { minimumFractionDigits: 2 })}`;
-
-      const dif = totalFisico - totalNetoDepositoCalculado;
-      const badge = document.getElementById('badgeEstadoCuadre');
-      const difElem = document.getElementById('auditoriaDiferencia');
-
-      if (totalFisico === 0 && totalNetoDepositoCalculado === 0) {
-        difElem.textContent = "$ 0.00";
-        badge.textContent = "Sin datos";
-      } else if (dif === 0) {
-        difElem.textContent = "$ 0.00";
-        difElem.className = "text-2xl font-black text-emerald-400";
-        badge.textContent = "✅ Caja Cuadrada";
-      } else if (dif < 0) {
-        difElem.textContent = `- ${formatearMontoLimpio(Math.abs(dif))}`;
-        difElem.className = "text-2xl font-black text-rose-400";
-        badge.textContent = "⚠️ Faltante";
-      } else {
-        difElem.textContent = `+ ${formatearMontoLimpio(dif)}`;
-        difElem.className = "text-2xl font-black text-amber-400";
-        badge.textContent = "ℹ️ Sobrante";
-      }
-    }
-
-    function exportarDepositoDocumento() {
-      const desde = document.getElementById('depositoFechaDesde').value;
-      const hasta = document.getElementById('depositoFechaHasta').value;
-      const totalRec = document.getElementById('subtotalRecoleccionSemanaCard').textContent;
-      const totalGas = document.getElementById('totalGastosSemanaCard').textContent;
-      const totalDep = document.getElementById('auditoriaTotalSistema').textContent;
-
-      const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Comprobante de Depósito</title></head><body style="font-family:sans-serif;padding:20px;"><div style="max-width:600px;margin:auto;border:1px solid #cbd5e1;padding:20px;border-radius:12px;"><h2 style="color:#1e3a8a;margin-top:0;">PLANET BRANDS - CIERRE Y DEPÓSITO</h2><p style="color:#64748b;">Período: <strong>${desde} al ${hasta}</strong> | Zona: <strong>${zonaActiva.toUpperCase()}</strong></p><p>Total Recolección: <strong>${totalRec}</strong></p><p>Gastos Deducidos: <strong>${totalGas}</strong></p><hr/><h3 style="color:#047857;">TOTAL A DEPOSITAR: ${totalDep}</h3></div></body></html>`;
-
-      const blob = new Blob(["\uFEFF" + html], { type: 'text/html;charset=utf-8;' });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = `Deposito_${zonaActiva.toUpperCase()}_${desde}_al_${hasta}.html`;
-      link.click();
-    }
-
-    // ==========================================
-    // RESPALDOS FÍSICOS LOCALES (.JSON)
-    // ==========================================
-    function descargarCopiaSeguridad() {
-      registrarActividad();
-      const backup = {
-        usuario: usuarioActual ? window.nombreMostrar : "local",
-        zona: zonaActiva,
-        rutas: rutasApp,
-        clientes: catalogoClientes,
-        liquidaciones: liquidacionesGuardadas,
-        gastos: gastosGuardados,
-        arqueos_semanales: arqueosSemanalesGuardados,
-        fecha: new Date().toISOString()
-      };
-
-      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json;charset=utf-8;' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `Respaldo_PlanetBrands_${zonaActiva.toUpperCase()}_${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(link.href);
-    }
-
-    function restaurarCopiaSeguridad(input) {
-      const file = input.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = async function(e) {
-        try {
-          const data = JSON.parse(e.target.result);
-          if (data.rutas && data.clientes) {
-            rutasApp = data.rutas;
-            catalogoClientes = data.clientes;
-            if (data.liquidaciones) liquidacionesGuardadas = data.liquidaciones;
-            if (data.gastos) gastosGuardados = data.gastos;
-            if (data.arqueos_semanales) arqueosSemanalesGuardados = data.arqueos_semanales;
-
-            poblarSelectoresRuta();
-            actualizarClientesSegunRuta();
-            renderizarHistorial();
-            renderizarListaClientesConfig();
-            alCambiarRangoSemana();
-
-            mostrarMensaje("Archivo de respaldo restaurado.", "✅");
-          } else {
-            mostrarMensaje("Formato de archivo no válido.", "❌");
-          }
-        } catch (err) {
-          mostrarMensaje("Error al leer el archivo de respaldo.", "❌");
-        }
-      };
-      reader.readAsText(file, "UTF-8");
-    }
-
-    // ==========================================
-    // RUTAS Y CLIENTES (CATÁLOGO)
-    // ==========================================
-    async function agregarRuta() {
-      const nombre = document.getElementById('nuevaRutaNombre').value.trim().toUpperCase();
-      if (!nombre) return;
-
-      const zonaDestino = (zonaActiva === 'todas' || zonaActiva === 'personal') ? 'cibao' : zonaActiva;
-
-      const { error } = await sbClient.from('pb_rutas').insert({
-        zona_id: zonaDestino,
-        nombre: nombre,
-        creado_por: usuarioActual.id,
-        creado_por_email: window.nombreMostrar
-      });
-
-      if (error) { mostrarMensaje("Error: " + error.message, "❌"); return; }
-      document.getElementById('nuevaRutaNombre').value = '';
-      await cargarDatosZonaActiva();
-      mostrarMensaje("Ruta creada correctamente.", "✅");
-    }
-
-    async function editarRuta(id, nombreActual) {
-      const nuevoNombre = prompt("Editar nombre de la ruta:", nombreActual);
-      if (nuevoNombre && nuevoNombre.trim().toUpperCase() !== nombreActual) {
-        const nombreFinal = nuevoNombre.trim().toUpperCase();
-        
-        const { error } = await sbClient.from('pb_rutas').update({ nombre: nombreFinal }).eq('id', id);
-        if (error) {
-            mostrarMensaje("Error al actualizar la base de datos.", "❌");
-            return;
-        }
-
-        await sbClient.from('pb_clientes').update({ ruta_nombre: nombreFinal }).eq('ruta_nombre', nombreActual);
-        await sbClient.from('pb_liquidaciones').update({ ruta_nombre: nombreFinal }).eq('ruta_nombre', nombreActual);
-        
-        await cargarDatosZonaActiva();
-        mostrarMensaje("Ruta y registros actualizados.", "✅");
-      }
-    }
-
-    async function eliminarRuta(id, nombreActual) {
-      const confirmado = await pedirConfirmacion(`¿Estás seguro de que deseas eliminar la ruta ${nombreActual}?`, "ELIMINAR RUTA", "⚠️");
-      if (confirmado) {
-        await sbClient.from('pb_rutas').update({ eliminado: true }).eq('id', id);
-        await cargarDatosZonaActiva();
-        mostrarMensaje("Ruta eliminada.", "🗑️");
-      }
-    }
-
-    async function agregarClienteCatalogo(e) {
-      e.preventDefault();
-      const ruta = document.getElementById('selectRutaParaCliente').value;
-      const nombre = document.getElementById('nuevoClienteNombre').value.trim();
-      const concepto = document.getElementById('nuevoClienteConcepto').value;
-      const porcentaje = Number(document.getElementById('nuevoClientePorcentaje').value) || 25;
-
-      const zonaDestino = (zonaActiva === 'todas' || zonaActiva === 'personal') ? 'cibao' : zonaActiva;
-
-      const { error } = await sbClient.from('pb_clientes').insert({
-        zona_id: zonaDestino,
-        ruta_nombre: ruta,
-        nombre: nombre,
-        concepto: concepto,
-        porcentaje: porcentaje,
-        creado_por: usuarioActual.id,
-        creado_por_email: window.nombreMostrar
-      });
-
-      if (error) { mostrarMensaje("Error: " + error.message, "❌"); return; }
-      document.getElementById('nuevoClienteNombre').value = '';
-      await cargarDatosZonaActiva();
-      mostrarMensaje("Guardado correctamente.", "✅");
-    }
-
-    function renderizarListaClientesConfig() {
-      const ruta = document.getElementById('selectRutaParaCliente').value;
-      const lista = catalogoClientes.filter(c => c.ruta === ruta);
-      const cont = document.getElementById('listaClientesConfig');
-      cont.innerHTML = '';
-      if (lista.length === 0) { cont.innerHTML = '<li class="p-3 text-slate-400 text-center">No hay clientes configurados en esta ruta.</li>'; return; }
-
-      lista.forEach(c => {
-        cont.innerHTML += `<li class="p-3 flex justify-between items-center hover:bg-slate-50 border-b border-slate-100"><div><strong class="text-slate-800 text-xs block">${c.nombre}</strong><span class="text-[11px] text-slate-500 font-semibold">${c.concepto} - ${c.porcentaje}%</span></div><button onclick="eliminarClienteCatalogo(${c.id})" class="text-rose-500 font-bold text-xs accion-eliminar-col">Eliminar</button></li>`;
-      });
-    }
-
-    async function eliminarClienteCatalogo(id) {
-      const confirmado = await pedirConfirmacion("¿Estás seguro de que quieres eliminarlo?", "ELIMINAR CLIENTE", "🗑️");
-      if (confirmado) {
-        await sbClient.from('pb_clientes').update({ eliminado: true, eliminado_por: usuarioActual.id, eliminado_en: new Date().toISOString() }).eq('id', id);
-        await cargarDatosZonaActiva();
-        mostrarMensaje("Cliente eliminado correctamente.", "🗑️");
-      }
     }
 
     // ==========================================
