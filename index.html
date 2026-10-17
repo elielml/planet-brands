@@ -1382,15 +1382,18 @@
       const btnReiniciarConteo = document.getElementById('btnReiniciarConteo');
       const tabCuadre = document.getElementById('tabCuadre');
       const tabClientes = document.getElementById('tabClientes');
+      const tabAdmin = document.getElementById('tabAdminMaster');
 
       if (esModoConsulta) {
         if (formGasto) formGasto.classList.add('hidden');
         if (btnGuardarArqueo) btnGuardarArqueo.classList.add('hidden');
         if (btnReiniciarConteo) btnReiniciarConteo.classList.add('hidden');
         
-        tabCuadre.classList.add('hidden');
+        if (tabCuadre) tabCuadre.classList.add('hidden');
+        if (tabAdmin) tabAdmin.classList.add('hidden');
         if (tabClientes) tabClientes.classList.remove('hidden');
-        if (!document.getElementById('vistaCuadre').classList.contains('seccion-oculta')) {
+        
+        if (!document.getElementById('vistaCuadre').classList.contains('seccion-oculta') || !document.getElementById('vistaAdminMaster').classList.contains('seccion-oculta')) {
            cambiarPestana('historial');
         }
         
@@ -1403,28 +1406,14 @@
         if (btnGuardarArqueo) btnGuardarArqueo.classList.remove('hidden');
         if (btnReiniciarConteo) btnReiniciarConteo.classList.remove('hidden');
         
-        tabCuadre.classList.remove('hidden');
-        if (tabClientes) {
-           if (esSuperAdmin) tabClientes.classList.remove('hidden');
-           else tabClientes.classList.add('hidden');
+        if (tabCuadre) tabCuadre.classList.remove('hidden');
+        if (esSuperAdmin) {
+           if(tabClientes) tabClientes.classList.remove('hidden');
+           if(tabAdmin) tabAdmin.classList.remove('hidden');
+        } else {
+           if(tabClientes) tabClientes.classList.add('hidden');
+           if(tabAdmin) tabAdmin.classList.add('hidden');
         }
-        
-        ['b2000','b1000','b500','b200','b100','b50','m25','m10','m5','m1'].forEach(id => {
-            const input = document.getElementById(id);
-            if (input) input.disabled = false;
-        });
-      }
-        if (btnGuardarArqueo) btnGuardarArqueo.classList.add('hidden');
-        if (btnReiniciarConteo) btnReiniciarConteo.classList.add('hidden');
-        
-        ['b2000','b1000','b500','b200','b100','b50','m25','m10','m5','m1'].forEach(id => {
-            const input = document.getElementById(id);
-            if (input) input.disabled = true;
-        });
-      } else {
-        if (formGasto) formGasto.classList.remove('hidden');
-        if (btnGuardarArqueo) btnGuardarArqueo.classList.remove('hidden');
-        if (btnReiniciarConteo) btnReiniciarConteo.classList.remove('hidden');
         
         ['b2000','b1000','b500','b200','b100','b50','m25','m10','m5','m1'].forEach(id => {
             const input = document.getElementById(id);
@@ -1445,7 +1434,7 @@
       let qLiq = sbClient.from('pb_liquidaciones').select('*').eq('eliminado', false).order('fecha', { ascending: false });
       let qGastos = sbClient.from('pb_gastos').select('*').eq('eliminado', false).order('fecha', { ascending: false });
 
-     if (permisosUsuario.length === 0 && !esSuperAdmin) {
+      if (permisosUsuario.length === 0 && !esSuperAdmin) {
         qRutas = qRutas.eq('creado_por', usuarioActual.id);
         qClientes = qClientes.eq('creado_por', usuarioActual.id);
         qLiq = qLiq.eq('creado_por', usuarioActual.id);
@@ -1466,7 +1455,7 @@
       const rutasDesdeLiquidaciones = [...new Set((resLiq.data || []).map(l => l.ruta_nombre))];
       rutasApp = [...new Set([...rutasDesdeTabla, ...rutasDesdeLiquidaciones])];
 
-     catalogoClientes = (resClientes.data || []).map(c => ({ 
+      catalogoClientes = (resClientes.data || []).map(c => ({ 
         id: c.id, 
         ruta: c.ruta_nombre, 
         nombre: c.nombre, 
@@ -1490,7 +1479,8 @@
               nombre: l.cliente_nombre,
               concepto: l.concepto,
               porcentaje: l.porcentaje,
-              zona_id: l.zona_id || 'cibao'
+              zona_id: l.zona_id || 'cibao',
+              direccion: '', sector: '', provincia: '', representante: '', telefono: ''
             });
           }
         });
@@ -1532,22 +1522,11 @@
       renderizarHistorial();
       renderizarListaClientesConfig();
       alCambiarRangoSemana();
-    }
-
-    function poblarFiltroColectores() {
-      const select = document.getElementById('filtroColector');
-      const valPrevio = select.value;
-      select.innerHTML = `
-        <option value="TODOS">Todos los usuarios (Consolidado)</option>
-        <option value="MIO" selected>Solo mis registros</option>
-      `;
-
-      const otrosEmails = [...new Set(liquidacionesGuardadas.filter(i => !i.esMio).map(i => i.creadoPorEmail))];
-      otrosEmails.forEach(email => {
-        select.innerHTML += `<option value="${email}">Solo de: ${email}</option>`;
-      });
-
-      select.value = valPrevio || "MIO";
+      
+      const vistaCli = document.getElementById('vistaClientesGeneral');
+      if(vistaCli && !vistaCli.classList.contains('seccion-oculta')) {
+         renderizarListaGlobalClientes();
+      }
     }
 
     // ==========================================
