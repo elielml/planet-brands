@@ -2457,10 +2457,11 @@
                 🖨️
               </button>
             </td>
-            <td class="p-3 text-center accion-eliminar-col">
-              <div class="flex items-center justify-center gap-2">
-                <button onclick="editarFechaRegistro(${item.id}, '${item.fecha}')" title="Editar Fecha" class="text-blue-500 hover:text-blue-700 font-bold text-sm bg-blue-50 px-2 py-1 rounded">📅</button>
-                <button onclick="eliminarRegistro(${item.id})" title="Eliminar" class="text-rose-500 hover:text-rose-700 font-bold text-sm bg-rose-50 px-2 py-1 rounded">✕</button>
+           <td class="p-3 text-center accion-eliminar-col">
+              <div class="flex items-center justify-center gap-1.5">
+                <button onclick="editarRutaRegistro(${item.id}, '${item.ruta}')" title="Cambiar Ruta" class="text-indigo-600 hover:text-indigo-800 font-bold text-xs bg-indigo-50 px-2 py-1 rounded">📍</button>
+                <button onclick="editarFechaRegistro(${item.id}, '${item.fecha}')" title="Editar Fecha" class="text-blue-500 hover:text-blue-700 font-bold text-xs bg-blue-50 px-2 py-1 rounded">📅</button>
+                <button onclick="eliminarRegistro(${item.id})" title="Eliminar" class="text-rose-500 hover:text-rose-700 font-bold text-xs bg-rose-50 px-2 py-1 rounded">✕</button>
               </div>
             </td>
           `;
@@ -3172,6 +3173,50 @@
       link.href = URL.createObjectURL(blob);
       link.download = `Base_Datos_Clientes.xls`;
       link.click();
+    }
+    async function editarRutaRegistro(id, rutaActual) {
+      if (rutasApp.length === 0) {
+        mostrarMensaje("No hay rutas disponibles para cambiar.", "⚠️");
+        return;
+      }
+
+      const opcionesRutas = rutasApp.map(r => `<option value="${r}" ${r === rutaActual ? 'selected' : ''}>${r}</option>`).join('');
+      
+      const modalHtml = `
+        <div id="modalCambiarRuta" class="fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-5 border border-slate-200 space-y-4">
+            <h3 class="text-sm font-black text-slate-900 uppercase">Cambiar Ruta del Registro</h3>
+            <p class="text-xs text-slate-500">Selecciona la ruta correcta para este negocio:</p>
+            <select id="nuevoSelectRutaModal" class="w-full p-2.5 border rounded-xl text-xs font-bold bg-slate-50 border-slate-300 outline-none">
+              ${opcionesRutas}
+            </select>
+            <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+              <button type="button" onclick="document.getElementById('modalCambiarRuta').remove()" class="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-xl text-xs uppercase">Cancelar</button>
+              <button type="button" onclick="confirmarCambioRutaRegistro(${id})" class="px-4 py-2 bg-blue-900 text-white font-black rounded-xl text-xs uppercase shadow">Guardar</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const divTemp = document.createElement('div');
+      divTemp.innerHTML = modalHtml;
+      document.body.appendChild(divTemp);
+    }
+
+    async function confirmarCambioRutaRegistro(id) {
+      const nuevaRuta = document.getElementById('nuevoSelectRutaModal').value;
+      if (!nuevaRuta) return;
+
+      const { error } = await sbClient.from('pb_liquidaciones').update({ ruta_nombre: nuevaRuta }).eq('id', id);
+      
+      document.getElementById('modalCambiarRuta').parentElement.remove();
+
+      if (error) {
+        mostrarMensaje("Error al actualizar la ruta: " + error.message, "❌");
+      } else {
+        await cargarDatosZonaActiva();
+        mostrarMensaje("¡Ruta actualizada con éxito!", "✅");
+      }
     }
   </script>
 </body>
