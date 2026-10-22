@@ -1372,9 +1372,6 @@
       await cargarDatosZonaActiva();
     }
 
-    // ==========================================
-    // CARGA DE DATOS ESTRICTA POR ZONA
-    // ==========================================
     async function cargarDatosZonaActiva() {
       const permisoActual = permisosUsuario.find(p => p.zona_id === zonaActiva) || { puede_leer: esSuperAdmin, puede_crear: esSuperAdmin, puede_eliminar: esSuperAdmin };
       const esModoConsulta = !permisoActual.puede_crear && permisosUsuario.length > 0;
@@ -1386,14 +1383,21 @@
       const tabClientes = document.getElementById('tabClientes');
       const tabAdmin = document.getElementById('tabAdminMaster');
 
+      // BLINDAJE ESTRICTO: Solo el correo principal puede ver los botones de Admin y Clientes Globales
+      if (!esSuperAdmin) {
+        if (tabAdmin) tabAdmin.classList.add('hidden');
+        if (tabClientes) tabClientes.classList.add('hidden');
+      } else {
+        if (tabAdmin) tabAdmin.classList.remove('hidden');
+        if (tabClientes) tabClientes.classList.remove('hidden');
+      }
+
       if (esModoConsulta) {
         if (formGasto) formGasto.classList.add('hidden');
         if (btnGuardarArqueo) btnGuardarArqueo.classList.add('hidden');
         if (btnReiniciarConteo) btnReiniciarConteo.classList.add('hidden');
         
         if (tabCuadre) tabCuadre.classList.add('hidden');
-        if (tabAdmin) tabAdmin.classList.add('hidden');
-        if (tabClientes) tabClientes.classList.remove('hidden');
         
         if (!document.getElementById('vistaCuadre').classList.contains('seccion-oculta') || !document.getElementById('vistaAdminMaster').classList.contains('seccion-oculta')) {
            cambiarPestana('historial');
@@ -1409,13 +1413,6 @@
         if (btnReiniciarConteo) btnReiniciarConteo.classList.remove('hidden');
         
         if (tabCuadre) tabCuadre.classList.remove('hidden');
-        if (esSuperAdmin) {
-           if(tabClientes) tabClientes.classList.remove('hidden');
-           if(tabAdmin) tabAdmin.classList.remove('hidden');
-        } else {
-           if(tabClientes) tabClientes.classList.add('hidden');
-           if(tabAdmin) tabAdmin.classList.add('hidden');
-        }
         
         ['b2000','b1000','b500','b200','b100','b50','m25','m10','m5','m1'].forEach(id => {
             const input = document.getElementById(id);
@@ -1529,22 +1526,6 @@
       if(vistaCli && !vistaCli.classList.contains('seccion-oculta')) {
          renderizarListaGlobalClientes();
       }
-    }
-
-    function poblarFiltroColectores() {
-      const select = document.getElementById('filtroColector');
-      const valPrevio = select.value;
-      select.innerHTML = `
-        <option value="TODOS">Todos los usuarios (Consolidado)</option>
-        <option value="MIO" selected>Solo mis registros</option>
-      `;
-
-      const otrosEmails = [...new Set(liquidacionesGuardadas.filter(i => !i.esMio).map(i => i.creadoPorEmail))];
-      otrosEmails.forEach(email => {
-        select.innerHTML += `<option value="${email}">Solo de: ${email}</option>`;
-      });
-
-      select.value = valPrevio || "MIO";
     }
 
     // ==========================================
@@ -3066,8 +3047,10 @@
     // ==========================================
     // CAMBIO DE PESTAÑAS
     // ==========================================
-    function cambiarPestana(p) {
-      if (p === 'adminMaster' && !esSuperAdmin) return;
+function cambiarPestana(p) {
+      if ((p === 'adminMaster' || p === 'clientes') && !esSuperAdmin) {
+        return;
+      }
 
       ['vistaCuadre','vistaHistorial','vistaDeposito','vistaRutas','vistaAdminMaster','vistaClientesGeneral'].forEach(id => {
         const el = document.getElementById(id);
@@ -3094,19 +3077,18 @@
         document.getElementById('tabRutas').className = "py-2.5 rounded-lg bg-blue-900 text-white shadow transition text-[11px] sm:text-xs";
         renderizarAdminRutas();
         renderizarListaClientesConfig();
-      } else if (p === 'adminMaster') {
+      } else if (p === 'adminMaster' && esSuperAdmin) {
         document.getElementById('vistaAdminMaster').classList.remove('seccion-oculta');
         document.getElementById('tabAdminMaster').className = "col-span-2 sm:col-span-4 py-2.5 rounded-lg bg-amber-400 text-slate-950 font-black shadow transition text-xs";
         cargarListaUsuariosRegistrados();
         cargarPapelera();
         cargarAuditoria();
-      } else if (p === 'clientes') {
+      } else if (p === 'clientes' && esSuperAdmin) {
         document.getElementById('vistaClientesGeneral').classList.remove('seccion-oculta');
         document.getElementById('tabClientes').className = "col-span-2 sm:col-span-4 py-2.5 rounded-lg bg-indigo-500 text-white font-black shadow transition text-xs";
         renderizarListaGlobalClientes();
       }
     }
-
     async function cerrarSesionManual() {
       localStorage.removeItem('pb_ultima_actividad');
       await sbClient.auth.signOut();
