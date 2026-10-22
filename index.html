@@ -3283,6 +3283,15 @@ function cambiarPestana(p) {
         mostrarMensaje("¡Ruta actualizada con éxito!", "✅");
       }
     }
+    async function cerrarSesionManual() {
+      localStorage.removeItem('pb_ultima_actividad');
+      try {
+        await sbClient.auth.signOut();
+      } catch (e) {
+        console.error("Error al cerrar sesión:", e);
+      }
+      window.location.href = window.location.pathname;
+    }
   </script>
 </body>
 </html>
