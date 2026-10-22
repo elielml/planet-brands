@@ -791,9 +791,10 @@
     <!-- ========================================== -->
     <!-- VISTA 4: GESTIÓN DE RUTAS Y CLIENTES       -->
     <!-- ========================================== -->
-    <section id="vistaRutas" class="seccion-oculta space-y-4">
+   <section id="vistaRutas" class="seccion-oculta space-y-4">
 
-      <div class="w-full bg-slate-900 text-white p-4 sm:p-5 rounded-xl shadow border border-slate-800 space-y-3 box-border overflow-hidden">
+      <!-- BLOQUE DE COPIAS DE SEGURIDAD (SOLO SUPERADMIN) -->
+      <div id="bloqueCopiasSeguridad" class="w-full bg-slate-900 text-white p-4 sm:p-5 rounded-xl shadow border border-slate-800 space-y-3 box-border overflow-hidden">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
             <h2 class="text-sm font-bold flex items-center gap-2">
@@ -1445,6 +1446,17 @@ const meta = usuarioActual.user_metadata || {};
         } else {
           el.style.display = '';
         }
+      // Ocultar o mostrar el bloque de respaldos en nube y renombrar pestaña según sea Superadmin
+      const bloqueBackup = document.getElementById('bloqueCopiasSeguridad');
+      const tabRutasBtn = document.getElementById('tabRutas');
+
+      if (esSuperAdmin) {
+        if (bloqueBackup) bloqueBackup.classList.remove('hidden');
+        if (tabRutasBtn) tabRutasBtn.innerHTML = '⚙️ Rutas/Nube';
+      } else {
+        if (bloqueBackup) bloqueBackup.classList.add('hidden');
+        if (tabRutasBtn) tabRutasBtn.innerHTML = '⚙️ Rutas';
+      }
       });
 
       let qRutas = sbClient.from('pb_rutas').select('*').eq('eliminado', false);
@@ -3075,10 +3087,22 @@ function cambiarPestana(p) {
         const el = document.getElementById(id);
         if(el) el.classList.add('seccion-oculta');
       });
+      
       ['tabCuadre','tabHistorial','tabDeposito','tabRutas','tabAdminMaster','tabClientes'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.className = "py-2.5 rounded-lg text-slate-600 hover:text-slate-900 transition text-[11px] sm:text-xs";
       });
+
+      // BLINDAJE VISUAL ESTRICTO EN NAVEGACIÓN
+      const tabAdmin = document.getElementById('tabAdminMaster');
+      const tabClientesBtn = document.getElementById('tabClientes');
+      if (!esSuperAdmin) {
+        if (tabAdmin) tabAdmin.classList.add('hidden');
+        if (tabClientesBtn) tabClientesBtn.classList.add('hidden');
+      } else {
+        if (tabAdmin) tabAdmin.classList.remove('hidden');
+        if (tabClientesBtn) tabClientesBtn.classList.remove('hidden');
+      }
 
       if (p === 'cuadre') {
         document.getElementById('vistaCuadre').classList.remove('seccion-oculta');
@@ -3107,11 +3131,6 @@ function cambiarPestana(p) {
         document.getElementById('tabClientes').className = "col-span-2 sm:col-span-4 py-2.5 rounded-lg bg-indigo-500 text-white font-black shadow transition text-xs";
         renderizarListaGlobalClientes();
       }
-    }
-    async function cerrarSesionManual() {
-      localStorage.removeItem('pb_ultima_actividad');
-      await sbClient.auth.signOut();
-      location.reload();
     }
 
     // ==========================================
