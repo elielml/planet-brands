@@ -175,9 +175,15 @@
 
       <form id="formAuth" onsubmit="procesarAuth(event)" class="space-y-4">
         
-        <div id="grupoNombre" class="hidden">
-          <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Nombre</label>
-          <input type="text" id="authNombre" placeholder="Escribe tu nombre" class="w-full p-3 border rounded-xl text-sm font-bold bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-600 outline-none">
+       <div id="grupoNombre" class="hidden space-y-3">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Nombre</label>
+            <input type="text" id="authNombre" placeholder="Ej: Eliel" class="w-full p-3 border rounded-xl text-sm font-bold bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-600 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Apellido</label>
+            <input type="text" id="authApellido" placeholder="Ej: Martinez" class="w-full p-3 border rounded-xl text-sm font-bold bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-600 outline-none">
+          </div>
         </div>
 
         <div>
@@ -1264,10 +1270,17 @@
 
       if (esRegistro) {
         const nombre = document.getElementById('authNombre').value.trim();
+        const apellido = document.getElementById('authApellido').value.trim();
+        
         const { data, error } = await sbClient.auth.signUp({ 
           email, 
           password,
-          options: { data: { primer_nombre: nombre } } 
+          options: { 
+            data: { 
+              primer_nombre: nombre,
+              primer_apellido: apellido 
+            } 
+          } 
         });
 
         if (error) {
@@ -1306,9 +1319,15 @@
 
       esSuperAdmin = (usuarioActual.email.trim().toLowerCase() === 'elieldejesusml@gmail.com');
       
-      window.nombreMostrar = usuarioActual.user_metadata?.primer_nombre || usuarioActual.email.split('@')[0];
+const meta = usuarioActual.user_metadata || {};
+      const nombreUsuario = meta.primer_nombre || '';
+      const apellidoUsuario = meta.primer_apellido || '';
+      
+      window.nombreMostrar = (nombreUsuario || apellidoUsuario) 
+        ? `${nombreUsuario} ${apellidoUsuario}`.trim() 
+        : usuarioActual.email.split('@')[0];
+        
       document.getElementById('labelUsuarioActivo').textContent = window.nombreMostrar;
-
       const tabAdmin = document.getElementById('tabAdminMaster');
       if (esSuperAdmin) {
         tabAdmin.classList.remove('hidden');
