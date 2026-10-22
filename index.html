@@ -1100,13 +1100,12 @@
 
   <script>
    // ==========================================
-    // CONFIGURACIÓN DE SUPABASE (SEGURA CON .ENV)
+    // CONFIGURACIÓN DE SUPABASE
     // ==========================================
-    const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-    const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_KEY;
+    const SUPABASE_URL = "https://nfgnyvdjolpowdpybuvw.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mZ255dmRqb2xwb3dkcHlidXZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4MTE5MzEsImV4cCI6MjEwNDM4NzkzMX0.bnNuDhGmIx04GoSEbmgHi_EJPv7Q4XixiCel-3owKSo";
 
     const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
     function mostrarMensaje(texto, icono = "✅", duracion = 2500) {
       const box = document.getElementById('notificacionFlotante');
       const txt = document.getElementById('notificacionTexto');
