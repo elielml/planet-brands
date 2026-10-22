@@ -354,3 +354,664 @@
               <div class="bg-blue-50/70 p-2 rounded-lg border border-blue-100 text-right">
                 <span class="text-[10px] uppercase font-bold text-blue-800/70 block">Subtotal:</span>
                 <p class="text-lg font-black text-blue-950 leading-tight" id="sub5">$ 0.00</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TOTALES -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-900 text-white p-4 rounded-xl">
+          <div>
+            <span class="block text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Total</span>
+            <p class="text-lg font-black" id="totalBrutoCard">$ 0.00</p>
+          </div>
+          <div>
+            <span class="block text-[11px] uppercase tracking-wider text-rose-300 font-semibold" id="labelComisionCliente">Comisión Cliente (25%)</span>
+            <p class="text-lg font-black text-rose-400" id="totalComisionCard">$ 0.00</p>
+          </div>
+          <div class="sm:border-l sm:border-slate-800 sm:pl-3">
+            <span class="block text-[11px] uppercase tracking-wider text-emerald-300 font-semibold">Diferencia</span>
+            <p class="text-xl font-black text-emerald-400" id="totalEmpresaCard">$ 0.00</p>
+          </div>
+        </div>
+
+        <!-- BOTONES: GUARDAR, IMPRIMIR Y LIMPIAR -->
+        <div id="botonesFormCuadre" class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2">
+          <button type="button" onclick="limpiarFormulario()" class="py-3.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-xl border border-rose-200 transition text-xs uppercase">
+            🗑 Borrar
+          </button>
+          <button type="button" onclick="imprimirTicketActual()" class="py-3.5 bg-blue-700 hover:bg-blue-800 text-white font-black rounded-xl shadow transition text-xs uppercase flex items-center justify-center gap-1.5">
+            <span>🖨️ Imprimir Recibo</span>
+          </button>
+          <button type="submit" class="py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl shadow-md transition text-xs uppercase">
+            💾 Guardar
+          </button>
+        </div>
+
+      </form>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- VISTA 2: HISTORIAL Y REPORTES              -->
+    <!-- ========================================== -->
+    <section id="vistaHistorial" class="seccion-oculta space-y-4">
+      
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Registrado Por</label>
+            <select id="filtroColector" onchange="renderizarHistorial()" class="w-full p-2 border rounded-lg text-xs font-bold bg-slate-50 border-slate-300 outline-none">
+              <option value="TODOS">Todos los usuarios (Consolidado)</option>
+              <option value="MIO" selected>Solo mis registros</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Ruta</label>
+            <select id="filtroRuta" onchange="alCambiarFiltroRutaHistorial()" class="w-full p-2 border rounded-lg text-xs font-bold bg-slate-50 border-slate-300 outline-none">
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Cliente Específico</label>
+            <select id="filtroClienteEspecifico" onchange="renderizarHistorial()" class="w-full p-2 border rounded-lg text-xs font-bold bg-slate-50 border-slate-300 outline-none">
+              <option value="TODOS">Todos los clientes</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Período</label>
+            <select id="filtroTipoPeriodo" onchange="alternarFiltroFecha()" class="w-full p-2 border rounded-lg text-xs font-bold bg-slate-50 border-slate-300 outline-none">
+              <option value="todos">Todos los registros</option>
+              <option value="dia">Un solo día</option>
+              <option value="semana">Semana (Rango)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- BUSCADOR LIBRE DE CLIENTE -->
+        <div>
+          <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">🔍 Buscar Cliente por Nombre</label>
+          <input type="text" id="inputBuscadorClienteLibre" oninput="renderizarHistorial()" placeholder="Escribe parte del nombre del negocio..." class="w-full p-2 border rounded-lg text-xs font-bold bg-slate-50 border-slate-300 outline-none">
+        </div>
+
+        <div id="contenedorFiltroDia" class="hidden pt-1">
+          <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Seleccionar Día</label>
+          <input type="date" id="filtroFechaDia" onchange="renderizarHistorial()" class="w-full sm:w-1/2 p-2 border rounded-lg text-xs font-bold bg-slate-50 border-slate-300 outline-none">
+        </div>
+
+        <div id="contenedorFiltroSemana" class="hidden pt-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Desde</label>
+            <input type="date" id="filtroFechaDesde" onchange="renderizarHistorial()" class="w-full p-2 border rounded-lg text-xs font-bold bg-slate-50 border-slate-300 outline-none">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Hasta</label>
+            <input type="date" id="filtroFechaHasta" onchange="renderizarHistorial()" class="w-full p-2 border rounded-lg text-xs font-bold bg-slate-50 border-slate-300 outline-none">
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-2 pt-2 border-t border-slate-100">
+          <button type="button" onclick="exportarExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg text-xs font-bold uppercase shadow transition flex items-center gap-2">
+            <span>📊 Exportar a Excel</span>
+          </button>
+          <button type="button" onclick="exportarDocumento()" class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2.5 rounded-lg text-xs font-bold uppercase shadow transition flex items-center gap-2">
+            <span>📄 Exportar Documento (Móvil)</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-900 text-white p-4 rounded-xl text-center">
+        <div>
+          <span class="text-[10px] uppercase text-slate-400 block font-semibold">Registros</span>
+          <span class="text-base font-black" id="resumenCantRegistros">0</span>
+        </div>
+        <div>
+          <span class="text-[10px] uppercase text-slate-400 block font-semibold">Total Monedas</span>
+          <span class="text-base font-black" id="resumenTotalMonedas">0</span>
+        </div>
+        <div>
+          <span class="text-[10px] uppercase text-rose-300 block font-semibold">Comisión Clientes</span>
+          <span class="text-base font-black text-rose-400" id="resumenComisiones">$ 0</span>
+        </div>
+        <div>
+          <span class="text-[10px] uppercase text-emerald-300 block font-semibold">Total Recolección</span>
+          <span class="text-base font-black text-emerald-400" id="resumenGananciaEmpresa">$ 0</span>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto w-full">
+          <table class="w-full text-left text-xs border-collapse whitespace-nowrap min-w-[700px]">
+            <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
+              <tr>
+                <th class="p-3">Cliente / Máquina</th>
+                <th class="p-3 text-center">Ruta / Colector</th>
+                <th class="p-3 text-center">Fecha</th>
+                <th class="p-3 text-center">Monedas (25/10/5)</th>
+                <th class="p-3 text-right">Bruto</th>
+                <th class="p-3 text-right">Ganancia</th>
+                <th class="p-3 text-center">Imprimir</th>
+                <th class="p-3 text-center accion-eliminar-col">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="cuerpoHistorial" class="divide-y divide-slate-100 text-slate-700">
+            </tbody>
+          </table>
+        </div>
+        <p id="mensajeHistorialVacio" class="text-center py-8 text-xs text-slate-400 font-medium hidden">
+          No hay liquidaciones registradas bajo este filtro.
+        </p>
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- VISTA 3: CIERRE SEMANAL, DEPÓSITO Y ARQUEO -->
+    <!-- ========================================== -->
+    <section id="vistaDeposito" class="seccion-oculta space-y-4">
+      
+      <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div>
+            <h2 class="text-sm font-black text-slate-800 uppercase tracking-wide">Semana de Recolección</h2>
+            <p class="text-xs text-slate-500">Resumen para depósito bancario y control de gastos</p>
+          </div>
+          <button type="button" onclick="fijarEstaSemanaDeposito()" class="bg-blue-100 hover:bg-blue-200 text-blue-900 text-xs font-bold px-3 py-1.5 rounded-lg transition">
+            📅 Lunes a Sábado
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Desde (Lunes)</label>
+            <input type="date" id="depositoFechaDesde" onchange="alCambiarRangoSemana()" class="w-full p-2.5 border rounded-xl text-xs font-bold bg-slate-50 border-slate-300 outline-none">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Hasta (Sábado)</label>
+            <input type="date" id="depositoFechaHasta" onchange="alCambiarRangoSemana()" class="w-full p-2.5 border rounded-xl text-xs font-bold bg-slate-50 border-slate-300 outline-none">
+          </div>
+        </div>
+      </div>
+
+      <!-- VISTA NORMAL -->
+      <div id="vistaDepositoNormal" class="space-y-4">
+        <!-- RUTAS -->
+        <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+          <div class="flex justify-between items-center">
+            <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">1. Rutas Trabajadas en esta Semana</h2>
+            <span class="text-xs font-bold text-slate-400" id="totalRutasSemanaLabel">0 rutas</span>
+          </div>
+          <div class="border border-slate-100 rounded-xl overflow-x-auto w-full">
+            <table class="w-full text-left text-xs border-collapse whitespace-nowrap min-w-[300px]">
+              <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
+                <tr><th class="p-3">Ruta / Colector</th><th class="p-3 text-center">Liquidaciones</th><th class="p-3 text-right">Subtotal Recolectado</th></tr>
+              </thead>
+              <tbody id="cuerpoRutasSemana" class="divide-y divide-slate-100 text-slate-700"></tbody>
+            </table>
+            <p id="sinRutasSemanaMsg" class="text-center py-5 text-xs text-slate-400 hidden">No se realizaron liquidaciones.</p>
+          </div>
+          <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-200 font-bold text-xs">
+            <span class="text-slate-600 uppercase">Subtotal Recolección Semanal:</span><span class="text-blue-900 text-sm font-black" id="subtotalRecoleccionSemanaCard">$ 0.00</span>
+          </div>
+        </div>
+
+        <!-- GASTOS -->
+        <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+          <div class="flex justify-between items-center">
+            <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">2. Gastos en Efectivo de la Semana</h2>
+            <span class="text-[11px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">Se resta del depósito</span>
+          </div>
+          <form id="formGastoEfectivo" onsubmit="agregarGasto(event)" class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div><label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Concepto del Gasto</label><input type="text" id="gastoConcepto" placeholder="Ej: Combustible..." required class="w-full p-2.5 border rounded-lg text-xs font-bold bg-white border-slate-300 outline-none"></div>
+              <div><label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Fecha</label><input type="date" id="gastoFecha" required class="w-full p-2.5 border rounded-lg text-xs font-bold bg-white border-slate-300 outline-none"></div>
+              <div><label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Monto ($)</label><input type="number" id="gastoMonto" min="1" step="any" placeholder="0.00" required class="w-full p-2.5 border rounded-lg text-xs font-bold bg-white border-slate-300 outline-none"></div>
+            </div>
+            <button type="submit" class="w-full py-2 bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold uppercase rounded-lg shadow transition">- Registrar Gasto en Efectivo</button>
+          </form>
+          <div class="border border-slate-100 rounded-xl overflow-x-auto w-full">
+            <table class="w-full text-left text-xs border-collapse whitespace-nowrap min-w-[300px]">
+              <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
+                <tr><th class="p-3">Concepto / Colector</th><th class="p-3 text-center">Fecha</th><th class="p-3 text-right">Monto</th><th class="p-3 text-center accion-eliminar-col">Quitar</th></tr>
+              </thead>
+              <tbody id="cuerpoGastosSemana" class="divide-y divide-slate-100 text-slate-700"></tbody>
+            </table>
+            <p id="sinGastosSemanaMsg" class="text-center py-4 text-xs text-slate-400">No hay gastos registrados en esta semana.</p>
+          </div>
+          <div class="flex justify-between items-center bg-rose-50 p-3 rounded-xl border border-rose-200 font-bold text-xs">
+            <span class="text-rose-800 uppercase">Total Gastos Restados:</span><span class="text-rose-700 text-sm font-black" id="totalGastosSemanaCard">- $ 0.00</span>
+          </div>
+        </div>
+
+        <!-- ARQUEO FÍSICO -->
+        <div id="seccionArqueoFisico" class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+          <div class="flex justify-between items-center">
+            <div><h2 class="text-xs font-black uppercase tracking-wider text-slate-700">3. Arqueo Físico en Mano</h2><p class="text-[11px] text-slate-500">Conteo de efectivo en tu poder de esta zona</p></div>
+            <button type="button" id="btnReiniciarConteo" onclick="limpiarArqueoFisico()" class="text-xs text-slate-400 hover:text-rose-600 underline font-semibold">Reiniciar Conteo</button>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Billetes -->
+            <div class="border border-slate-200 rounded-xl overflow-hidden bg-slate-50/50">
+              <div class="bg-blue-900 text-white px-3 py-2 text-xs font-black uppercase tracking-wide flex justify-between"><span>💵 Papeletas / Billetes</span></div>
+              <table class="w-full text-xs text-left">
+                <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
+                  <tr><th class="p-2.5">Denominación</th><th class="p-2.5 text-center w-24">Cantidad</th><th class="p-2.5 text-right">Subtotal</th></tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 bg-white">
+                  <tr><td class="p-2 font-bold text-slate-700">$ 2,000</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="b2000" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subB2000">$ 0.00</td></tr>
+                  <tr><td class="p-2 font-bold text-slate-700">$ 1,000</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="b1000" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subB1000">$ 0.00</td></tr>
+                  <tr><td class="p-2 font-bold text-slate-700">$ 500</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="b500" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subB500">$ 0.00</td></tr>
+                  <tr><td class="p-2 font-bold text-slate-700">$ 200</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="b200" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subB200">$ 0.00</td></tr>
+                  <tr><td class="p-2 font-bold text-slate-700">$ 100</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="b100" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subB100">$ 0.00</td></tr>
+                  <tr><td class="p-2 font-bold text-slate-700">$ 50</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="b50" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subB50">$ 0.00</td></tr>
+                </tbody>
+                <tfoot class="bg-blue-50 border-t border-blue-200">
+                  <tr><td colspan="2" class="p-2.5 font-black text-blue-900 uppercase text-[11px]">Total Papeletas:</td><td class="p-2.5 text-right font-black text-blue-950 text-sm" id="totalBilletesCard">$ 0.00</td></tr>
+                </tfoot>
+              </table>
+            </div>
+            <!-- Monedas -->
+            <div class="border border-slate-200 rounded-xl overflow-hidden bg-slate-50/50 flex flex-col justify-between">
+              <div>
+                <div class="bg-amber-600 text-white px-3 py-2 text-xs font-black uppercase tracking-wide flex justify-between"><span>🪙 Monedas Físicas</span></div>
+                <table class="w-full text-xs text-left">
+                  <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
+                    <tr><th class="p-2.5">Denominación</th><th class="p-2.5 text-center w-24">Cantidad</th><th class="p-2.5 text-right">Subtotal</th></tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100 bg-white">
+                    <tr><td class="p-2 font-bold text-slate-700">$ 25</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="m25" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subM25">$ 0.00</td></tr>
+                    <tr><td class="p-2 font-bold text-slate-700">$ 10</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="m10" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subM10">$ 0.00</td></tr>
+                    <tr><td class="p-2 font-bold text-slate-700">$ 5</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="m5" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subM5">$ 0.00</td></tr>
+                    <tr><td class="p-2 font-bold text-slate-700">$ 1</td><td class="p-1.5"><input type="number" min="0" placeholder="0" id="m1" oninput="alModificarArqueo()" class="w-full text-center p-1.5 border rounded-lg font-black text-sm bg-slate-50 outline-none"></td><td class="p-2 text-right font-black text-slate-800" id="subM1">$ 0.00</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="bg-amber-50 border-t border-amber-200 p-2.5 flex justify-between items-center">
+                <span class="font-black text-amber-900 uppercase text-[11px]">Total Monedas:</span><span class="font-black text-amber-950 text-sm" id="totalMonedasFisicasCard">$ 0.00</span>
+              </div>
+            </div>
+          </div>
+          <div class="bg-slate-100 p-3.5 rounded-xl border border-slate-200 flex justify-between items-center font-bold text-xs">
+            <span class="text-slate-700 uppercase">Total Dinero Físico en Mano:</span><span class="text-slate-900 text-base font-black" id="totalFisicoEnManoCard">$ 0.00</span>
+          </div>
+        </div>
+
+        <!-- COMPARADOR DE AUDITORÍA Y DEPÓSITO FINAL -->
+        <div id="contenedorAuditoria" class="p-5 rounded-2xl shadow-lg border space-y-3 bg-slate-900 text-white border-slate-800">
+          <div class="flex justify-between items-center">
+            <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold block">Liquidación de Depósito</span>
+            <span id="badgeEstadoCuadre" class="px-2.5 py-0.5 rounded-full text-xs font-black uppercase bg-slate-800 text-slate-300">Pendiente</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 border-t border-slate-800">
+            <div><span class="text-[11px] uppercase text-slate-400 block font-semibold">Total a Depositar (Esperado)</span><p class="text-lg font-black text-blue-300" id="auditoriaTotalSistema">$ 0.00</p></div>
+            <div><span class="text-[11px] uppercase text-slate-400 block font-semibold">Efectivo Físico Contado</span><p class="text-lg font-black text-slate-100" id="auditoriaTotalContado">$ 0.00</p></div>
+            <div class="sm:border-l sm:border-slate-800 sm:pl-3"><span class="text-[11px] uppercase text-slate-400 block font-semibold">Diferencia de Cuadre</span><p class="text-2xl font-black text-slate-300" id="auditoriaDiferencia">$ 0.00</p></div>
+          </div>
+          <p id="mensajeAuditoria" class="text-xs font-bold text-center pt-2 text-slate-400"></p>
+          <div class="flex flex-wrap gap-2 pt-2 border-t border-slate-800">
+            <button type="button" id="btnGuardarArqueoMaster" onclick="guardarArqueoSemanaActual(true)" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs uppercase px-4 py-3 shadow transition flex items-center justify-center gap-1.5"><span>💾</span> Guardar Arqueo</button>
+            <button type="button" onclick="exportarDepositoDocumento()" class="flex-1 py-3 bg-blue-700 hover:bg-blue-800 text-white font-black rounded-xl text-xs uppercase shadow transition flex items-center justify-center gap-2"><span>📄 Exportar Comprobante</span></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- VISTA CONSOLIDADA (Ambas Rutas) -->
+      <div id="vistaDepositoConsolidado" class="hidden space-y-4">
+        <h2 class="text-base sm:text-lg font-black text-slate-800 uppercase tracking-wide text-center pt-2">Resumen Consolidado Semanal</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- ZONA CIBAO -->
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-blue-200 flex flex-col items-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
+            <h3 class="text-sm font-black text-blue-900 uppercase">📍 Ruta Cibao</h3>
+            <div class="w-32 h-32 my-5 rounded-full border-4 border-blue-200 shadow-sm" id="graficoCibao"></div>
+            <div class="w-full space-y-2 text-xs font-bold pt-2 border-t border-slate-100">
+              <div class="flex justify-between items-center text-blue-600"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 border border-blue-600 bg-white"></div> Recolección Total:</span><span id="consCibaoRec">$ 0.00</span></div>
+              <div class="flex justify-between items-center text-rose-500"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 bg-rose-500"></div> Gastos (Rojo):</span><span id="consCibaoGas">$ 0.00</span></div>
+              <div class="flex justify-between items-center text-emerald-700 bg-emerald-50 p-2 rounded-lg mt-1"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 bg-emerald-500"></div> Depósito (Verde):</span><span id="consCibaoDep" class="text-sm font-black">$ 0.00</span></div>
+            </div>
+            <button onclick="abrirDetallesZona('cibao')" class="mt-4 w-full bg-blue-50 hover:bg-blue-100 text-blue-700 py-2 rounded-lg text-xs font-bold uppercase transition">Ver Detalles</button>
+          </div>
+
+          <!-- ZONA SUR -->
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-amber-200 flex flex-col items-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-amber-500"></div>
+            <h3 class="text-sm font-black text-amber-900 uppercase">📍 Ruta Sur</h3>
+            <div class="w-32 h-32 my-5 rounded-full border-4 border-amber-200 shadow-sm" id="graficoSur"></div>
+            <div class="w-full space-y-2 text-xs font-bold pt-2 border-t border-slate-100">
+              <div class="flex justify-between items-center text-blue-600"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 border border-blue-600 bg-white"></div> Recolección Total:</span><span id="consSurRec">$ 0.00</span></div>
+              <div class="flex justify-between items-center text-rose-500"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 bg-rose-500"></div> Gastos (Rojo):</span><span id="consSurGas">$ 0.00</span></div>
+              <div class="flex justify-between items-center text-emerald-700 bg-emerald-50 p-2 rounded-lg mt-1"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 bg-emerald-500"></div> Depósito (Verde):</span><span id="consSurDep" class="text-sm font-black">$ 0.00</span></div>
+            </div>
+            <button onclick="abrirDetallesZona('sur')" class="mt-4 w-full bg-amber-50 hover:bg-amber-100 text-amber-800 py-2 rounded-lg text-xs font-bold uppercase transition">Ver Detalles</button>
+          </div>
+
+          <!-- TOTAL GENERAL -->
+          <div class="bg-slate-900 p-5 rounded-2xl shadow-xl border border-slate-800 flex flex-col items-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-slate-500"></div>
+            <h3 class="text-sm font-black text-white uppercase">🌐 Total General Esperado</h3>
+            <div class="w-32 h-32 my-5 rounded-full border-4 border-slate-600 shadow-sm" id="graficoGen"></div>
+            <div class="w-full space-y-2 text-xs font-bold pt-2 border-t border-slate-800">
+              <div class="flex justify-between items-center text-blue-300"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 border border-blue-300 bg-transparent"></div> Recolección Global:</span><span id="consGenRec">$ 0.00</span></div>
+              <div class="flex justify-between items-center text-rose-400"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 bg-rose-500"></div> Gastos Globales:</span><span id="consGenGas">$ 0.00</span></div>
+              <div class="flex justify-between items-center text-emerald-400 bg-slate-800 p-2 rounded-lg mt-1"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 bg-emerald-500"></div> Gran Total a Depositar:</span><span id="consGenDep" class="text-base font-black">$ 0.00</span></div>
+            </div>
+            <button onclick="abrirDetallesZona('todas')" class="mt-4 w-full bg-slate-800 hover:bg-slate-700 text-slate-300 py-2 rounded-lg text-xs font-bold uppercase transition">Ver Detalles Generales</button>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- VISTA 4: GESTIÓN DE RUTAS Y CLIENTES       -->
+    <!-- ========================================== -->
+    <section id="vistaRutas" class="seccion-oculta space-y-4">
+
+      <div id="bloqueCopiasSeguridad" class="w-full bg-slate-900 text-white p-4 sm:p-5 rounded-xl shadow border border-slate-800 space-y-3 box-border overflow-hidden">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div>
+            <h2 class="text-sm font-bold flex items-center gap-2">
+              <span>💾</span> Copias de Seguridad Locales
+            </h2>
+            <p class="text-xs text-slate-300 mt-0.5">
+              Tus cambios se guardan automáticamente en la nube.
+            </p>
+          </div>
+          <span id="badgeNube" class="px-3 py-1 bg-emerald-500/20 text-emerald-300 text-[11px] font-semibold rounded-full border border-emerald-500/30">
+            Autoguardado Activo
+          </span>
+        </div>
+
+        <div class="flex flex-wrap gap-2 pt-1">
+          <button type="button" onclick="descargarCopiaSeguridad()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-lg text-xs font-bold shadow border border-slate-700 flex items-center gap-1">
+            <span>📥 Descargar Archivo Respaldo (.json)</span>
+          </button>
+          <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-lg text-xs font-bold shadow border border-slate-700 inline-flex items-center gap-1">
+            <span>📤 Restaurar Archivo Respaldo</span>
+            <input type="file" accept=".json" onchange="restaurarCopiaSeguridad(this)" class="hidden">
+          </label>
+        </div>
+      </div>
+
+      <!-- GESTIÓN Y ADMINISTRACIÓN DE RUTAS -->
+      <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+        <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">Crear y Administrar Rutas</h2>
+        <div class="flex gap-2">
+          <input type="system" id="nuevaRutaNombre" placeholder="Ej: RUTA AZUA, RUTA LA VEGA..." class="flex-1 p-2.5 border rounded-xl text-sm font-bold bg-slate-50 border-slate-300 focus:bg-white outline-none">
+          <button type="button" onclick="agregarRuta()" class="bg-blue-900 text-white px-4 py-2.5 rounded-xl text-xs font-bold uppercase hover:bg-blue-800 transition">
+            Crear
+          </button>
+        </div>
+        <div class="pt-2">
+          <ul id="listaRutasAdministrar" class="divide-y divide-slate-100 text-xs font-medium border border-slate-100 rounded-xl overflow-hidden bg-white">
+          </ul>
+        </div>
+      </div>
+
+      <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+        <div class="flex justify-between items-center">
+          <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">Agregar Cliente a la Ruta</h2>
+          <select id="selectRutaParaCliente" onchange="renderizarListaClientesConfig()" class="p-2 border rounded-lg text-xs font-bold bg-slate-50 border-slate-300 outline-none">
+          </select>
+        </div>
+
+        <form onsubmit="agregarClienteCatalogo(event)" class="space-y-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+          <div>
+            <label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Nombre del Negocio / Cliente</label>
+            <input type="text" id="nuevoClienteNombre" placeholder="Ej: Colmado El Progreso" required class="w-full p-2.5 border rounded-lg text-sm font-bold bg-white border-slate-300 outline-none">
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Concepto / Máquina</label>
+              <select id="nuevoClienteConcepto" class="w-full p-2.5 border rounded-lg text-sm font-bold bg-white border-slate-300 outline-none">
+                <option value="Dulces">Dulces</option>
+                <option value="Peluches">Peluches</option>
+                <option value="Kiddie Rides">Kiddie Rides</option>
+                <option value="Boxing Machine">Boxing Machine</option>
+                <option value="General">General / Otra</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">% Comisión Acordado</label>
+              <input type="number" id="nuevoClientePorcentaje" min="0" max="100" value="25" required class="w-full p-2.5 border rounded-lg text-sm font-bold bg-white border-slate-300 outline-none">
+            </div>
+          </div>
+          <button type="submit" class="w-full py-2.5 bg-blue-900 hover:bg-blue-800 text-white text-xs font-bold uppercase rounded-lg shadow transition">
+            + Guardar Cliente en Catálogo
+          </button>
+        </form>
+
+        <div class="pt-2">
+          <h3 class="text-xs font-bold text-slate-600 mb-2 uppercase">Clientes en esta Ruta:</h3>
+          <ul id="listaClientesConfig" class="divide-y divide-slate-100 text-xs font-medium border border-slate-100 rounded-xl overflow-hidden bg-white">
+          </ul>
+        </div>
+      </div>
+
+    </section>
+<!-- ========================================== -->
+    <!-- VISTA: LISTA GENERAL DE CLIENTES           -->
+    <!-- ========================================== -->
+    <section id="vistaClientesGeneral" class="seccion-oculta space-y-4">
+      <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+          <h2 class="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-1.5">
+            <span>📋</span> Base de Datos de Clientes
+          </h2>
+          <div class="flex gap-2">
+            <button type="button" onclick="exportarListaClientesExcel()" class="text-xs bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-lg font-bold hover:bg-emerald-200 transition">📊 Exportar</button>
+          </div>
+        </div>
+        
+        <div class="overflow-x-auto w-full pb-2">
+          <table class="w-full text-left text-xs border-collapse whitespace-nowrap min-w-[800px]">
+            <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
+              <tr>
+                <th class="p-2">ID</th>
+                <th class="p-2">Nombre del Cliente</th>
+                <th class="p-2">Ruta</th>
+                <th class="p-2 text-center">Tipo</th>
+                <th class="p-2 text-center">%</th>
+                <th class="p-2">Dirección</th>
+                <th class="p-2">Sector</th>
+                <th class="p-2">Provincia</th>
+                <th class="p-2">Representante</th>
+                <th class="p-2">Teléfono</th>
+                <th class="p-2 text-center">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="cuerpoListaClientes" class="divide-y divide-slate-100 text-slate-700">
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- MODAL PARA EDITAR INFO DEL CLIENTE -->
+      <div id="modalEditarCliente" class="hidden fixed inset-0 bg-slate-900/80 z-50 overflow-y-auto p-4 backdrop-blur-sm flex items-center justify-center">
+        <form onsubmit="guardarInfoCliente(event)" class="bg-white w-full max-w-lg rounded-2xl shadow-2xl p-5 border border-slate-200 space-y-3">
+          <h3 class="font-black text-sm uppercase text-slate-800 border-b border-slate-100 pb-2">Editar Cliente</h3>
+          <input type="hidden" id="editClienteId">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div><label class="text-[10px] font-bold text-slate-500 uppercase">Nombre</label><input type="text" id="editNombre" class="w-full p-2 border rounded-lg text-xs font-bold" required></div>
+            <div><label class="text-[10px] font-bold text-slate-500 uppercase">Ruta</label><select id="editRuta" class="w-full p-2 border rounded-lg text-xs font-bold"></select></div>
+            <div>
+              <label class="text-[10px] font-bold text-slate-500 uppercase">Máquina</label>
+              <select id="editConcepto" class="w-full p-2 border rounded-lg text-xs font-bold">
+                <option value="Dulces">Dulces</option><option value="Peluches">Peluches</option><option value="Kiddie Rides">Kiddie Rides</option><option value="Boxing Machine">Boxing Machine</option><option value="General">General / Otra</option>
+              </select>
+            </div>
+            <div><label class="text-[10px] font-bold text-slate-500 uppercase">% Comisión</label><input type="number" id="editPorc" class="w-full p-2 border rounded-lg text-xs font-bold" required></div>
+            <div class="sm:col-span-2"><label class="text-[10px] font-bold text-slate-500 uppercase">Dirección</label><input type="text" id="editDir" class="w-full p-2 border rounded-lg text-xs"></div>
+            <div><label class="text-[10px] font-bold text-slate-500 uppercase">Sector</label><input type="text" id="editSector" class="w-full p-2 border rounded-lg text-xs"></div>
+            <div><label class="text-[10px] font-bold text-slate-500 uppercase">Provincia</label><input type="text" id="editProv" class="w-full p-2 border rounded-lg text-xs"></div>
+            <div><label class="text-[10px] font-bold text-slate-500 uppercase">Representante</label><input type="text" id="editRep" class="w-full p-2 border rounded-lg text-xs"></div>
+            <div><label class="text-[10px] font-bold text-slate-500 uppercase">Teléfono</label><input type="text" id="editTel" class="w-full p-2ger border rounded-lg text-xs"></div>
+          </div>
+          <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+            <button type="button" onclick="document.getElementById('modalEditarCliente').classList.add('hidden')" class="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-xl text-xs uppercase">Cancelar</button>
+            <button type="submit" class="px-4 py-2 bg-blue-900 text-white font-black rounded-xl text-xs uppercase shadow">Guardar Cambios</button>
+          </div>
+        </form>
+      </div>
+    </section>
+    <!-- ======================================================== -->
+    <!-- VISTA 5: USUARIOS REGISTRADOS Y PERMISOS (SOLO MASTER)   -->
+    <!-- ======================================================== -->
+    <section id="vistaAdminMaster" class="seccion-oculta space-y-4">
+      
+      <!-- LISTA DE USUARIOS EN TARJETAS ADAPTABLES AL CELULAR -->
+      <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-amber-300 space-y-3">
+        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+          <div>
+            <h2 class="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-1.5">
+              <span>👥</span> Usuarios Registrados
+            </h2>
+            <p class="text-xs text-slate-500">Toca "Configurar" en cualquier usuario para otorgarle acceso</p>
+          </div>
+          <button type="button" onclick="cargarListaUsuariosRegistrados()" class="text-xs font-bold text-blue-700 hover:underline">
+            🔄 Refrescar
+          </button>
+        </div>
+
+        <div id="listaTarjetasUsuarios" class="space-y-2.5 pt-1">
+          <p class="text-center py-4 text-xs text-slate-400">Cargando usuarios registrados...</p>
+        </div>
+        <p id="mensajeSinUsuarios" class="text-center py-4 text-xs text-slate-400 hidden">
+          No hay otros usuarios registrados aún.
+        </p>
+      </div>
+
+      <!-- FORMULARIO DE ASIGNACIÓN INDEPENDIENTE POR ZONA -->
+      <div id="panelFormularioPermisos" class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+        <div class="border-b border-slate-100 pb-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div>
+            <h3 class="text-xs font-black text-slate-900 uppercase tracking-wide">
+              Configurando a: <span id="labelUsuarioSeleccionado" class="text-blue-900 font-bold normal-case">Ninguno seleccionado</span>
+            </h3>
+            <p class="text-[11px] text-slate-500">Activa zonas y permisos independientes para este usuario</p>
+          </div>
+          <button type="button" onclick="marcarModoDuenoRapido()" class="bg-amber-100 hover:bg-amber-200 text-amber-900 px-3 py-1.5 rounded-lg text-xs font-bold transition">
+            👔 Atajo: Modo Dueño
+          </button>
+        </div>
+
+        <input type="hidden" id="inputUserIdSeleccionado">
+
+        <div class="space-y-3">
+          <!-- BLOQUE ZONA CIBAO -->
+          <div class="p-3.5 rounded-xl border border-blue-200 bg-blue-50/50 space-y-2.5">
+            <div class="flex items-center justify-between border-b border-blue-200 pb-2">
+              <label class="flex items-center gap-2 font-black text-xs text-blue-950 uppercase cursor-pointer">
+                <input type="checkbox" id="chkCibaoActivo" onchange="alternarBloqueZona('cibao')" class="w-4 h-4 text-blue-600 rounded">
+                <span>Acceso a Ruta Cibao</span>
+              </label>
+              <span class="text-[10px] text-blue-700 font-semibold uppercase">Provincias Norte</span>
+            </div>
+
+            <div id="permisosCibaoContainer" class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 opacity-50 pointer-events-none">
+              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer">
+                <input type="checkbox" id="chkCibaoLeer" checked class="w-4 h-4 text-blue-600 rounded">
+                <span>Lectura</span>
+              </label>
+              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer">
+                <input type="checkbox" id="chkCibaoCrear" class="w-4 h-4 text-blue-600 rounded">
+                <span>Crear</span>
+              </label>
+              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer">
+                <input type="checkbox" id="chkCibaoEditar" class="w-4 h-4 text-blue-600 rounded">
+                <span>Editar</span>
+              </label>
+              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer">
+                <input type="checkbox" id="chkCibaoEliminar" class="w-4 h-4 text-rose-600 rounded">
+                <span>Eliminar</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- BLOQUE ZONA SUR -->
+          <div class="p-3.5 rounded-xl border border-emerald-200 bg-emerald-50/50 space-y-2.5">
+            <div class="flex items-center justify-between border-b border-emerald-200 pb-2">
+              <label class="flex items-center gap-2 font-black text-xs text-emerald-950 uppercase cursor-pointer">
+                <input type="checkbox" id="chkSurActivo" onchange="alternarBloqueZona('sur')" class="w-4 h-4 text-emerald-600 rounded">
+                <span>Acceso a Ruta Sur</span>
+              </label>
+              <span class="text-[10px] text-emerald-700 font-semibold uppercase">Sur / SD Oeste</span>
+            </div>
+
+            <div id="permisosSurContainer" class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 opacity-50 pointer-events-none">
+              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer">
+                <input type="checkbox" id="chkSurLeer" checked class="w-4 h-4 text-emerald-600 rounded">
+                <span>Lectura</span>
+              </label>
+              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer">
+                <input type="checkbox" id="chkSurCrear" class="w-4 h-4 text-emerald-600 rounded">
+                <span>Crear</span>
+              </label>
+              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 розу rounded-lg border border-slate-200 cursor-pointer">
+                <input type="checkbox" id="chkSurEditar" class="w-4 h-4 text-emerald-600 rounded">
+                <span>Editar</span>
+              </label>
+              <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 cursor-pointer">
+                <input type="checkbox" id="chkSurEliminar" class="w-4 h-4 text-rose-600 rounded">
+                <span>Eliminar</span>
+              </label>
+            </div>
+          </div>
+
+          <button type="type" onclick="guardarPermisosGranulares()" class="w-full py-3.5 bg-blue-900 hover:bg-blue-800 text-white font-black rounded-xl text-xs uppercase tracking-wider shadow transition">
+            💾 Guardar Permisos
+          </button>
+        </div>
+      </div>
+
+      <!-- PAPELERA DE RECICLAJE (SOFT-DELETE) -->
+      <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+          <div>
+            <h2 class="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-1.5">
+              <span>🗑️</span> Papelera de Registros Eliminados
+            </h2>
+            <p class="text-xs text-slate-500">Restaura liquidaciones que los usuarios hayan borrado</p>
+          </div>
+          <button type="button" onclick="cargarPapelera()" class="text-xs font-bold text-blue-700 hover:underline">
+            🔄 Refrescar
+          </button>
+        </div>
+
+        <div class="border border-slate-100 rounded-xl overflow-hidden">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
+              <tr>
+                <th class="p-2.5">Detalle / Cliente</th>
+                <th class="p-2.5 text-center">Zona</th>
+                <th class="p-2.5 text-center">Fecha Borrado</th>
+                <th class="p-2.5 text-right">Monto</th>
+                <th class="p-2.5 text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="cuerpoPapelera" class="divide-y divide-slate-100 text-slate-700">
+            </tbody>
+          </table>
+          <p id="mensajePapeleraVacia" class="text-center py-6 text-xs text-slate-400">
+            La papelera está vacía. No hay registros pendientes.
+          </p>
+        </div>
+      </div>
+
+      <!-- BITÁCORA DE AUDITORÍA -->
+      <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+          <h2 class="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-1.5">
+            <span>📜</span> Bitácora de Operaciones (Auditoría)
+          </h2>
+          <button type="button" onclick="cargarAuditoria()" class="text-xs font-bold text-blue-700 hover:underline">
+            🔄 Refrescar
+          </button>
+        </div>
+
+        <div id="listaAuditoria" class="space-y-2 max-h-80 overflow-y-auto text-xs font-medium">
+          <p class="text-center py-4 text-slate-400">Cargando registros de auditoría...</p>
+        </div>
+      </div>
+
+    </section>
