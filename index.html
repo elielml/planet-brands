@@ -472,22 +472,22 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-900 text-white p-4 rounded-xl text-center">
+     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-900 text-white p-4 sm:p-5 rounded-xl text-center">
         <div>
-          <span class="text-[10px] uppercase text-slate-400 block font-semibold">Registros</span>
-          <span class="text-base font-black" id="resumenCantRegistros">0</span>
+          <span class="text-xs sm:text-sm uppercase text-slate-400 block font-bold mb-1">Registros</span>
+          <span class="text-xl sm:text-2xl font-black" id="resumenCantRegistros">0</span>
         </div>
         <div>
-          <span class="text-[10px] uppercase text-slate-400 block font-semibold">Total Monedas</span>
-          <span class="text-base font-black" id="resumenTotalMonedas">0</span>
+          <span class="text-xs sm:text-sm uppercase text-slate-400 block font-bold mb-1">Total Monedas</span>
+          <span class="text-xl sm:text-2xl font-black" id="resumenTotalMonedas">0</span>
         </div>
         <div>
-          <span class="text-[10px] uppercase text-rose-300 block font-semibold">Comisión Clientes</span>
-          <span class="text-base font-black text-rose-400" id="resumenComisiones">$ 0</span>
+          <span class="text-xs sm:text-sm uppercase text-sky-300 block font-bold mb-1">Comisión Clientes</span>
+          <span class="text-xl sm:text-2xl font-black text-sky-400" id="resumenComisiones">$ 0</span>
         </div>
         <div>
-          <span class="text-[10px] uppercase text-emerald-300 block font-semibold">Total Recolección</span>
-          <span class="text-base font-black text-emerald-400" id="resumenGananciaEmpresa">$ 0</span>
+          <span class="text-xs sm:text-sm uppercase text-emerald-300 block font-bold mb-1">Total Recolección</span>
+          <span class="text-xl sm:text-2xl font-black text-emerald-400" id="resumenGananciaEmpresa">$ 0</span>
         </div>
       </div>
 
@@ -707,43 +707,42 @@
           </div>
         </div>
 
-        <!-- COMPARADOR DE AUDITORÍA Y DEPÓSITO FINAL -->
-        <div id="contenedorAuditoria" class="p-5 rounded-2xl shadow-lg border space-y-3 bg-slate-900 text-white border-slate-800">
+       <!-- COMPARADOR DE AUDITORÍA Y DEPÓSITO FINAL -->
+        <div id="contenedorAuditoria" class="p-4 sm:p-6 rounded-2xl shadow-lg border space-y-4 bg-slate-900 text-white border-slate-800">
           <div class="flex justify-between items-center">
-            <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold block">Liquidación de Depósito</span>
-            <span id="badgeEstadoCuadre" class="px-2.5 py-0.5 rounded-full text-xs font-black uppercase bg-slate-800 text-slate-300">
+            <span class="text-sm font-black uppercase tracking-wider text-slate-400 block">Liquidación de Depósito</span>
+            <span id="badgeEstadoCuadre" class="px-3 py-1.5 rounded-full text-[11px] font-black uppercase bg-slate-800 text-slate-300">
               Pendiente
             </span>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 border-t border-slate-800">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-slate-800">
             <div>
-              <span class="text-[11px] uppercase text-slate-400 block font-semibold">Total a Depositar (Esperado)</span>
-              <p class="text-lg font-black text-blue-300" id="auditoriaTotalSistema">$ 0.00</p>
+              <span class="text-xs sm:text-sm uppercase text-slate-400 block font-bold mb-1">Total a Depositar (Esperado)</span>
+              <p class="text-xl sm:text-2xl font-black text-blue-300" id="auditoriaTotalSistema">$ 0.00</p>
             </div>
             <div>
-              <span class="text-[11px] uppercase text-slate-400 block font-semibold">Efectivo Físico Contado</span>
-              <p class="text-lg font-black text-slate-100" id="auditoriaTotalContado">$ 0.00</p>
+              <span class="text-xs sm:text-sm uppercase text-slate-400 block font-bold mb-1">Efectivo Físico Contado</span>
+              <p class="text-xl sm:text-2xl font-black text-slate-100" id="auditoriaTotalContado">$ 0.00</p>
             </div>
-            <div class="sm:border-l sm:border-slate-800 sm:pl-3">
-              <span class="text-[11px] uppercase text-slate-400 block font-semibold">Diferencia de Cuadre</span>
-              <p class="text-2xl font-black text-slate-300" id="auditoriaDiferencia">$ 0.00</p>
+            <div class="sm:border-l sm:border-slate-800 sm:pl-4 mt-2 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-800">
+              <span class="text-xs sm:text-sm uppercase text-slate-400 block font-bold mb-1">Diferencia de Cuadre</span>
+              <p class="text-2xl sm:text-3xl font-black text-slate-300" id="auditoriaDiferencia">$ 0.00</p>
             </div>
           </div>
 
-          <p id="mensajeAuditoria" class="text-xs font-bold text-center pt-2 text-slate-400"></p>
+          <p id="mensajeAuditoria" class="text-sm font-bold text-center pt-2 text-slate-400"></p>
 
-          <div class="flex flex-wrap gap-2 pt-2 border-t border-slate-800">
-            <button type="button" id="btnGuardarArqueoMaster" onclick="guardarArqueoSemanaActual(true)" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs uppercase px-4 py-3 shadow transition flex items-center justify-center gap-1.5">
+          <div class="flex flex-wrap gap-3 pt-3 border-t border-slate-800">
+            <button type="button" id="btnGuardarArqueoMaster" onclick="guardarArqueoSemanaActual(true)" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl text-xs sm:text-sm uppercase px-5 py-3.5 shadow transition flex items-center justify-center gap-2">
               <span>💾</span> Guardar Arqueo
             </button>
-            <button type="button" onclick="exportarDepositoDocumento()" class="flex-1 py-3 bg-blue-700 hover:bg-blue-800 text-white font-black rounded-xl text-xs uppercase shadow transition flex items-center justify-center gap-2">
+            <button type="button" onclick="exportarDepositoDocumento()" class="flex-1 py-3.5 bg-blue-700 hover:bg-blue-800 text-white font-black rounded-xl text-xs sm:text-sm uppercase shadow transition flex items-center justify-center gap-2">
               <span>📄 Exportar Comprobante</span>
             </button>
           </div>
         </div>
-      </div>
-
+        
       <!-- VISTA CONSOLIDADA (Ambas Rutas, Solo Visible si se selecciona Consolidado General) -->
       <div id="vistaDepositoConsolidado" class="hidden space-y-4">
         <h2 class="text-base sm:text-lg font-black text-slate-800 uppercase tracking-wide text-center pt-2">Resumen Consolidado Semanal</h2>
