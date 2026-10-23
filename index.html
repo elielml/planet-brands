@@ -2165,36 +2165,29 @@ const meta = usuarioActual.user_metadata || {};
       const s1 = document.getElementById('selectRutaForm');
       const s2 = document.getElementById('filtroRuta');
       const s3 = document.getElementById('selectRutaParaCliente');
+      const val1 = s1 ? s1.value : '';
+      const val2 = s2 ? s2.value : '';
+      const val3 = s3 ? s3.value : '';
 
-      const val1 = s1.value;
-      const val2 = s2.value;
-      const val3 = s3.value;
-
-      if (rutasApp.length === 0) {
-        s1.innerHTML = '<option value="">(Sin rutas en esta zona)</option>';
-        s3.innerHTML = '<option value="">(Crea una ruta en esta zona)</option>';
-        s2.innerHTML = '<option value="TODAS">TODAS LAS RUTAS</option>';
+      if (!rutasApp || rutasApp.length === 0) {
+        if (s1) s1.innerHTML = '<option value="">(Sin rutas en esta zona)</option>';
+        if (s3) s3.innerHTML = '<option value="">(Crea una ruta en esta zona)</option>';
+        if (s2) s2.innerHTML = '<option value="TODAS">TODAS LAS RUTAS</option>';
         return;
       }
 
       const opciones = rutasApp.map(r => `<option value="${r}">${r}</option>`).join('');
-      s1.innerHTML = opciones;
-      s3.innerHTML = opciones;
-      s2.innerHTML = `<option value="TODAS">TODAS LAS RUTAS (CONSOLIDADO)</option>` + opciones;
+      if (s1) s1.innerHTML = opciones;
+      if (s3) s3.innerHTML = opciones;
+      if (s2) s2.innerHTML = `<option value="TODAS">TODAS LAS RUTAS (CONSOLIDADO)</option>` + opciones;
 
-      if (val1 && rutasApp.includes(val1)) s1.value = val1;
-      else if (rutasApp.length > 0) s1.value = rutasApp[0];
-
-      if (val3 && rutasApp.includes(val3)) s3.value = val3;
-      else if (rutasApp.length > 0) s3.value = rutasApp[0];
-
-      if (val2 && (rutasApp.includes(val2) || val2 === 'TODAS')) s2.value = val2;
-      else s2.value = 'TODAS';
-
-      // <--- Aquí agregamos esta línea para que cargue los clientes del historial automáticamente
-      alCambiarFiltroRutaHistorial();
+      if (s1) s1.value = (val1 && rutasApp.includes(val1)) ? val1 : rutasApp[0];
+      if (s3) s3.value = (val3 && rutasApp.includes(val3)) ? val3 : rutasApp[0];
+      if (s2) s2.value = (val2 && (rutasApp.includes(val2) || val2 === 'TODAS')) ? val2 : 'TODAS';
+      
+      if (typeof actualizarClientesSegunRuta === 'function') actualizarClientesSegunRuta();
+      if (typeof alCambiarFiltroRutaHistorial === 'function') alCambiarFiltroRutaHistorial();
     }
-
     function renderizarAdminRutas() {
        const cont = document.getElementById('listaRutasAdministrar');
        if(!cont) return;
