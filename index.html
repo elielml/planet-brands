@@ -3544,7 +3544,7 @@ function cambiarPestana(p) {
       renderizarInventario();
     }
 
-    function renderizarInventario() {
+   function renderizarInventario() {
       const contenedor = document.getElementById('contenedorTarjetasInventario');
       const vacio = document.getElementById('mensajeInventarioVacio');
       const query = document.getElementById('inputBuscarInventario').value.trim().toLowerCase();
@@ -3573,38 +3573,38 @@ function cambiarPestana(p) {
         const stockNum = Number(p.stock) || 0;
         const minNum = Number(p.stock_minimo) || 0;
         const alerta = (stockNum <= minNum && minNum > 0) 
-          ? `<span class="bg-rose-100 text-rose-800 px-2 py-0.5 rounded text-[10px] font-black uppercase shadow-sm border border-rose-200 ml-2">⚠️ Stock Bajo</span>` 
+          ? `<span class="bg-rose-100 text-rose-800 px-2 py-0.5 rounded text-[11px] font-black uppercase shadow-sm border border-rose-200 ml-2">⚠️ Stock Bajo</span>` 
           : '';
 
         contenedor.innerHTML += `
-          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div class="bg-slate-50 p-4 sm:p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
             <div>
               <div class="flex justify-between items-start mb-2">
-                <h4 class="font-black text-slate-900 text-sm uppercase leading-tight">${p.nombre}</h4>
+                <h4 class="font-black text-slate-900 text-base sm:text-lg uppercase leading-tight">${p.nombre}</h4>
                 <div class="flex items-center gap-1.5 ml-2">
-                  <button onclick="abrirHistorialInventario(${p.id})" title="Historial" class="text-slate-500 hover:text-slate-800 bg-slate-200 px-2 py-1 rounded shadow-sm text-xs transition">📜</button>
-                  <button onclick="abrirModalFormProducto(${p.id})" title="Editar" class="text-blue-500 hover:text-blue-700 bg-white border border-slate-200 px-2 py-1 rounded shadow-sm text-xs transition">✏️</button>
+                  <button onclick="abrirHistorialInventario(${p.id})" title="Historial" class="text-slate-500 hover:text-slate-800 bg-slate-200 px-2.5 py-1.5 rounded shadow-sm text-sm transition">📜</button>
+                  <button onclick="abrirModalFormProducto(${p.id})" title="Editar" class="text-blue-500 hover:text-blue-700 bg-white border border-slate-200 px-2.5 py-1.5 rounded shadow-sm text-sm transition">✏️</button>
                 </div>
               </div>
-              <p class="text-[10px] text-slate-500 font-mono mb-3">${p.codigo ? 'Ref: '+p.codigo : ''}</p>
+              <p class="text-[11px] sm:text-xs text-slate-500 font-mono mb-3">${p.codigo ? 'Ref: '+p.codigo : ''}</p>
               
-              <div class="flex items-center gap-2 mb-3">
-                <div class="bg-white px-3 py-2 rounded-lg border border-slate-200 flex-1 shadow-inner">
-                   <span class="block text-[10px] uppercase text-slate-400 font-bold mb-0.5">Disponible</span>
-                   <div class="flex items-baseline gap-1 text-blue-900">
-                     <span class="text-2xl font-black">${stockNum}</span>
-                     <span class="text-xs font-semibold lowercase">${p.unidad_medida}</span>
+              <div class="flex items-center gap-2 mb-4">
+                <div class="bg-white px-4 py-3 rounded-lg border border-slate-200 flex-1 shadow-inner">
+                   <span class="block text-xs uppercase text-slate-500 font-bold mb-1">Disponible</span>
+                   <div class="flex items-baseline gap-1.5 text-blue-900">
+                     <span class="text-3xl font-black">${stockNum}</span>
+                     <span class="text-sm font-bold lowercase text-slate-600">${p.unidad_medida}</span>
                      ${alerta}
                    </div>
                 </div>
               </div>
             </div>
             
-            <div class="grid grid-cols-2 gap-3 mt-2 pt-3 border-t border-slate-200">
-              <button onclick="abrirModalMovimiento(${p.id}, 'SALIDA')" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs py-2.5 rounded-lg uppercase shadow-sm flex items-center justify-center gap-1.5 transition">
+            <div class="grid grid-cols-2 gap-3 mt-1 pt-4 border-t border-slate-200">
+              <button onclick="abrirModalMovimiento(${p.id}, 'SALIDA')" class="bg-rose-600 hover:bg-rose-700 text-white font-black text-sm py-3 rounded-lg uppercase shadow-sm flex items-center justify-center gap-1.5 transition">
                 <span>➖</span> Salida
               </button>
-              <button onclick="abrirModalMovimiento(${p.id}, 'ENTRADA')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 rounded-lg uppercase shadow-sm flex items-center justify-center gap-1.5 transition">
+              <button onclick="abrirModalMovimiento(${p.id}, 'ENTRADA')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm py-3 rounded-lg uppercase shadow-sm flex items-center justify-center gap-1.5 transition">
                 <span>➕</span> Entrada
               </button>
             </div>
@@ -3612,7 +3612,6 @@ function cambiarPestana(p) {
         `;
       });
     }
-
     function alBuscarInventario() {
       renderizarInventario();
     }
