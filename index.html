@@ -1149,7 +1149,6 @@
       <p id="mensajeInventarioVacio" class="text-center py-6 text-xs text-slate-400 hidden font-medium">No se encontraron productos.</p>
 
       <!-- MODAL: AGREGAR/EDITAR PRODUCTO -->
-<!-- MODAL: AGREGAR/EDITAR PRODUCTO -->
       <div id="modalFormProducto" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
         <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl p-5 border border-slate-200 my-8">
           <h3 id="tituloModalProducto" class="font-black text-sm uppercase text-slate-800 border-b border-slate-100 pb-2 mb-3">Registrar Producto</h3>
@@ -1194,6 +1193,60 @@
           </form>
         </div>
       </div>
+
+      <!-- MODAL: REGISTRAR MOVIMIENTO (ENTRADA, SALIDA) -->
+      <div id="modalMovimiento" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
+        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-5 border border-slate-200 my-8">
+          <h3 id="tituloModalMovimiento" class="font-black text-sm uppercase text-slate-800 border-b border-slate-100 pb-2 mb-3">Registrar Movimiento</h3>
+          
+          <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 mb-4 grid grid-cols-3 gap-2 items-center">
+             <div class="col-span-1 text-left border-r border-slate-200 pr-2">
+                <span class="text-[9px] text-slate-500 font-bold uppercase block">Producto</span>
+                <span id="movProdNombre" class="font-black text-slate-800 text-[11px] leading-tight">Cargando...</span>
+             </div>
+             <div class="col-span-1 text-center border-r border-slate-200 px-2">
+                <span class="text-[9px] text-slate-500 font-bold uppercase block">Stock Actual</span>
+                <span id="movProdStockActual" class="font-black text-slate-600 text-sm">0</span>
+             </div>
+             <div class="col-span-1 text-right pl-2">
+                <span class="text-[9px] text-blue-600 font-bold uppercase block">Stock Final</span>
+                <span id="movProdStockProyectado" class="font-black text-blue-800 text-sm">0</span>
+             </div>
+          </div>
+
+          <form onsubmit="ejecutarMovimientoInventario(event)" class="space-y-3">
+            <input type="hidden" id="movProdId">
+            <input type="hidden" id="movTipo">
+            
+            <div>
+                 <label id="labelCantidadMovimiento" class="text-[11px] font-bold text-slate-500 uppercase">Cantidad a Procesar</label>
+                 <input type="number" id="movCantidad" min="0.01" step="any" required class="w-full p-2.5 border rounded-lg text-2xl font-black bg-slate-50 outline-none text-center focus:border-blue-500 focus:bg-white transition-colors">
+            </div>
+
+            <div>
+              <label class="text-[11px] font-bold text-slate-500 uppercase">Motivo *</label>
+              <select id="movMotivo" required class="w-full p-2 border rounded-lg text-xs font-bold bg-slate-50 outline-none"></select>
+            </div>
+
+            <div id="bloqueRutaDestino">
+              <label class="text-[11px] font-bold text-slate-500 uppercase">Ruta Relacionada</label>
+              <select id="movRuta" class="w-full p-2 border rounded-lg text-xs font-bold bg-slate-50 outline-none">
+              </select>
+            </div>
+
+            <div>
+              <label id="labelDestinoExtra" class="text-[11px] font-bold text-slate-500 uppercase">Máquina / Destino (Opcional)</label>
+              <input type="text" id="movDestinoExtra" placeholder="Ej: Plaza Central, Máquina 3..." class="w-full p-2 border rounded-lg text-xs bg-slate-50 outline-none">
+            </div>
+
+            <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+              <button type="button" onclick="cerrarModal('modalMovimiento')" class="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-xl text-xs uppercase">Cancelar</button>
+              <button type="submit" id="btnConfirmarMovimiento" class="px-4 py-2 bg-slate-900 text-white font-black rounded-xl text-xs uppercase shadow">Confirmar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
       <!-- MODAL: HISTORIAL / KARDEX -->
       <div id="modalHistorialInventario" class="hidden fixed inset-0 bg-slate-900/90 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
         <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl p-4 sm:p-5 border border-slate-200 my-6">
