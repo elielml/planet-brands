@@ -3525,7 +3525,7 @@ const meta = usuarioActual.user_metadata || {};
       }
       window.location.href = window.location.pathname;
     }
-    // ==========================================
+   // ==========================================
     // LÓGICA DEL MÓDULO DE INVENTARIO
     // ==========================================
     let inventarioGuardado = [];
@@ -3579,20 +3579,20 @@ const meta = usuarioActual.user_metadata || {};
         contenedor.innerHTML += `
           <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
             <div>
-              <div class="flex justify-between items-start mb-1">
+              <div class="flex justify-between items-start mb-2">
                 <h4 class="font-black text-slate-900 text-sm uppercase leading-tight">${p.nombre}</h4>
-                <div class="flex items-center gap-1.5">
+                <div class="flex items-center gap-1.5 ml-2">
                   <button onclick="abrirHistorialInventario(${p.id})" title="Historial" class="text-slate-500 hover:text-slate-800 bg-slate-200 px-2 py-1 rounded shadow-sm text-xs transition">📜</button>
                   <button onclick="abrirModalFormProducto(${p.id})" title="Editar" class="text-blue-500 hover:text-blue-700 bg-white border border-slate-200 px-2 py-1 rounded shadow-sm text-xs transition">✏️</button>
                 </div>
               </div>
-              <p class="text-[10px] text-slate-500 font-mono mb-2">${p.codigo ? 'Ref: '+p.codigo : 'Sin ref.'}</p>
+              <p class="text-[10px] text-slate-500 font-mono mb-3">${p.codigo ? 'Ref: '+p.codigo : ''}</p>
               
               <div class="flex items-center gap-2 mb-3">
                 <div class="bg-white px-3 py-2 rounded-lg border border-slate-200 flex-1 shadow-inner">
                    <span class="block text-[10px] uppercase text-slate-400 font-bold mb-0.5">Disponible</span>
                    <div class="flex items-baseline gap-1 text-blue-900">
-                     <span class="text-xl font-black">${stockNum}</span>
+                     <span class="text-2xl font-black">${stockNum}</span>
                      <span class="text-xs font-semibold lowercase">${p.unidad_medida}</span>
                      ${alerta}
                    </div>
@@ -3600,16 +3600,13 @@ const meta = usuarioActual.user_metadata || {};
               </div>
             </div>
             
-            <div class="grid grid-cols-2 gap-2 mt-2 pt-3 border-t border-slate-200">
-              <button onclick="abrirModalMovimiento(${p.id}, 'SALIDA')" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-[10px] sm:text-xs py-2.5 rounded-lg uppercase shadow-sm flex items-center justify-center gap-1 transition">
+            <div class="grid grid-cols-2 gap-3 mt-2 pt-3 border-t border-slate-200">
+              <button onclick="abrirModalMovimiento(${p.id}, 'SALIDA')" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs py-2.5 rounded-lg uppercase shadow-sm flex items-center justify-center gap-1.5 transition">
                 <span>➖</span> Salida
               </button>
-              <button onclick="abrirModalMovimiento(${p.id}, 'ENTRADA')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] sm:text-xs py-2.5 rounded-lg uppercase shadow-sm flex items-center justify-center gap-1 transition">
+              <button onclick="abrirModalMovimiento(${p.id}, 'ENTRADA')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 rounded-lg uppercase shadow-sm flex items-center justify-center gap-1.5 transition">
                 <span>➕</span> Entrada
               </button>
-            </div>
-            <div class="text-center mt-3 w-full">
-               <button onclick="abrirModalMovimiento(${p.id}, 'AJUSTE')" class="text-[10px] font-bold text-slate-400 hover:text-amber-600 underline">Ajustar cantidad manualmente</button>
             </div>
           </div>
         `;
@@ -3620,38 +3617,145 @@ const meta = usuarioActual.user_metadata || {};
       renderizarInventario();
     }
 
+    function abrirModalFormProducto(id = null) {
+      document.getElementById('invProdId').value = id || '';
+      if (id) {
+        const p = inventarioGuardado.find(i => i.id === id);
+        if(!p) return;
+        document.getElementById('tituloModalProducto').textContent = "Editar Producto";
+        document.getElementById('invProdNombre').value = p.nombre;
+        document.getElementById('invProdCodigo').value = p.codigo || '';
+        document.getElementById('invProdMedida').value = p.unidad_medida;
+        document.getElementById('invProdObservaciones').value = p.observaciones || '';
+        document.getElementById('invProdMinimo').value = p.stock_minimo || 0;
+        document.getElementById('invProdStock').value = p.stock || 0;
+        document.getElementById('bloqueStockInicial').classList.remove('hidden'); 
+      } else {
+        document.getElementById('tituloModalProducto').textContent = "Nuevo Producto";
+        document.getElementById('invProdNombre').value = '';
+        document.getElementById('invProdCodigo').value = '';
+        document.getElementById('invProdMedida').value = 'unidades';
+        document.getElementById('invProdObservaciones').value = '';
+        document.getElementById('invProdStock').value = 0;
+        document.getElementById('invProdMinimo').value = 0;
+        document.getElementById('bloqueStockInicial').classList.remove('hidden');
+      }
+      document.getElementById('modalFormProducto').classList.remove('hidden');
+    }
+
+    async function guardarProductoInventario(e) {
+      e.preventDefault();
+      try {
+        const id = document.getElementById('invProdId').value;
+        const nombre = document.getElementById('invProdNombre').value.trim();
+        const codigo = document.getElementById('invProdCodigo').value.trim();
+        const medida = document.getElementById('invProdMedida').value;
+        const obs = document.getElementById('invProdObservaciones').value.trim();
+        const stockIngresado = Number(document.getElementById('invProdStock').value) || 0;
+        const min = Number(document.getElementById('invProdMinimo').value) || 0;
+
+        if (codigo && !id) {
+           const duplicado = inventarioGuardado.find(p => p.codigo && p.codigo.toLowerCase() === codigo.toLowerCase());
+           if(duplicado) {
+              mostrarMensaje("Ya existe un producto con este código.", "⚠️");
+              return;
+           }
+        }
+
+        const payload = {
+          nombre, codigo, unidad_medida: medida, observaciones: obs, stock_minimo: min, stock: stockIngresado
+        };
+
+        if (!id) {
+          payload.creado_por = usuarioActual.id;
+          payload.creado_por_email = window.nombreMostrar;
+          const { data, error } = await sbClient.from('pb_inventario').insert(payload).select().single();
+          if (error) { mostrarMensaje("Error al crear: " + error.message, "❌"); return; }
+          
+          if (stockIngresado > 0) {
+             await sbClient.from('pb_movimientos_inventario').insert({
+                producto_id: data.id, producto_nombre: nombre, tipo_movimiento: 'ENTRADA',
+                cantidad_anterior: 0, cantidad_movimiento: stockIngresado, cantidad_resultante: stockIngresado,
+                motivo: 'Inventario Inicial', usuario_id: usuarioActual.id, usuario_email: window.nombreMostrar
+             });
+          }
+        } else {
+          // Si estamos editando y el stock manual cambia, registramos el ajuste
+          const prodAnterior = inventarioGuardado.find(i => i.id === Number(id));
+          const stockAnterior = Number(prodAnterior.stock) || 0;
+          
+          const { error } = await sbClient.from('pb_inventario').update(payload).eq('id', id);
+          if (error) { mostrarMensaje("Error al actualizar: " + error.message, "❌"); return; }
+
+          if (stockIngresado !== stockAnterior) {
+              await sbClient.from('pb_movimientos_inventario').insert({
+                producto_id: id, producto_nombre: nombre, tipo_movimiento: 'AJUSTE',
+                cantidad_anterior: stockAnterior, cantidad_movimiento: stockIngresado - stockAnterior, cantidad_resultante: stockIngresado,
+                motivo: 'Ajuste manual desde edición', usuario_id: usuarioActual.id, usuario_email: window.nombreMostrar
+             });
+          }
+        }
+
+        cerrarModal('modalFormProducto');
+        await cargarInventario();
+        mostrarMensaje(id ? "Producto actualizado." : "Producto creado.", "✅");
+        
+      } catch (error) {
+        mostrarMensaje("Error interno.", "⚠️");
+      }
+    }
+
     function abrirModalMovimiento(id, tipo) {
       const p = inventarioGuardado.find(i => i.id === id);
-      if(!p) return;
+      if(!p) {
+        mostrarMensaje("Producto no encontrado.", "⚠️");
+        return;
+      }
 
       document.getElementById('movProdId').value = p.id;
       document.getElementById('movTipo').value = tipo;
       document.getElementById('movProdNombre').textContent = p.nombre;
-      document.getElementById('movProdStockActual').textContent = Number(p.stock) + " " + p.unidad_medida;
-      document.getElementById('movCantidad').value = '';
+      
+      const stockActual = Number(p.stock) || 0;
+      document.getElementById('movProdStockActual').textContent = stockActual + " " + p.unidad_medida;
+      document.getElementById('movProdStockProyectado').textContent = stockActual + " " + p.unidad_medida;
+      
+      const inpCantidad = document.getElementById('movCantidad');
+      inpCantidad.value = '';
       document.getElementById('movDestinoExtra').value = '';
 
       const selMotivo = document.getElementById('movMotivo');
       const selRuta = document.getElementById('movRuta');
-      const divRuta = document.getElementById('bloqueRutaDestino');
-      const divDiff = document.getElementById('bloqueDiferencia');
-      const txtCant = document.getElementById('labelCantidadMovimiento');
       const btnConf = document.getElementById('btnConfirmarMovimiento');
+      const txtCant = document.getElementById('labelCantidadMovimiento');
 
-      // Protección de rutas
-      selRuta.innerHTML = '<option value="">-- Sin ruta específica --</option>' + rutasApp.map(r => {
+      selRuta.innerHTML = '<option value="">-- Sin ruta específica --</option>' + (rutasApp || []).map(r => {
         const nRuta = typeof r === 'object' ? (r.nombre || r.ruta || r.id) : r;
         return `<option value="${nRuta}">${nRuta}</option>`;
       }).join('');
 
-      divDiff.style.display = 'none';
-      document.getElementById('movCantidad').oninput = null;
+      inpCantidad.oninput = () => {
+         const val = Number(inpCantidad.value) || 0;
+         let proyectado = stockActual;
+         if (tipo === 'SALIDA') proyectado = stockActual - val;
+         else if (tipo === 'ENTRADA') proyectado = stockActual + val;
+
+         const labelProyectado = document.getElementById('movProdStockProyectado');
+         labelProyectado.textContent = proyectado + ' ' + p.unidad_medida;
+         
+         if (proyectado < 0) {
+             labelProyectado.classList.add('text-rose-600');
+             labelProyectado.classList.remove('text-blue-800');
+         } else {
+             labelProyectado.classList.remove('text-rose-600');
+             labelProyectado.classList.add('text-blue-800');
+         }
+      };
 
       if (tipo === 'SALIDA') {
         document.getElementById('tituloModalMovimiento').innerHTML = "➖ Registrar Salida";
         btnConf.className = "px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-black rounded-xl text-xs uppercase shadow transition w-full";
         txtCant.textContent = "Cantidad a Retirar";
-        divRuta.style.display = 'block';
         selMotivo.innerHTML = `
           <option value="Reposición de máquina">Reposición de máquina</option>
           <option value="Reparación o mantenimiento">Reparación o mantenimiento</option>
@@ -3664,34 +3768,16 @@ const meta = usuarioActual.user_metadata || {};
         document.getElementById('tituloModalMovimiento').innerHTML = "➕ Registrar Entrada";
         btnConf.className = "px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl text-xs uppercase shadow transition w-full";
         txtCant.textContent = "Cantidad a Ingresar";
-        divRuta.style.display = 'block';
         selMotivo.innerHTML = `
           <option value="Compra o abastecimiento">Compra o abastecimiento</option>
           <option value="Devolución de una ruta">Devolución de una ruta</option>
           <option value="Traslado desde otra ubicación">Traslado desde otra ubicación</option>
           <option value="Otro">Otro</option>
         `;
-      } else if (tipo === 'AJUSTE') {
-        document.getElementById('tituloModalMovimiento').innerHTML = "⚖️ Ajuste Físico";
-        btnConf.className = "px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-black rounded-xl text-xs uppercase shadow transition w-full";
-        txtCant.textContent = "Cantidad Real Contada";
-        divRuta.style.display = 'none';
-        divDiff.style.display = 'block';
-        document.getElementById('movDiferencia').value = '0';
-        document.getElementById('movCantidad').oninput = () => {
-           const val = Number(document.getElementById('movCantidad').value) || 0;
-           const diff = val - Number(p.stock);
-           document.getElementById('movDiferencia').value = diff > 0 ? '+'+diff : diff;
-        };
-        selMotivo.innerHTML = `
-          <option value="Conteo físico">Conteo físico</option>
-          <option value="Corrección por error documentado">Corrección por error</option>
-          <option value="Mermas o daños">Mermas o daños</option>
-          <option value="Otro">Otro</option>
-        `;
       }
 
       document.getElementById('modalMovimiento').classList.remove('hidden');
+      setTimeout(() => inpCantidad.focus(), 100);
     }
 
     async function ejecutarMovimientoInventario(e) {
@@ -3712,7 +3798,6 @@ const meta = usuarioActual.user_metadata || {};
 
         const stockActual = Number(p.stock) || 0;
         let nuevoStock = stockActual;
-        let cantMov = cantInp;
 
         if (tipo === 'SALIDA') {
            if (cantInp <= 0 || cantInp > stockActual) {
@@ -3726,16 +3811,8 @@ const meta = usuarioActual.user_metadata || {};
               return;
            }
            nuevoStock = stockActual + cantInp;
-        } else if (tipo === 'AJUSTE') {
-           cantMov = cantInp - stockActual;
-           if (cantMov === 0) {
-              mostrarMensaje("La cantidad es idéntica al stock actual.", "ℹ️");
-              return;
-           }
-           nuevoStock = cantInp;
         }
 
-        // Deshabilitar botón temporalmente para evitar doble click
         document.getElementById('btnConfirmarMovimiento').disabled = true;
 
         const payloadMov = {
@@ -3743,7 +3820,7 @@ const meta = usuarioActual.user_metadata || {};
             producto_nombre: p.nombre,
             tipo_movimiento: tipo,
             cantidad_anterior: stockActual,
-            cantidad_movimiento: tipo === 'AJUSTE' ? cantMov : cantInp,
+            cantidad_movimiento: cantInp,
             cantidad_resultante: nuevoStock,
             motivo: motivo,
             ruta_destino: ruta || null,
@@ -3769,154 +3846,11 @@ const meta = usuarioActual.user_metadata || {};
         document.getElementById('btnConfirmarMovimiento').disabled = false;
         cerrarModal('modalMovimiento');
         await cargarInventario();
-        mostrarMensaje("Movimiento registrado.", "✅");
+        mostrarMensaje("Movimiento registrado exitosamente.", "✅");
       } catch (err) {
         document.getElementById('btnConfirmarMovimiento').disabled = false;
         mostrarMensaje("Error interno del sistema.", "❌");
       }
-    }
-    function alBuscarInventario() {
-      renderizarInventario();
-    }
-
-  function abrirModalFormProducto(id = null) {
-      document.getElementById('invProdId').value = id || '';
-      if (id) {
-        const p = inventarioGuardado.find(i => i.id === id);
-        if(!p) return;
-        document.getElementById('tituloModalProducto').textContent = "Editar Producto";
-        document.getElementById('invProdNombre').value = p.nombre;
-        document.getElementById('invProdCodigo').value = p.codigo || '';
-        document.getElementById('invProdMedida').value = p.unidad_medida;
-        document.getElementById('invProdObservaciones').value = p.observaciones || '';
-        document.getElementById('invProdMinimo').value = p.stock_minimo || 0;
-        document.getElementById('bloqueStockInicial').classList.add('hidden'); 
-      } else {
-        document.getElementById('tituloModalProducto').textContent = "Nuevo Producto";
-        document.getElementById('invProdNombre').value = '';
-        document.getElementById('invProdCodigo').value = '';
-        document.getElementById('invProdMedida').value = 'unidades';
-        document.getElementById('invProdObservaciones').value = '';
-        document.getElementById('invProdStock').value = 0;
-        document.getElementById('invProdMinimo').value = 0;
-        document.getElementById('bloqueStockInicial').classList.remove('hidden');
-      }
-      document.getElementById('modalFormProducto').classList.remove('hidden');
-    }
-
-    async function guardarProductoInventario(e) {
-      e.preventDefault();
-      try {
-        const id = document.getElementById('invProdId').value;
-        const nombre = document.getElementById('invProdNombre').value.trim();
-        const codigo = document.getElementById('invProdCodigo').value.trim();
-        const medida = document.getElementById('invProdMedida').value;
-        const obs = document.getElementById('invProdObservaciones').value.trim();
-        const stockIni = Number(document.getElementById('invProdStock').value) || 0;
-        const min = Number(document.getElementById('invProdMinimo').value) || 0;
-
-        if (codigo && !id) {
-           const duplicado = inventarioGuardado.find(p => p.codigo && p.codigo.toLowerCase() === codigo.toLowerCase());
-           if(duplicado) {
-              mostrarMensaje("Ya existe un producto con este código.", "⚠️");
-              return;
-           }
-        }
-
-        const payload = {
-          nombre, codigo, unidad_medida: medida, observaciones: obs, stock_minimo: min, categoria: null, ubicacion: null
-        };
-
-        if (!id) {
-          payload.stock = stockIni;
-          payload.creado_por = usuarioActual.id;
-          payload.creado_por_email = window.nombreMostrar;
-          const { data, error } = await sbClient.from('pb_inventario').insert(payload).select().single();
-          if (error) { mostrarMensaje("Error al crear: " + error.message, "❌"); return; }
-          
-          if (stockIni > 0) {
-             await sbClient.from('pb_movimientos_inventario').insert({
-                producto_id: data.id, producto_nombre: nombre, tipo_movimiento: 'ENTRADA',
-                cantidad_anterior: 0, cantidad_movimiento: stockIni, cantidad_resultante: stockIni,
-                motivo: 'Inventario Inicial', usuario_id: usuarioActual.id, usuario_email: window.nombreMostrar
-             });
-          }
-        } else {
-          const { error } = await sbClient.from('pb_inventario').update(payload).eq('id', id);
-          if (error) { mostrarMensaje("Error al actualizar: " + error.message, "❌"); return; }
-        }
-
-        cerrarModal('modalFormProducto');
-        await cargarInventario();
-        mostrarMensaje(id ? "Producto actualizado." : "Producto creado.", "✅");
-        
-      } catch (error) {
-        mostrarMensaje("Error interno: Revisa tu conexión a internet.", "⚠️");
-      }
-    }
-    async function ejecutarMovimientoInventario(e) {
-      e.preventDefault();
-      const id = Number(document.getElementById('movProdId').value);
-      const tipo = document.getElementById('movTipo').value;
-      const cantInp = Number(document.getElementById('movCantidad').value);
-      const motivo = document.getElementById('movMotivo').value;
-      const ruta = document.getElementById('movRuta').value;
-      const destinoEx = document.getElementById('movDestinoExtra').value.trim();
-
-      const p = inventarioGuardado.find(i => i.id === id);
-      if(!p || isNaN(cantInp) || cantInp < 0) return;
-
-      const stockActual = Number(p.stock);
-      let nuevoStock = stockActual;
-      let cantMov = cantInp;
-
-      if (tipo === 'SALIDA') {
-         if (cantInp <= 0 || cantInp > stockActual) {
-            mostrarMensaje("No hay suficiente stock disponible.", "⚠️");
-            return;
-         }
-         nuevoStock = stockActual - cantInp;
-      } else if (tipo === 'ENTRADA') {
-         if (cantInp <= 0) return;
-         nuevoStock = stockActual + cantInp;
-      } else if (tipo === 'AJUSTE') {
-         cantMov = cantInp - stockActual;
-         if (cantMov === 0) {
-            mostrarMensaje("La cantidad es idéntica al stock actual.", "ℹ️");
-            return;
-         }
-         nuevoStock = cantInp;
-      }
-
-      // Deshabilitar botón temporalmente para evitar doble click
-      document.getElementById('btnConfirmarMovimiento').disabled = true;
-
-      const { error: errMov } = await sbClient.from('pb_movimientos_inventario').insert({
-          producto_id: p.id,
-          producto_nombre: p.nombre,
-          tipo_movimiento: tipo,
-          cantidad_anterior: stockActual,
-          cantidad_movimiento: tipo === 'AJUSTE' ? cantMov : cantInp,
-          cantidad_resultante: nuevoStock,
-          motivo: motivo,
-          ruta_destino: ruta || null,
-          destino_especifico: destinoEx || null,
-          usuario_id: usuarioActual.id,
-          usuario_email: window.nombreMostrar
-      });
-
-      if (errMov) { 
-        mostrarMensaje("Error al registrar movimiento.", "❌"); 
-        document.getElementById('btnConfirmarMovimiento').disabled = false;
-        return; 
-      }
-
-      await sbClient.from('pb_inventario').update({ stock: nuevoStock }).eq('id', p.id);
-
-      document.getElementById('btnConfirmarMovimiento').disabled = false;
-      cerrarModal('modalMovimiento');
-      await cargarInventario();
-      mostrarMensaje("Movimiento registrado.", "✅");
     }
 
     async function abrirHistorialInventario(productoId) {
