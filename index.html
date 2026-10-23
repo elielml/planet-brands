@@ -1573,12 +1573,15 @@ const meta = usuarioActual.user_metadata || {};
       const tabAdmin = document.getElementById('tabAdminMaster');
 
       // BLINDAJE ESTRICTO: Solo el correo principal puede ver los botones de Admin y Clientes Globales
+     const cajaFiltro = document.getElementById('cajaFiltroColector');
       if (!esSuperAdmin) {
         if (tabAdmin) tabAdmin.classList.add('hidden');
         if (tabClientes) tabClientes.classList.add('hidden');
+        if (cajaFiltro) cajaFiltro.classList.add('hidden');
       } else {
         if (tabAdmin) tabAdmin.classList.remove('hidden');
         if (tabClientes) tabClientes.classList.remove('hidden');
+        if (cajaFiltro) cajaFiltro.classList.remove('hidden');
       }
 
       if (esModoConsulta) {
