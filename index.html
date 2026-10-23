@@ -2186,6 +2186,11 @@ const meta = usuarioActual.user_metadata || {};
       const s2 = document.getElementById('filtroRuta');
       const s3 = document.getElementById('selectRutaParaCliente');
 
+      // 1. MEMORIZAR QUÉ RUTAS ESTÁN SELECCIONADAS AHORA MISMO
+      const val1 = s1 ? s1.value : '';
+      const val2 = s2 ? s2.value : '';
+      const val3 = s3 ? s3.value : '';
+
       if (!rutasApp || rutasApp.length === 0) {
         if (s1) s1.innerHTML = '<option value="">(Esperando rutas...)</option>';
         if (s3) s3.innerHTML = '<option value="">(Esperando rutas...)</option>';
@@ -2193,6 +2198,7 @@ const meta = usuarioActual.user_metadata || {};
         return;
       }
 
+      // 2. CREAR LAS OPCIONES
       const opciones = rutasApp.map(r => {
         const nombreRuta = typeof r === 'object' ? (r.nombre || r.ruta || r.id) : r;
         return `<option value="${nombreRuta}">${nombreRuta}</option>`;
@@ -2202,10 +2208,11 @@ const meta = usuarioActual.user_metadata || {};
       if (s3) s3.innerHTML = opciones;
       if (s2) s2.innerHTML = `<option value="TODAS">TODAS LAS RUTAS (CONSOLIDADO)</option>` + opciones;
 
-      if (s1 && !s1.value) s1.value = rutasApp[0].nombre || rutasApp[0];
-      if (s3 && !s3.value) s3.value = rutasApp[0].nombre || rutasApp[0];
+      // 3. VOLVER A APLICAR LA RUTA QUE TENÍAS SELECCIONADA ANTES DE GUARDAR
+      if (s1) s1.value = (val1 && rutasApp.includes(val1)) ? val1 : (rutasApp[0].nombre || rutasApp[0]);
+      if (s3) s3.value = (val3 && rutasApp.includes(val3)) ? val3 : (rutasApp[0].nombre || rutasApp[0]);
+      if (s2) s2.value = (val2 && (rutasApp.includes(val2) || val2 === 'TODAS')) ? val2 : 'TODAS';
     }
-
     function renderizarAdminRutas() {
        const cont = document.getElementById('listaRutasAdministrar');
        if(!cont) return;
