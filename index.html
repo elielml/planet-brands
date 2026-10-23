@@ -2512,6 +2512,13 @@ const meta = usuarioActual.user_metadata || {};
             ? `<span class="text-[9px] bg-blue-100 text-blue-900 px-1.5 py-0.2 rounded font-bold">Mío</span>` 
             : `<span class="text-[9px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded font-bold">${item.creadoPorEmail}</span>`;
 
+          // CONVERTIR FECHA DE AAAA-MM-DD A DD/MM/AAAA
+          let fechaFormateada = item.fecha;
+          if (item.fecha && item.fecha.includes('-')) {
+            const [anio, mes, dia] = item.fecha.split('-');
+            fechaFormateada = `${dia}/${mes}/${anio}`;
+          }
+
           const fila = document.createElement('tr');
           fila.className = "hover:bg-slate-50 transition border-b border-slate-100";
           fila.innerHTML = `
@@ -2522,7 +2529,7 @@ const meta = usuarioActual.user_metadata || {};
             <td class="p-3 text-center text-slate-500 font-semibold text-[10px] uppercase">
               ${item.ruta} <br/> ${badgeColector}
             </td>
-            <td class="p-3 text-center text-slate-500 font-medium text-[11px] whitespace-nowrap">${item.fecha}</td>
+            <td class="p-3 text-center text-slate-500 font-medium text-[11px] whitespace-nowrap">${fechaFormateada}</td>
             <td class="p-3 text-center font-mono font-medium text-slate-600">${item.cant25} / ${item.cant10} / ${item.cant5}</td>
             <td class="p-3 text-right font-medium text-slate-600">$ ${item.bruto.toLocaleString('es-DO', { minimumFractionDigits: 2 })}</td>
             <td class="p-3 text-right font-black text-emerald-700">$ ${item.gananciaEmpresa.toLocaleString('es-DO', { minimumFractionDigits: 2 })}</td>
