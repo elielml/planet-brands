@@ -3299,7 +3299,7 @@ const meta = usuarioActual.user_metadata || {};
     // ==========================================
     // CAMBIO DE PESTAÑAS
     // ==========================================
-   function cambiarPestana(p) {
+function cambiarPestana(p) {
       if ((p === 'adminMaster' || p === 'clientes') && !esSuperAdmin) {
         return;
       }
@@ -3311,53 +3311,56 @@ const meta = usuarioActual.user_metadata || {};
 
       ['tabCuadre','tabHistorial','tabDeposito','tabRutas','tabAdminMaster','tabClientes','tabInventario'].forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.className = "py-2.5 rounded-lg text-slate-600 hover:text-slate-900 transition text-[11px] sm:text-xs";
+        if (el) el.className = "py-2.5 rounded-lg text-slate-600 hover:text-slate-900 transition text-xs sm:text-sm uppercase font-black";
       });
 
       // BLINDAJE VISUAL ESTRICTO EN NAVEGACIÓN
       const tabAdmin = document.getElementById('tabAdminMaster');
       const tabClientesBtn = document.getElementById('tabClientes');
+      const cajaFiltro = document.getElementById('cajaFiltroColector');
+
       if (!esSuperAdmin) {
         if (tabAdmin) tabAdmin.classList.add('hidden');
         if (tabClientesBtn) tabClientesBtn.classList.add('hidden');
+        if (cajaFiltro) cajaFiltro.classList.add('hidden');
       } else {
         if (tabAdmin) tabAdmin.classList.remove('hidden');
         if (tabClientesBtn) tabClientesBtn.classList.remove('hidden');
+        if (cajaFiltro) cajaFiltro.classList.remove('hidden');
       }
 
       if (p === 'cuadre') {
         document.getElementById('vistaCuadre').classList.remove('seccion-oculta');
-        document.getElementById('tabCuadre').className = "py-2.5 rounded-lg bg-blue-900 text-white shadow transition text-[11px] sm:text-xs";
+        document.getElementById('tabCuadre').className = "py-2.5 rounded-lg bg-blue-900 text-white shadow transition text-xs sm:text-sm uppercase font-black";
       } else if (p === 'historial') {
         document.getElementById('vistaHistorial').classList.remove('seccion-oculta');
-        document.getElementById('tabHistorial').className = "py-2.5 rounded-lg bg-blue-900 text-white shadow transition text-[11px] sm:text-xs";
+        document.getElementById('tabHistorial').className = "py-2.5 rounded-lg bg-blue-900 text-white shadow transition text-xs sm:text-sm uppercase font-black";
         renderizarHistorial();
       } else if (p === 'deposito') {
         document.getElementById('vistaDeposito').classList.remove('seccion-oculta');
-        document.getElementById('tabDeposito').className = "py-2.5 rounded-lg bg-blue-900 text-white shadow transition text-[11px] sm:text-xs";
+        document.getElementById('tabDeposito').className = "py-2.5 rounded-lg bg-blue-900 text-white shadow transition text-xs sm:text-sm uppercase font-black";
         alCambiarRangoSemana();
       } else if (p === 'rutas') {
         document.getElementById('vistaRutas').classList.remove('seccion-oculta');
-        document.getElementById('tabRutas').className = "py-2.5 rounded-lg bg-blue-900 text-white shadow transition text-[11px] sm:text-xs";
+        document.getElementById('tabRutas').className = "py-2.5 rounded-lg bg-blue-900 text-white shadow transition text-xs sm:text-sm uppercase font-black";
         renderizarAdminRutas();
         renderizarListaClientesConfig();
       } else if (p === 'adminMaster' && esSuperAdmin) {
         document.getElementById('vistaAdminMaster').classList.remove('seccion-oculta');
-        document.getElementById('tabAdminMaster').className = "col-span-2 sm:col-span-4 py-2.5 rounded-lg bg-amber-400 text-slate-950 font-black shadow transition text-xs mt-1";
+        document.getElementById('tabAdminMaster').className = "col-span-2 sm:col-span-4 py-2.5 rounded-lg bg-amber-400 text-slate-950 shadow transition text-xs sm:text-sm uppercase font-black mt-1";
         cargarListaUsuariosRegistrados();
         cargarPapelera();
         cargarAuditoria();
       } else if (p === 'clientes' && esSuperAdmin) {
         document.getElementById('vistaClientesGeneral').classList.remove('seccion-oculta');
-        document.getElementById('tabClientes').className = "col-span-2 sm:col-span-4 py-2.5 rounded-lg bg-indigo-500 text-white font-black shadow transition text-xs mt-1";
+        document.getElementById('tabClientes').className = "col-span-2 sm:col-span-4 py-2.5 rounded-lg bg-indigo-500 text-white shadow transition text-xs sm:text-sm uppercase font-black mt-1";
         renderizarListaGlobalClientes();
       } else if (p === 'inventario') {
         document.getElementById('vistaInventario').classList.remove('seccion-oculta');
-        document.getElementById('tabInventario').className = "col-span-2 sm:col-span-4 py-2.5 rounded-lg bg-blue-900 text-white shadow transition text-[11px] sm:text-xs mt-1";
+        document.getElementById('tabInventario').className = "col-span-2 sm:col-span-4 py-2.5 rounded-lg bg-blue-900 text-white shadow transition text-xs sm:text-sm uppercase font-black mt-1";
         if(typeof cargarInventario === 'function') cargarInventario();
       }
 
-      // Forzar recarga de selectores al tocar cualquier pestaña
       if (typeof poblarSelectoresRuta === 'function') {
         poblarSelectoresRuta();
       }
