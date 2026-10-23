@@ -2044,6 +2044,26 @@ const meta = usuarioActual.user_metadata || {};
       }
     }
 
+    function poblarFiltroColectores() {
+      const filtro = document.getElementById('filtroColector');
+      if (!filtro) return;
+
+      const valorAnterior = filtro.value;
+      filtro.innerHTML = '<option value="TODOS">Todos los usuarios</option><option value="MIO">Solo mis registros</option>';
+
+      if (esSuperAdmin) {
+        const correos = [...new Set([...liquidacionesGuardadas.map(l => l.creadoPorEmail), ...gastosGuardados.map(g => g.creadoPorEmail)])].filter(c => c);
+        correos.forEach(c => {
+          if (c !== window.nombreMostrar) {
+             filtro.innerHTML += `<option value="${c}">${c}</option>`;
+          }
+        });
+      }
+      
+      const hayOpcion = Array.from(filtro.options).some(opt => opt.value === valorAnterior);
+      filtro.value = hayOpcion ? valorAnterior : "TODOS";
+    }
+
     async function cargarAuditoria() {
       if (!esSuperAdmin) return;
       const cont = document.getElementById('listaAuditoria');
@@ -2161,15 +2181,18 @@ const meta = usuarioActual.user_metadata || {};
     // ==========================================
     // OPERACIONES (LIQUIDAR, RUTAS, GASTOS)
     // ==========================================
-function poblarSelectoresRuta() {
+    function poblarSelectoresRuta() {
       const s1 = document.getElementById('selectRutaForm');
       const s2 = document.getElementById('filtroRuta');
       const s3 = document.getElementById('selectRutaParaCliente');
 
-      // Si aún no hay rutas cargadas, detenerse sin causar errores
-      if (!rutasApp || rutasApp.length === 0) return;
+      if (!rutasApp || rutasApp.length === 0) {
+        if (s1) s1.innerHTML = '<option value="">(Esperando rutas...)</option>';
+        if (s3) s3.innerHTML = '<option value="">(Esperando rutas...)</option>';
+        if (s2) s2.innerHTML = '<option value="TODAS">TODAS LAS RUTAS</option>';
+        return;
+      }
 
-      // Adaptable: extrae el nombre sin importar cómo lo envíe Supabase
       const opciones = rutasApp.map(r => {
         const nombreRuta = typeof r === 'object' ? (r.nombre || r.ruta || r.id) : r;
         return `<option value="${nombreRuta}">${nombreRuta}</option>`;
@@ -2178,11 +2201,11 @@ function poblarSelectoresRuta() {
       if (s1) s1.innerHTML = opciones;
       if (s3) s3.innerHTML = opciones;
       if (s2) s2.innerHTML = `<option value="TODAS">TODAS LAS RUTAS (CONSOLIDADO)</option>` + opciones;
-  // Forzar recarga de selectores al tocar cualquier pestaña
-      if (typeof poblarSelectoresRuta === 'function') {
-        poblarSelectoresRuta();
-      }
+
+      if (s1 && !s1.value) s1.value = rutasApp[0].nombre || rutasApp[0];
+      if (s3 && !s3.value) s3.value = rutasApp[0].nombre || rutasApp[0];
     }
+
     function renderizarAdminRutas() {
        const cont = document.getElementById('listaRutasAdministrar');
        if(!cont) return;
@@ -2210,8 +2233,11 @@ function poblarSelectoresRuta() {
     }
 
     function actualizarClientesSegunRuta() {
-      const ruta = document.getElementById('selectRutaForm').value;
+      const sForm = document.getElementById('selectRutaForm');
+      if (!sForm) return;
+      const ruta = sForm.value;
       const datalist = document.getElementById('listaClientesDatalist');
+      if (!datalist) return;
 
       const filtrados = catalogoClientes.filter(c => c.ruta === ruta);
       datalist.innerHTML = filtrados.map(c => `<option value="${c.nombre}">`).join('');
@@ -2400,21 +2426,21 @@ function poblarSelectoresRuta() {
       renderizarHistorial();
     }
 
-    // Actualizar el selector de clientes del historial cuando cambia la ruta seleccionada arriba
     function alCambiarFiltroRutaHistorial() {
-      const rutaSeleccionada = document.getElementById('filtroRuta').value;
+      const elFiltroRuta = document.getElementById('filtroRuta');
       const selectCliente = document.getElementById('filtroClienteEspecifico');
+      if (!elFiltroRuta || !selectCliente) return;
 
+      const rutaSeleccionada = elFiltroRuta.value;
       selectCliente.innerHTML = `<option value="TODOS">Todos los clientes</option>`;
-
+      
       let clientesFiltrados = catalogoClientes;
-      if (rutaSeleccionada !== "TODAS" && rutaSeleccionada) {
+      if (rutaSeleccionada !== "TODAS" && rutaSeleccionada !== "") {
         clientesFiltrados = catalogoClientes.filter(c => c.ruta === rutaSeleccionada);
       }
 
-      // Sacar nombres únicos de clientes ordenados alfabéticamente
       const nombresUnicos = [...new Set(clientesFiltrados.map(c => c.nombre))].sort();
-
+      
       nombresUnicos.forEach(nombre => {
         selectCliente.innerHTML += `<option value="${nombre}">${nombre}</option>`;
       });
@@ -2422,7 +2448,6 @@ function poblarSelectoresRuta() {
       renderizarHistorial();
     }
 
-    // Nueva versión de filtrarLiquidaciones con el buscador y el selector de cliente
     function filtrarLiquidaciones() {
       const ruta = document.getElementById('filtroRuta').value;
       const colector = document.getElementById('filtroColector').value;
@@ -2435,10 +2460,7 @@ function poblarSelectoresRuta() {
         if (colector !== "TODOS" && colector !== "MIO" && item.creadoPorEmail !== colector) return false;
         if (ruta !== "TODAS" && item.ruta !== ruta) return false;
 
-        // Filtro por el selector desplegable de cliente específico
         if (clienteEsp !== "TODOS" && item.cliente.trim().toLowerCase() !== clienteEsp.trim().toLowerCase()) return false;
-
-        // Filtro por el buscador de texto libre
         if (textoLibre && !item.cliente.toLowerCase().includes(textoLibre)) return false;
 
         if (tipo === 'dia') return item.fecha === document.getElementById('filtroFechaDia').value;
@@ -3066,7 +3088,7 @@ function poblarSelectoresRuta() {
     // ==========================================
     // CAMBIO DE PESTAÑAS
     // ==========================================
-function cambiarPestana(p) {
+    function cambiarPestana(p) {
       if ((p === 'adminMaster' || p === 'clientes') && !esSuperAdmin) {
         return;
       }
@@ -3118,6 +3140,11 @@ function cambiarPestana(p) {
         document.getElementById('vistaClientesGeneral').classList.remove('seccion-oculta');
         document.getElementById('tabClientes').className = "col-span-2 sm:col-span-4 py-2.5 rounded-lg bg-indigo-500 text-white font-black shadow transition text-xs";
         renderizarListaGlobalClientes();
+      }
+
+      // Forzar recarga de selectores al tocar cualquier pestaña
+      if (typeof poblarSelectoresRuta === 'function') {
+        poblarSelectoresRuta();
       }
     }
 
@@ -3227,6 +3254,7 @@ function cambiarPestana(p) {
       link.download = `Base_Datos_Clientes.xls`;
       link.click();
     }
+
     async function editarRutaRegistro(id, rutaActual) {
       if (rutasApp.length === 0) {
         mostrarMensaje("No hay rutas disponibles para cambiar.", "⚠️");
@@ -3271,6 +3299,7 @@ function cambiarPestana(p) {
         mostrarMensaje("¡Ruta actualizada con éxito!", "✅");
       }
     }
+
     async function cerrarSesionManual() {
       localStorage.removeItem('pb_ultima_actividad');
       try {
