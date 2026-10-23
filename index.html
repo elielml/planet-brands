@@ -2161,32 +2161,27 @@ const meta = usuarioActual.user_metadata || {};
     // ==========================================
     // OPERACIONES (LIQUIDAR, RUTAS, GASTOS)
     // ==========================================
-    function poblarSelectoresRuta() {
+function poblarSelectoresRuta() {
       const s1 = document.getElementById('selectRutaForm');
       const s2 = document.getElementById('filtroRuta');
       const s3 = document.getElementById('selectRutaParaCliente');
-      const val1 = s1 ? s1.value : '';
-      const val2 = s2 ? s2.value : '';
-      const val3 = s3 ? s3.value : '';
 
-      if (!rutasApp || rutasApp.length === 0) {
-        if (s1) s1.innerHTML = '<option value="">(Sin rutas en esta zona)</option>';
-        if (s3) s3.innerHTML = '<option value="">(Crea una ruta en esta zona)</option>';
-        if (s2) s2.innerHTML = '<option value="TODAS">TODAS LAS RUTAS</option>';
-        return;
-      }
+      // Si aún no hay rutas cargadas, detenerse sin causar errores
+      if (!rutasApp || rutasApp.length === 0) return;
 
-      const opciones = rutasApp.map(r => `<option value="${r}">${r}</option>`).join('');
+      // Adaptable: extrae el nombre sin importar cómo lo envíe Supabase
+      const opciones = rutasApp.map(r => {
+        const nombreRuta = typeof r === 'object' ? (r.nombre || r.ruta || r.id) : r;
+        return `<option value="${nombreRuta}">${nombreRuta}</option>`;
+      }).join('');
+      
       if (s1) s1.innerHTML = opciones;
       if (s3) s3.innerHTML = opciones;
       if (s2) s2.innerHTML = `<option value="TODAS">TODAS LAS RUTAS (CONSOLIDADO)</option>` + opciones;
-
-      if (s1) s1.value = (val1 && rutasApp.includes(val1)) ? val1 : rutasApp[0];
-      if (s3) s3.value = (val3 && rutasApp.includes(val3)) ? val3 : rutasApp[0];
-      if (s2) s2.value = (val2 && (rutasApp.includes(val2) || val2 === 'TODAS')) ? val2 : 'TODAS';
-      
-      if (typeof actualizarClientesSegunRuta === 'function') actualizarClientesSegunRuta();
-      if (typeof alCambiarFiltroRutaHistorial === 'function') alCambiarFiltroRutaHistorial();
+  // Forzar recarga de selectores al tocar cualquier pestaña
+      if (typeof poblarSelectoresRuta === 'function') {
+        poblarSelectoresRuta();
+      }
     }
     function renderizarAdminRutas() {
        const cont = document.getElementById('listaRutasAdministrar');
