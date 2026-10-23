@@ -3688,7 +3688,7 @@ const meta = usuarioActual.user_metadata || {};
       }
     }
 
-    function abrirModalMovimiento(id, tipo) {
+  function abrirModalMovimiento(id, tipo) {
       const p = inventarioGuardado.find(i => i.id === id);
       if(!p) {
         mostrarMensaje("Producto no encontrado.", "⚠️");
@@ -3705,17 +3705,9 @@ const meta = usuarioActual.user_metadata || {};
       
       const inpCantidad = document.getElementById('movCantidad');
       inpCantidad.value = '';
-      document.getElementById('movDestinoExtra').value = '';
 
-      const selMotivo = document.getElementById('movMotivo');
-      const selRuta = document.getElementById('movRuta');
       const btnConf = document.getElementById('btnConfirmarMovimiento');
       const txtCant = document.getElementById('labelCantidadMovimiento');
-
-      selRuta.innerHTML = '<option value="">-- Sin ruta específica --</option>' + (rutasApp || []).map(r => {
-        const nRuta = typeof r === 'object' ? (r.nombre || r.ruta || r.id) : r;
-        return `<option value="${nRuta}">${nRuta}</option>`;
-      }).join('');
 
       inpCantidad.oninput = () => {
          const val = Number(inpCantidad.value) || 0;
@@ -3737,26 +3729,12 @@ const meta = usuarioActual.user_metadata || {};
 
       if (tipo === 'SALIDA') {
         document.getElementById('tituloModalMovimiento').innerHTML = "➖ Registrar Salida";
-        btnConf.className = "px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-black rounded-xl text-xs uppercase shadow transition w-full";
+        btnConf.className = "px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-black rounded-xl text-xs uppercase shadow transition w-full";
         txtCant.textContent = "Cantidad a Retirar";
-        selMotivo.innerHTML = `
-          <option value="Reposición de máquina">Reposición de máquina</option>
-          <option value="Reparación o mantenimiento">Reparación o mantenimiento</option>
-          <option value="Entrega a una ruta">Entrega a una ruta</option>
-          <option value="Uso interno">Uso interno</option>
-          <option value="Traslado a otro almacén">Traslado a otro almacén</option>
-          <option value="Otro">Otro</option>
-        `;
       } else if (tipo === 'ENTRADA') {
         document.getElementById('tituloModalMovimiento').innerHTML = "➕ Registrar Entrada";
-        btnConf.className = "px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl text-xs uppercase shadow transition w-full";
+        btnConf.className = "px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl text-xs uppercase shadow transition w-full";
         txtCant.textContent = "Cantidad a Ingresar";
-        selMotivo.innerHTML = `
-          <option value="Compra o abastecimiento">Compra o abastecimiento</option>
-          <option value="Devolución de una ruta">Devolución de una ruta</option>
-          <option value="Traslado desde otra ubicación">Traslado desde otra ubicación</option>
-          <option value="Otro">Otro</option>
-        `;
       }
 
       document.getElementById('modalMovimiento').classList.remove('hidden');
@@ -3769,10 +3747,7 @@ const meta = usuarioActual.user_metadata || {};
         const id = Number(document.getElementById('movProdId').value);
         const tipo = document.getElementById('movTipo').value;
         const cantInp = Number(document.getElementById('movCantidad').value);
-        const motivo = document.getElementById('movMotivo').value;
-        const ruta = document.getElementById('movRuta').value;
-        const destinoEx = document.getElementById('movDestinoExtra').value.trim();
-
+        
         const p = inventarioGuardado.find(i => i.id === id);
         if(!p || isNaN(cantInp) || cantInp < 0) {
             mostrarMensaje("Revisa la cantidad ingresada.", "⚠️");
@@ -3805,9 +3780,9 @@ const meta = usuarioActual.user_metadata || {};
             cantidad_anterior: stockActual,
             cantidad_movimiento: cantInp,
             cantidad_resultante: nuevoStock,
-            motivo: motivo,
-            ruta_destino: ruta || null,
-            destino_especifico: destinoEx || null,
+            motivo: tipo === 'ENTRADA' ? 'Entrada rápida' : 'Salida rápida',
+            ruta_destino: null,
+            destino_especifico: null,
             usuario_id: usuarioActual.id,
             usuario_email: window.nombreMostrar
         };
