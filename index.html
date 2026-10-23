@@ -285,21 +285,21 @@
     <section id="vistaCuadre" class="space-y-4">
       <form id="formCuadre" onsubmit="guardarCuadre(event)" class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Ruta Actual</label>
+            <label class="block text-sm font-black uppercase text-slate-500 mb-1">Ruta Actual</label>
             <select id="selectRutaForm" onchange="actualizarClientesSegunRuta()" class="w-full p-2.5 border rounded-xl text-sm font-semibold bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-600 outline-none">
             </select>
           </div>
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Fecha</label>
+            <label class="block text-sm font-black uppercase text-slate-500 mb-1">Fecha</label>
             <input type="date" id="fechaCuadre" required class="w-full p-2.5 border rounded-xl text-sm font-semibold bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-600 outline-none">
           </div>
         </div>
 
         <div>
           <div class="flex justify-between items-center mb-1">
-            <label class="block text-xs font-bold uppercase text-slate-500">Cliente / Negocio</label>
+            <label class="block text-sm font-black uppercase text-slate-500">Cliente / Negocio</label>
             <span id="badgeVariasMaquinas" class="hidden text-[11px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md border border-amber-300">
               Múltiples Máquinas
             </span>
@@ -310,7 +310,7 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Concepto / Máquina</label>
+            <label class="block text-sm font-black uppercase text-slate-500 mb-1">Concepto / Máquina</label>
             <select id="concepto" onchange="alCambiarConcepto()" class="w-full p-2.5 border rounded-xl text-sm font-bold bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-600 outline-none">
               <option value="Dulces">Dulces</option>
               <option value="Peluches">Peluches</option>
@@ -319,7 +319,7 @@
             </select>
           </div>
           <div>
-            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">% Comisión del Cliente</label>
+            <label class="block text-sm font-black uppercase text-slate-500 mb-1">% Comisión del Cliente</label>
             <div class="relative">
               <input type="number" id="porcentajeComision" min="0" max="100" step="1" value="25" oninput="calcularTodo()" required class="w-full p-2.5 border rounded-xl text-sm font-bold bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-600 outline-none pr-8">
               <span class="absolute right-3 top-2.5 text-sm font-bold text-slate-400">%</span>
@@ -363,19 +363,19 @@
             </div>
           </div>
 
-        <!-- TOTALES -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-900 text-white p-4 rounded-xl">
+<!-- TOTALES -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-900 text-white p-4 sm:p-5 rounded-xl">
           <div>
-            <span class="block text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Total</span>
-            <p class="text-lg font-black" id="totalBrutoCard">$ 0.00</p>
+            <span class="block text-xs sm:text-sm uppercase tracking-wider text-slate-400 font-bold mb-1">Total</span>
+            <p class="text-xl sm:text-2xl font-black" id="totalBrutoCard">$ 0.00</p>
           </div>
-          <div>
-            <span class="block text-[11px] uppercase tracking-wider text-rose-300 font-semibold" id="labelComisionCliente">Comisión Cliente (25%)</span>
-            <p class="text-lg font-black text-rose-400" id="totalComisionCard">$ 0.00</p>
+          <div class="sm:border-l sm:border-slate-800 sm:pl-3 mt-2 sm:mt-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800">
+            <span class="block text-xs sm:text-sm uppercase tracking-wider text-sky-300 font-bold mb-1" id="labelComisionCliente">Comisión Cliente (25%)</span>
+            <p class="text-xl sm:text-2xl font-black text-sky-400" id="totalComisionCard">$ 0.00</p>
           </div>
-          <div class="sm:border-l sm:border-slate-800 sm:pl-3">
-            <span class="block text-[11px] uppercase tracking-wider text-emerald-300 font-semibold">Diferencia</span>
-            <p class="text-xl font-black text-emerald-400" id="totalEmpresaCard">$ 0.00</p>
+          <div class="sm:border-l sm:border-slate-800 sm:pl-3 mt-2 sm:mt-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800">
+            <span class="block text-xs sm:text-sm uppercase tracking-wider text-emerald-300 font-bold mb-1">Diferencia</span>
+            <p class="text-2xl sm:text-3xl font-black text-emerald-400" id="totalEmpresaCard">$ 0.00</p>
           </div>
         </div>
 
