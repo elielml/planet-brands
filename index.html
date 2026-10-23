@@ -3540,6 +3540,366 @@ const meta = usuarioActual.user_metadata || {};
       }
       window.location.href = window.location.pathname;
     }
+    // ==========================================
+    // LÓGICA DEL MÓDULO DE INVENTARIO
+    // ==========================================
+    let inventarioGuardado = [];
+
+    async function cargarInventario() {
+      const { data, error } = await sbClient
+        .from('pb_inventario')
+        .select('*')
+        .eq('eliminado', false);
+      
+      if (error) {
+        mostrarMensaje("Error al cargar inventario", "❌");
+        return;
+      }
+      inventarioGuardado = data || [];
+      renderizarInventario();
+    }
+
+    function renderizarInventario() {
+      const contenedor = document.getElementById('contenedorTarjetasInventario');
+      const vacio = document.getElementById('mensajeInventarioVacio');
+      const query = document.getElementById('inputBuscarInventario').value.trim().toLowerCase();
+      const orden = document.getElementById('selectOrdenInventario').value;
+
+      let filtrados = inventarioGuardado.filter(p => 
+        p.nombre.toLowerCase().includes(query) || 
+        (p.codigo && p.codigo.toLowerCase().includes(query))
+      );
+
+      if (orden === 'AZ') filtrados.sort((a,b) => a.nombre.localeCompare(b.nombre));
+      if (orden === 'ZA') filtrados.sort((a,b) => b.nombre.localeCompare(a.nombre));
+      if (orden === 'MAX') filtrados.sort((a,b) => b.stock - a.stock);
+      if (orden === 'MIN') filtrados.sort((a,b) => a.stock - b.stock);
+
+      document.getElementById('labelTotalInventario').textContent = filtrados.length;
+      contenedor.innerHTML = '';
+
+      if (filtrados.length === 0) {
+        vacio.classList.remove('hidden');
+        return;
+      }
+      vacio.classList.add('hidden');
+
+      filtrados.forEach(p => {
+        const stockNum = Number(p.stock) || 0;
+        const minNum = Number(p.stock_minimo) || 0;
+        const alerta = (stockNum <= minNum && minNum > 0) 
+          ? `<span class="bg-rose-100 text-rose-800 px-2 py-0.5 rounded text-[10px] font-black uppercase shadow-sm border border-rose-200 ml-2">⚠️ Stock Bajo</span>` 
+          : '';
+
+        contenedor.innerHTML += `
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-start mb-1">
+                <h4 class="font-black text-slate-900 text-sm uppercase leading-tight">${p.nombre}</h4>
+                <button onclick="abrirModalFormProducto(${p.id})" title="Editar" class="text-blue-500 hover:text-blue-700 bg-white border border-slate-200 px-2 py-1 rounded shadow-sm text-xs">✏️</button>
+              </div>
+              <p class="text-[10px] text-slate-500 font-mono mb-2">${p.codigo ? 'Ref: '+p.codigo : 'Sin ref.'} | ${p.categoria || 'Sin categoría'}</p>
+              
+              <div class="flex items-center gap-2 mb-3">
+                <div class="bg-white px-3 py-2 rounded-lg border border-slate-200 flex-1 shadow-inner">
+                   <span class="block text-[10px] uppercase text-slate-400 font-bold mb-0.5">Disponible</span>
+                   <div class="flex items-baseline gap-1 text-blue-900">
+                     <span class="text-xl font-black">${stockNum}</span>
+                     <span class="text-xs font-semibold lowercase">${p.unidad_medida}</span>
+                     ${alerta}
+                   </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-2 mt-2 pt-3 border-t border-slate-200">
+              <button onclick="abrirModalMovimiento(${p.id}, 'SALIDA')" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-[10px] sm:text-xs py-2 rounded-lg uppercase shadow-sm flex items-center justify-center gap-1 transition">
+                <span>➖</span> Salida
+              </button>
+              <button onclick="abrirModalMovimiento(${p.id}, 'ENTRADA')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] sm:text-xs py-2 rounded-lg uppercase shadow-sm flex items-center justify-center gap-1 transition">
+                <span>➕</span> Entrada
+              </button>
+              <button onclick="abrirHistorialInventario(${p.id})" class="bg-slate-800 hover:bg-slate-900 text-white font-bold text-[10px] sm:text-xs py-2 rounded-lg uppercase shadow-sm flex items-center justify-center gap-1 transition">
+                <span>📜</span> Hist.
+              </button>
+            </div>
+            <div class="text-center mt-2 w-full">
+               <button onclick="abrirModalMovimiento(${p.id}, 'AJUSTE')" class="text-[10px] font-bold text-slate-400 hover:text-amber-600 underline">Ajustar cantidad manualmente</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function alBuscarInventario() {
+      renderizarInventario();
+    }
+
+    function abrirModalFormProducto(id = null) {
+      document.getElementById('invProdId').value = id || '';
+      if (id) {
+        const p = inventarioGuardado.find(i => i.id === id);
+        if(!p) return;
+        document.getElementById('tituloModalProducto').textContent = "Editar Producto";
+        document.getElementById('invProdNombre').value = p.nombre;
+        document.getElementById('invProdCodigo').value = p.codigo || '';
+        document.getElementById('invProdMedida').value = p.unidad_medida;
+        document.getElementById('invProdCategoria').value = p.categoria || '';
+        document.getElementById('invProdUbicacion').value = p.ubicacion || '';
+        document.getElementById('invProdObservaciones').value = p.observaciones || '';
+        document.getElementById('invProdMinimo').value = p.stock_minimo || 0;
+        document.getElementById('bloqueStockInicial').classList.add('hidden'); // Solo ajustar stock por movimientos
+      } else {
+        document.getElementById('tituloModalProducto').textContent = "Nuevo Producto";
+        document.getElementById('invProdNombre').value = '';
+        document.getElementById('invProdCodigo').value = '';
+        document.getElementById('invProdMedida').value = 'unidades';
+        document.getElementById('invProdCategoria').value = '';
+        document.getElementById('invProdUbicacion').value = '';
+        document.getElementById('invProdObservaciones').value = '';
+        document.getElementById('invProdStock').value = 0;
+        document.getElementById('invProdMinimo').value = 0;
+        document.getElementById('bloqueStockInicial').classList.remove('hidden');
+      }
+      document.getElementById('modalFormProducto').classList.remove('hidden');
+    }
+
+    async function guardarProductoInventario(e) {
+      e.preventDefault();
+      const id = document.getElementById('invProdId').value;
+      const nombre = document.getElementById('invProdNombre').value.trim();
+      const codigo = document.getElementById('invProdCodigo').value.trim();
+      const medida = document.getElementById('invProdMedida').value;
+      const categoria = document.getElementById('invProdCategoria').value.trim();
+      const ubicacion = document.getElementById('invProdUbicacion').value.trim();
+      const obs = document.getElementById('invProdObservaciones').value.trim();
+      const stockIni = Number(document.getElementById('invProdStock').value) || 0;
+      const min = Number(document.getElementById('invProdMinimo').value) || 0;
+
+      // Evitar duplicados por código
+      if (codigo && !id) {
+         const duplicado = inventarioGuardado.find(p => p.codigo && p.codigo.toLowerCase() === codigo.toLowerCase());
+         if(duplicado) {
+            mostrarMensaje("Ya existe un producto con este código.", "⚠️");
+            return;
+         }
+      }
+
+      const payload = {
+        nombre, codigo, categoria, unidad_medida: medida, ubicacion, observaciones, stock_minimo: min
+      };
+
+      if (!id) {
+        payload.stock = stockIni;
+        payload.creado_por = usuarioActual.id;
+        payload.creado_por_email = window.nombreMostrar;
+        const { data, error } = await sbClient.from('pb_inventario').insert(payload).select().single();
+        if (error) { mostrarMensaje("Error al crear: " + error.message, "❌"); return; }
+        
+        if (stockIni > 0) {
+           await sbClient.from('pb_movimientos_inventario').insert({
+              producto_id: data.id, producto_nombre: nombre, tipo_movimiento: 'ENTRADA',
+              cantidad_anterior: 0, cantidad_movimiento: stockIni, cantidad_resultante: stockIni,
+              motivo: 'Inventario Inicial', usuario_id: usuarioActual.id, usuario_email: window.nombreMostrar
+           });
+        }
+      } else {
+        const { error } = await sbClient.from('pb_inventario').update(payload).eq('id', id);
+        if (error) { mostrarMensaje("Error al actualizar: " + error.message, "❌"); return; }
+      }
+
+      cerrarModal('modalFormProducto');
+      await cargarInventario();
+      mostrarMensaje(id ? "Producto actualizado." : "Producto creado.", "✅");
+    }
+
+    function abrirModalMovimiento(id, tipo) {
+      const p = inventarioGuardado.find(i => i.id === id);
+      if(!p) return;
+
+      document.getElementById('movProdId').value = p.id;
+      document.getElementById('movTipo').value = tipo;
+      document.getElementById('movProdNombre').textContent = p.nombre;
+      document.getElementById('movProdStockActual').textContent = Number(p.stock) + " " + p.unidad_medida;
+      document.getElementById('movCantidad').value = '';
+      document.getElementById('movDestinoExtra').value = '';
+
+      const selMotivo = document.getElementById('movMotivo');
+      const selRuta = document.getElementById('movRuta');
+      const divRuta = document.getElementById('bloqueRutaDestino');
+      const divDiff = document.getElementById('bloqueDiferencia');
+      const txtCant = document.getElementById('labelCantidadMovimiento');
+      const btnConf = document.getElementById('btnConfirmarMovimiento');
+
+      selRuta.innerHTML = '<option value="">-- Sin ruta específica --</option>' + rutasApp.map(r => `<option value="${r}">${r}</option>`).join('');
+
+      divDiff.style.display = 'none';
+      document.getElementById('movCantidad').oninput = null;
+
+      if (tipo === 'SALIDA') {
+        document.getElementById('tituloModalMovimiento').innerHTML = "➖ Registrar Salida";
+        btnConf.className = "px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-black rounded-xl text-xs uppercase shadow transition w-full";
+        txtCant.textContent = "Cantidad a Retirar";
+        divRuta.style.display = 'block';
+        selMotivo.innerHTML = `
+          <option value="Reposición de máquina">Reposición de máquina</option>
+          <option value="Reparación o mantenimiento">Reparación o mantenimiento</option>
+          <option value="Entrega a una ruta">Entrega a una ruta</option>
+          <option value="Uso interno">Uso interno</option>
+          <option value="Traslado a otro almacén">Traslado a otro almacén</option>
+          <option value="Otro">Otro</option>
+        `;
+      } else if (tipo === 'ENTRADA') {
+        document.getElementById('tituloModalMovimiento').innerHTML = "➕ Registrar Entrada";
+        btnConf.className = "px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl text-xs uppercase shadow transition w-full";
+        txtCant.textContent = "Cantidad a Ingresar";
+        divRuta.style.display = 'block';
+        selMotivo.innerHTML = `
+          <option value="Compra o abastecimiento">Compra o abastecimiento</option>
+          <option value="Devolución de una ruta">Devolución de una ruta</option>
+          <option value="Traslado desde otra ubicación">Traslado desde otra ubicación</option>
+          <option value="Otro">Otro</option>
+        `;
+      } else if (tipo === 'AJUSTE') {
+        document.getElementById('tituloModalMovimiento').innerHTML = "⚖️ Ajuste Físico";
+        btnConf.className = "px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-black rounded-xl text-xs uppercase shadow transition w-full";
+        txtCant.textContent = "Cantidad Real Contada";
+        divRuta.style.display = 'none';
+        divDiff.style.display = 'block';
+        document.getElementById('movDiferencia').value = '0';
+        document.getElementById('movCantidad').oninput = () => {
+           const val = Number(document.getElementById('movCantidad').value) || 0;
+           const diff = val - Number(p.stock);
+           document.getElementById('movDiferencia').value = diff > 0 ? '+'+diff : diff;
+        };
+        selMotivo.innerHTML = `
+          <option value="Conteo físico">Conteo físico</option>
+          <option value="Corrección por error documentado">Corrección por error</option>
+          <option value="Mermas o daños">Mermas o daños</option>
+          <option value="Otro">Otro</option>
+        `;
+      }
+
+      document.getElementById('modalMovimiento').classList.remove('hidden');
+    }
+
+    async function ejecutarMovimientoInventario(e) {
+      e.preventDefault();
+      const id = Number(document.getElementById('movProdId').value);
+      const tipo = document.getElementById('movTipo').value;
+      const cantInp = Number(document.getElementById('movCantidad').value);
+      const motivo = document.getElementById('movMotivo').value;
+      const ruta = document.getElementById('movRuta').value;
+      const destinoEx = document.getElementById('movDestinoExtra').value.trim();
+
+      const p = inventarioGuardado.find(i => i.id === id);
+      if(!p || isNaN(cantInp) || cantInp < 0) return;
+
+      const stockActual = Number(p.stock);
+      let nuevoStock = stockActual;
+      let cantMov = cantInp;
+
+      if (tipo === 'SALIDA') {
+         if (cantInp <= 0 || cantInp > stockActual) {
+            mostrarMensaje("No hay suficiente stock disponible.", "⚠️");
+            return;
+         }
+         nuevoStock = stockActual - cantInp;
+      } else if (tipo === 'ENTRADA') {
+         if (cantInp <= 0) return;
+         nuevoStock = stockActual + cantInp;
+      } else if (tipo === 'AJUSTE') {
+         cantMov = cantInp - stockActual;
+         if (cantMov === 0) {
+            mostrarMensaje("La cantidad es idéntica al stock actual.", "ℹ️");
+            return;
+         }
+         nuevoStock = cantInp;
+      }
+
+      // Deshabilitar botón temporalmente para evitar doble click
+      document.getElementById('btnConfirmarMovimiento').disabled = true;
+
+      const { error: errMov } = await sbClient.from('pb_movimientos_inventario').insert({
+          producto_id: p.id,
+          producto_nombre: p.nombre,
+          tipo_movimiento: tipo,
+          cantidad_anterior: stockActual,
+          cantidad_movimiento: tipo === 'AJUSTE' ? cantMov : cantInp,
+          cantidad_resultante: nuevoStock,
+          motivo: motivo,
+          ruta_destino: ruta || null,
+          destino_especifico: destinoEx || null,
+          usuario_id: usuarioActual.id,
+          usuario_email: window.nombreMostrar
+      });
+
+      if (errMov) { 
+        mostrarMensaje("Error al registrar movimiento.", "❌"); 
+        document.getElementById('btnConfirmarMovimiento').disabled = false;
+        return; 
+      }
+
+      await sbClient.from('pb_inventario').update({ stock: nuevoStock }).eq('id', p.id);
+
+      document.getElementById('btnConfirmarMovimiento').disabled = false;
+      cerrarModal('modalMovimiento');
+      await cargarInventario();
+      mostrarMensaje("Movimiento registrado.", "✅");
+    }
+
+    async function abrirHistorialInventario(productoId) {
+      const p = inventarioGuardado.find(i => i.id === productoId);
+      if(!p) return;
+      
+      document.getElementById('historialNombreProd').textContent = p.nombre;
+      const cuerpo = document.getElementById('cuerpoHistorialInventario');
+      const msgVacio = document.getElementById('mensajeHistorialInvVacio');
+      cuerpo.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-slate-400">Cargando...</td></tr>`;
+      document.getElementById('modalHistorialInventario').classList.remove('hidden');
+
+      const { data: movs, error } = await sbClient
+        .from('pb_movimientos_inventario')
+        .select('*')
+        .eq('producto_id', productoId)
+        .order('fecha', { ascending: false });
+
+      cuerpo.innerHTML = '';
+      if (error || !movs || movs.length === 0) {
+         msgVacio.classList.remove('hidden');
+         return;
+      }
+      msgVacio.classList.add('hidden');
+
+      movs.forEach(m => {
+        let badgeTipo = '';
+        let prefijoCant = '';
+        if (m.tipo_movimiento === 'ENTRADA') { badgeTipo = '<span class="bg-emerald-100 text-emerald-800 px-1.5 rounded text-[10px] font-bold uppercase">Entrada</span>'; prefijoCant = '+'; }
+        else if (m.tipo_movimiento === 'SALIDA') { badgeTipo = '<span class="bg-rose-100 text-rose-800 px-1.5 rounded text-[10px] font-bold uppercase">Salida</span>'; prefijoCant = '-'; }
+        else { badgeTipo = '<span class="bg-amber-100 text-amber-800 px-1.5 rounded text-[10px] font-bold uppercase">Ajuste</span>'; prefijoCant = m.cantidad_movimiento > 0 ? '+' : ''; }
+
+        const date = new Date(m.fecha);
+        const fechaFormat = `${date.getDate().toString().padStart(2,'0')}/${(date.getMonth()+1).toString().padStart(2,'0')}/${date.getFullYear()} ${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`;
+
+        cuerpo.innerHTML += `
+          <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+            <td class="p-2 text-[10px] text-slate-500 whitespace-nowrap">${fechaFormat}</td>
+            <td class="p-2">${badgeTipo}</td>
+            <td class="p-2 text-right font-black ${m.tipo_movimiento === 'SALIDA' ? 'text-rose-600' : 'text-emerald-700'}">${prefijoCant}${Math.abs(m.cantidad_movimiento)}</td>
+            <td class="p-2 text-right font-black text-slate-800">${m.cantidad_resultante}</td>
+            <td class="p-2">
+              <span class="block text-xs font-semibold text-slate-700">${m.motivo}</span>
+              <span class="block text-[10px] text-slate-500">${m.ruta_destino || ''} ${m.destino_especifico ? ' / '+m.destino_especifico : ''}</span>
+            </td>
+            <td class="p-2 text-[10px] font-bold text-blue-900">${m.usuario_email}</td>
+          </tr>
+        `;
+      });
+    }
+
+    function cerrarModal(id) {
+       document.getElementById(id).classList.add('hidden');
+    }
   </script>
 </body>
 </html>
