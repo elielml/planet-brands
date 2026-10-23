@@ -3628,7 +3628,7 @@ const meta = usuarioActual.user_metadata || {};
       renderizarInventario();
     }
 
-   function abrirModalFormProducto(id = null) {
+  function abrirModalFormProducto(id = null) {
       document.getElementById('invProdId').value = id || '';
       if (id) {
         const p = inventarioGuardado.find(i => i.id === id);
@@ -3657,100 +3657,56 @@ const meta = usuarioActual.user_metadata || {};
 
     async function guardarProductoInventario(e) {
       e.preventDefault();
-      const id = document.getElementById('invProdId').value;
-      const nombre = document.getElementById('invProdNombre').value.trim();
-      const codigo = document.getElementById('invProdCodigo').value.trim();
-      const medida = document.getElementById('invProdMedida').value;
-      const categoria = document.getElementById('invProdCategoria').value.trim();
-      const obs = document.getElementById('invProdObservaciones').value.trim();
-      const stockIni = Number(document.getElementById('invProdStock').value) || 0;
-      const min = Number(document.getElementById('invProdMinimo').value) || 0;
+      try {
+        const id = document.getElementById('invProdId').value;
+        const nombre = document.getElementById('invProdNombre').value.trim();
+        const codigo = document.getElementById('invProdCodigo').value.trim();
+        const medida = document.getElementById('invProdMedida').value;
+        const categoria = document.getElementById('invProdCategoria').value.trim();
+        const obs = document.getElementById('invProdObservaciones').value.trim();
+        const stockIni = Number(document.getElementById('invProdStock').value) || 0;
+        const min = Number(document.getElementById('invProdMinimo').value) || 0;
 
-      if (codigo && !id) {
-         const duplicado = inventarioGuardado.find(p => p.codigo && p.codigo.toLowerCase() === codigo.toLowerCase());
-         if(duplicado) {
-            mostrarMensaje("Ya existe un producto con este código.", "⚠️");
-            return;
-         }
-      }
-
-      const payload = {
-        nombre, codigo, categoria, unidad_medida: medida, observaciones, stock_minimo: min
-      };
-
-      if (!id) {
-        payload.stock = stockIni;
-        payload.creado_por = usuarioActual.id;
-        payload.creado_por_email = window.nombreMostrar;
-        const { data, error } = await sbClient.from('pb_inventario').insert(payload).select().single();
-        if (error) { mostrarMensaje("Error al crear: " + error.message, "❌"); return; }
-        
-        if (stockIni > 0) {
-           await sbClient.from('pb_movimientos_inventario').insert({
-              producto_id: data.id, producto_nombre: nombre, tipo_movimiento: 'ENTRADA',
-              cantidad_anterior: 0, cantidad_movimiento: stockIni, cantidad_resultante: stockIni,
-              motivo: 'Inventario Inicial', usuario_id: usuarioActual.id, usuario_email: window.nombreMostrar
-           });
+        // Evitar duplicados de código
+        if (codigo && !id) {
+           const duplicado = inventarioGuardado.find(p => p.codigo && p.codigo.toLowerCase() === codigo.toLowerCase());
+           if(duplicado) {
+              mostrarMensaje("Ya existe un producto con este código.", "⚠️");
+              return;
+           }
         }
-      } else {
-        const { error } = await sbClient.from('pb_inventario').update(payload).eq('id', id);
-        if (error) { mostrarMensaje("Error al actualizar: " + error.message, "❌"); return; }
-      }
 
-      cerrarModal('modalFormProducto');
-      await cargarInventario();
-      mostrarMensaje(id ? "Producto actualizado." : "Producto creado.", "✅");
-    }
+        const payload = {
+          nombre, codigo, categoria, unidad_medida: medida, observaciones, stock_minimo: min
+        };
 
-    async function guardarProductoInventario(e) {
-      e.preventDefault();
-      const id = document.getElementById('invProdId').value;
-      const nombre = document.getElementById('invProdNombre').value.trim();
-      const codigo = document.getElementById('invProdCodigo').value.trim();
-      const medida = document.getElementById('invProdMedida').value;
-      const categoria = document.getElementById('invProdCategoria').value.trim();
-      const ubicacion = document.getElementById('invProdUbicacion').value.trim();
-      const obs = document.getElementById('invProdObservaciones').value.trim();
-      const stockIni = Number(document.getElementById('invProdStock').value) || 0;
-      const min = Number(document.getElementById('invProdMinimo').value) || 0;
-
-      // Evitar duplicados por código
-      if (codigo && !id) {
-         const duplicado = inventarioGuardado.find(p => p.codigo && p.codigo.toLowerCase() === codigo.toLowerCase());
-         if(duplicado) {
-            mostrarMensaje("Ya existe un producto con este código.", "⚠️");
-            return;
-         }
-      }
-
-      const payload = {
-        nombre, codigo, categoria, unidad_medida: medida, ubicacion, observaciones, stock_minimo: min
-      };
-
-      if (!id) {
-        payload.stock = stockIni;
-        payload.creado_por = usuarioActual.id;
-        payload.creado_por_email = window.nombreMostrar;
-        const { data, error } = await sbClient.from('pb_inventario').insert(payload).select().single();
-        if (error) { mostrarMensaje("Error al crear: " + error.message, "❌"); return; }
-        
-        if (stockIni > 0) {
-           await sbClient.from('pb_movimientos_inventario').insert({
-              producto_id: data.id, producto_nombre: nombre, tipo_movimiento: 'ENTRADA',
-              cantidad_anterior: 0, cantidad_movimiento: stockIni, cantidad_resultante: stockIni,
-              motivo: 'Inventario Inicial', usuario_id: usuarioActual.id, usuario_email: window.nombreMostrar
-           });
+        if (!id) {
+          payload.stock = stockIni;
+          payload.creado_por = usuarioActual.id;
+          payload.creado_por_email = window.nombreMostrar;
+          const { data, error } = await sbClient.from('pb_inventario').insert(payload).select().single();
+          if (error) { mostrarMensaje("Error al crear: " + error.message, "❌"); return; }
+          
+          if (stockIni > 0) {
+             await sbClient.from('pb_movimientos_inventario').insert({
+                producto_id: data.id, producto_nombre: nombre, tipo_movimiento: 'ENTRADA',
+                cantidad_anterior: 0, cantidad_movimiento: stockIni, cantidad_resultante: stockIni,
+                motivo: 'Inventario Inicial', usuario_id: usuarioActual.id, usuario_email: window.nombreMostrar
+             });
+          }
+        } else {
+          const { error } = await sbClient.from('pb_inventario').update(payload).eq('id', id);
+          if (error) { mostrarMensaje("Error al actualizar: " + error.message, "❌"); return; }
         }
-      } else {
-        const { error } = await sbClient.from('pb_inventario').update(payload).eq('id', id);
-        if (error) { mostrarMensaje("Error al actualizar: " + error.message, "❌"); return; }
+
+        cerrarModal('modalFormProducto');
+        await cargarInventario();
+        mostrarMensaje(id ? "Producto actualizado." : "Producto creado.", "✅");
+        
+      } catch (error) {
+        mostrarMensaje("Error interno: No se pudo guardar.", "⚠️");
       }
-
-      cerrarModal('modalFormProducto');
-      await cargarInventario();
-      mostrarMensaje(id ? "Producto actualizado." : "Producto creado.", "✅");
     }
-
     function abrirModalMovimiento(id, tipo) {
       const p = inventarioGuardado.find(i => i.id === id);
       if(!p) return;
