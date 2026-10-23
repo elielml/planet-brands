@@ -1149,6 +1149,7 @@
       <p id="mensajeInventarioVacio" class="text-center py-6 text-xs text-slate-400 hidden font-medium">No se encontraron productos.</p>
 
       <!-- MODAL: AGREGAR/EDITAR PRODUCTO -->
+<!-- MODAL: AGREGAR/EDITAR PRODUCTO -->
       <div id="modalFormProducto" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
         <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl p-5 border border-slate-200 my-8">
           <h3 id="tituloModalProducto" class="font-black text-sm uppercase text-slate-800 border-b border-slate-100 pb-2 mb-3">Registrar Producto</h3>
@@ -1169,8 +1170,6 @@
                   <option value="unidades">Unidades</option>
                   <option value="paquetes">Paquetes</option>
                   <option value="cajas">Cajas</option>
-                  <option value="libras">Libras</option>
-                  <option value="metros">Metros</option>
                 </select>
               </div>
             </div>
@@ -1184,15 +1183,9 @@
                 <input type="number" id="invProdMinimo" value="0" min="0" step="any" class="w-full p-2 border rounded-lg text-xs font-bold bg-slate-50 outline-none text-rose-700">
               </div>
             </div>
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="text-[11px] font-bold text-slate-500 uppercase">Categoría</label>
-                <input type="text" id="invProdCategoria" placeholder="Ej: Piezas, Dulces..." class="w-full p-2 border rounded-lg text-xs bg-slate-50 outline-none">
-              </div>
-              <div>
-                <label class="text-[11px] font-bold text-slate-500 uppercase">Ubicación Fís.</label>
-                <input type="text" id="invProdUbicacion" placeholder="Ej: Estante A1" class="w-full p-2 border rounded-lg text-xs bg-slate-50 outline-none">
-              </div>
+            <div>
+              <label class="text-[11px] font-bold text-slate-500 uppercase">Categoría</label>
+              <input type="text" id="invProdCategoria" placeholder="Piezas, Dulces, Juguetes" class="w-full p-2 border rounded-lg text-xs bg-slate-50 outline-none">
             </div>
             <div>
               <label class="text-[11px] font-bold text-slate-500 uppercase">Observaciones</label>
@@ -3635,7 +3628,7 @@ const meta = usuarioActual.user_metadata || {};
       renderizarInventario();
     }
 
-    function abrirModalFormProducto(id = null) {
+   function abrirModalFormProducto(id = null) {
       document.getElementById('invProdId').value = id || '';
       if (id) {
         const p = inventarioGuardado.find(i => i.id === id);
@@ -3645,23 +3638,68 @@ const meta = usuarioActual.user_metadata || {};
         document.getElementById('invProdCodigo').value = p.codigo || '';
         document.getElementById('invProdMedida').value = p.unidad_medida;
         document.getElementById('invProdCategoria').value = p.categoria || '';
-        document.getElementById('invProdUbicacion').value = p.ubicacion || '';
         document.getElementById('invProdObservaciones').value = p.observaciones || '';
         document.getElementById('invProdMinimo').value = p.stock_minimo || 0;
-        document.getElementById('bloqueStockInicial').classList.add('hidden'); // Solo ajustar stock por movimientos
+        document.getElementById('bloqueStockInicial').classList.add('hidden'); 
       } else {
         document.getElementById('tituloModalProducto').textContent = "Nuevo Producto";
         document.getElementById('invProdNombre').value = '';
         document.getElementById('invProdCodigo').value = '';
         document.getElementById('invProdMedida').value = 'unidades';
         document.getElementById('invProdCategoria').value = '';
-        document.getElementById('invProdUbicacion').value = '';
         document.getElementById('invProdObservaciones').value = '';
         document.getElementById('invProdStock').value = 0;
         document.getElementById('invProdMinimo').value = 0;
         document.getElementById('bloqueStockInicial').classList.remove('hidden');
       }
       document.getElementById('modalFormProducto').classList.remove('hidden');
+    }
+
+    async function guardarProductoInventario(e) {
+      e.preventDefault();
+      const id = document.getElementById('invProdId').value;
+      const nombre = document.getElementById('invProdNombre').value.trim();
+      const codigo = document.getElementById('invProdCodigo').value.trim();
+      const medida = document.getElementById('invProdMedida').value;
+      const categoria = document.getElementById('invProdCategoria').value.trim();
+      const obs = document.getElementById('invProdObservaciones').value.trim();
+      const stockIni = Number(document.getElementById('invProdStock').value) || 0;
+      const min = Number(document.getElementById('invProdMinimo').value) || 0;
+
+      if (codigo && !id) {
+         const duplicado = inventarioGuardado.find(p => p.codigo && p.codigo.toLowerCase() === codigo.toLowerCase());
+         if(duplicado) {
+            mostrarMensaje("Ya existe un producto con este código.", "⚠️");
+            return;
+         }
+      }
+
+      const payload = {
+        nombre, codigo, categoria, unidad_medida: medida, observaciones, stock_minimo: min
+      };
+
+      if (!id) {
+        payload.stock = stockIni;
+        payload.creado_por = usuarioActual.id;
+        payload.creado_por_email = window.nombreMostrar;
+        const { data, error } = await sbClient.from('pb_inventario').insert(payload).select().single();
+        if (error) { mostrarMensaje("Error al crear: " + error.message, "❌"); return; }
+        
+        if (stockIni > 0) {
+           await sbClient.from('pb_movimientos_inventario').insert({
+              producto_id: data.id, producto_nombre: nombre, tipo_movimiento: 'ENTRADA',
+              cantidad_anterior: 0, cantidad_movimiento: stockIni, cantidad_resultante: stockIni,
+              motivo: 'Inventario Inicial', usuario_id: usuarioActual.id, usuario_email: window.nombreMostrar
+           });
+        }
+      } else {
+        const { error } = await sbClient.from('pb_inventario').update(payload).eq('id', id);
+        if (error) { mostrarMensaje("Error al actualizar: " + error.message, "❌"); return; }
+      }
+
+      cerrarModal('modalFormProducto');
+      await cargarInventario();
+      mostrarMensaje(id ? "Producto actualizado." : "Producto creado.", "✅");
     }
 
     async function guardarProductoInventario(e) {
