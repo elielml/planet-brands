@@ -2705,8 +2705,8 @@ const meta = usuarioActual.user_metadata || {};
           totalEmpresa += item.gananciaEmpresa;
 
           const badgeColector = item.esMio 
-            ? `<span class="text-[9px] bg-blue-100 text-blue-900 px-1.5 py-0.2 rounded font-bold">Mío</span>` 
-            : `<span class="text-[9px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded font-bold">${item.creadoPorEmail}</span>`;
+            ? `<span class="text-[10px] sm:text-[11px] bg-blue-100 text-blue-900 px-1.5 py-0.5 rounded font-bold">Mío</span>` 
+            : `<span class="text-[10px] sm:text-[11px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-bold">${item.creadoPorEmail}</span>`;
 
           // CONVERTIR FECHA DE AAAA-MM-DD A DD/MM/AAAA
           let fechaFormateada = item.fecha;
@@ -2716,29 +2716,29 @@ const meta = usuarioActual.user_metadata || {};
           }
 
           const fila = document.createElement('tr');
-          fila.className = "hover:bg-slate-50 transition border-b border-slate-100";
+          fila.className = "hover:bg-slate-50 transition border-b border-slate-100 text-xs sm:text-sm text-slate-700";
           fila.innerHTML = `
             <td class="p-3">
-              <span class="font-bold text-slate-800 block text-xs">${item.cliente}</span>
-              <span class="text-[10px] text-slate-400 font-semibold uppercase">${item.concepto} (${item.porcentaje}%)</span>
+              <span class="font-bold text-slate-800 block text-sm sm:text-base">${item.cliente}</span>
+              <span class="text-[11px] sm:text-xs text-slate-500 font-semibold uppercase">${item.concepto} (${item.porcentaje}%)</span>
             </td>
-            <td class="p-3 text-center text-slate-500 font-semibold text-[10px] uppercase">
-              ${item.ruta} <br/> ${badgeColector}
+            <td class="p-3 text-center text-slate-600 font-semibold text-[11px] sm:text-xs uppercase">
+              ${item.ruta} <br/> <div class="mt-1">${badgeColector}</div>
             </td>
-            <td class="p-3 text-center text-slate-500 font-medium text-[11px] whitespace-nowrap">${fechaFormateada}</td>
-            <td class="p-3 text-center font-mono font-medium text-slate-600">${item.cant25} / ${item.cant10} / ${item.cant5}</td>
-            <td class="p-3 text-right font-medium text-slate-600">$ ${item.bruto.toLocaleString('es-DO', { minimumFractionDigits: 2 })}</td>
-            <td class="p-3 text-right font-black text-emerald-700">$ ${item.gananciaEmpresa.toLocaleString('es-DO', { minimumFractionDigits: 2 })}</td>
+            <td class="p-3 text-center text-slate-600 font-medium">${fechaFormateada}</td>
+            <td class="p-3 text-center font-mono font-bold text-slate-600">${item.cant25} / ${item.cant10} / ${item.cant5}</td>
+            <td class="p-3 text-right font-bold text-slate-600">$ ${item.bruto.toLocaleString('es-DO', { minimumFractionDigits: 2 })}</td>
+            <td class="p-3 text-right font-black text-emerald-700 text-sm sm:text-base">$ ${item.gananciaEmpresa.toLocaleString('es-DO', { minimumFractionDigits: 2 })}</td>
             <td class="p-3 text-center">
-              <button onclick="reimprimirLiquidacion(${item.id})" title="Reimprimir Comprobante" class="bg-blue-50 text-blue-700 hover:bg-blue-100 p-1.5 rounded-lg border border-blue-200 font-bold transition">
+              <button onclick="reimprimirLiquidacion(${item.id})" title="Reimprimir Comprobante" class="bg-blue-50 text-blue-700 hover:bg-blue-100 p-2 rounded-lg border border-blue-200 font-bold transition text-sm">
                 🖨️
               </button>
             </td>
            <td class="p-3 text-center accion-eliminar-col">
-              <div class="flex items-center justify-center gap-1.5">
-                <button onclick="editarRutaRegistro(${item.id}, '${item.ruta}')" title="Cambiar Ruta" class="text-indigo-600 hover:text-indigo-800 font-bold text-xs bg-indigo-50 px-2 py-1 rounded">📍</button>
-                <button onclick="editarFechaRegistro(${item.id}, '${item.fecha}')" title="Editar Fecha" class="text-blue-500 hover:text-blue-700 font-bold text-xs bg-blue-50 px-2 py-1 rounded">📅</button>
-                <button onclick="eliminarRegistro(${item.id})" title="Eliminar" class="text-rose-500 hover:text-rose-700 font-bold text-xs bg-rose-50 px-2 py-1 rounded">✕</button>
+              <div class="flex items-center justify-center gap-2">
+                <button onclick="editarRutaRegistro(${item.id}, '${item.ruta}')" title="Cambiar Ruta" class="text-indigo-600 hover:text-indigo-800 font-bold text-sm bg-indigo-50 px-2.5 py-1.5 rounded">📍</button>
+                <button onclick="editarFechaRegistro(${item.id}, '${item.fecha}')" title="Editar Fecha" class="text-blue-500 hover:text-blue-700 font-bold text-sm bg-blue-50 px-2.5 py-1.5 rounded">📅</button>
+                <button onclick="eliminarRegistro(${item.id})" title="Eliminar" class="text-rose-500 hover:text-rose-700 font-bold text-sm bg-rose-50 px-2.5 py-1.5 rounded">✕</button>
               </div>
             </td>
           `;
