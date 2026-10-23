@@ -2413,7 +2413,7 @@ const meta = usuarioActual.user_metadata || {};
       selectCliente.innerHTML = `<option value="TODOS">Todos los clientes</option>`;
 
       let clientesFiltrados = catalogoClientes;
-      if (rutaSelejsonada !== "TODAS" && rutaSeleccionada) {
+      if (rutaSeleccionada !== "TODAS" && rutaSeleccionada) {
         clientesFiltrados = catalogoClientes.filter(c => c.ruta === rutaSeleccionada);
       }
 
