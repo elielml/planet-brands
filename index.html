@@ -3576,7 +3576,6 @@ const meta = usuarioActual.user_metadata || {};
         document.getElementById('invProdNombre').value = p.nombre;
         document.getElementById('invProdCodigo').value = p.codigo || '';
         document.getElementById('invProdMedida').value = p.unidad_medida;
-        document.getElementById('invProdCategoria').value = p.categoria || '';
         document.getElementById('invProdObservaciones').value = p.observaciones || '';
         document.getElementById('invProdMinimo').value = p.stock_minimo || 0;
         document.getElementById('bloqueStockInicial').classList.add('hidden'); 
@@ -3585,7 +3584,6 @@ const meta = usuarioActual.user_metadata || {};
         document.getElementById('invProdNombre').value = '';
         document.getElementById('invProdCodigo').value = '';
         document.getElementById('invProdMedida').value = 'unidades';
-        document.getElementById('invProdCategoria').value = '';
         document.getElementById('invProdObservaciones').value = '';
         document.getElementById('invProdStock').value = 0;
         document.getElementById('invProdMinimo').value = 0;
@@ -3601,12 +3599,10 @@ const meta = usuarioActual.user_metadata || {};
         const nombre = document.getElementById('invProdNombre').value.trim();
         const codigo = document.getElementById('invProdCodigo').value.trim();
         const medida = document.getElementById('invProdMedida').value;
-        const categoria = document.getElementById('invProdCategoria').value.trim();
         const obs = document.getElementById('invProdObservaciones').value.trim();
         const stockIni = Number(document.getElementById('invProdStock').value) || 0;
         const min = Number(document.getElementById('invProdMinimo').value) || 0;
 
-        // Evitar duplicados de código
         if (codigo && !id) {
            const duplicado = inventarioGuardado.find(p => p.codigo && p.codigo.toLowerCase() === codigo.toLowerCase());
            if(duplicado) {
@@ -3616,7 +3612,7 @@ const meta = usuarioActual.user_metadata || {};
         }
 
         const payload = {
-          nombre, codigo, categoria, unidad_medida: medida, observaciones, stock_minimo: min
+          nombre, codigo, unidad_medida: medida, observaciones: obs, stock_minimo: min, categoria: null, ubicacion: null
         };
 
         if (!id) {
@@ -3643,79 +3639,9 @@ const meta = usuarioActual.user_metadata || {};
         mostrarMensaje(id ? "Producto actualizado." : "Producto creado.", "✅");
         
       } catch (error) {
-        mostrarMensaje("Error interno: No se pudo guardar.", "⚠️");
+        mostrarMensaje("Error interno: Revisa tu conexión a internet.", "⚠️");
       }
     }
-    function abrirModalMovimiento(id, tipo) {
-      const p = inventarioGuardado.find(i => i.id === id);
-      if(!p) return;
-
-      document.getElementById('movProdId').value = p.id;
-      document.getElementById('movTipo').value = tipo;
-      document.getElementById('movProdNombre').textContent = p.nombre;
-      document.getElementById('movProdStockActual').textContent = Number(p.stock) + " " + p.unidad_medida;
-      document.getElementById('movCantidad').value = '';
-      document.getElementById('movDestinoExtra').value = '';
-
-      const selMotivo = document.getElementById('movMotivo');
-      const selRuta = document.getElementById('movRuta');
-      const divRuta = document.getElementById('bloqueRutaDestino');
-      const divDiff = document.getElementById('bloqueDiferencia');
-      const txtCant = document.getElementById('labelCantidadMovimiento');
-      const btnConf = document.getElementById('btnConfirmarMovimiento');
-
-      selRuta.innerHTML = '<option value="">-- Sin ruta específica --</option>' + rutasApp.map(r => `<option value="${r}">${r}</option>`).join('');
-
-      divDiff.style.display = 'none';
-      document.getElementById('movCantidad').oninput = null;
-
-      if (tipo === 'SALIDA') {
-        document.getElementById('tituloModalMovimiento').innerHTML = "➖ Registrar Salida";
-        btnConf.className = "px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-black rounded-xl text-xs uppercase shadow transition w-full";
-        txtCant.textContent = "Cantidad a Retirar";
-        divRuta.style.display = 'block';
-        selMotivo.innerHTML = `
-          <option value="Reposición de máquina">Reposición de máquina</option>
-          <option value="Reparación o mantenimiento">Reparación o mantenimiento</option>
-          <option value="Entrega a una ruta">Entrega a una ruta</option>
-          <option value="Uso interno">Uso interno</option>
-          <option value="Traslado a otro almacén">Traslado a otro almacén</option>
-          <option value="Otro">Otro</option>
-        `;
-      } else if (tipo === 'ENTRADA') {
-        document.getElementById('tituloModalMovimiento').innerHTML = "➕ Registrar Entrada";
-        btnConf.className = "px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl text-xs uppercase shadow transition w-full";
-        txtCant.textContent = "Cantidad a Ingresar";
-        divRuta.style.display = 'block';
-        selMotivo.innerHTML = `
-          <option value="Compra o abastecimiento">Compra o abastecimiento</option>
-          <option value="Devolución de una ruta">Devolución de una ruta</option>
-          <option value="Traslado desde otra ubicación">Traslado desde otra ubicación</option>
-          <option value="Otro">Otro</option>
-        `;
-      } else if (tipo === 'AJUSTE') {
-        document.getElementById('tituloModalMovimiento').innerHTML = "⚖️ Ajuste Físico";
-        btnConf.className = "px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-black rounded-xl text-xs uppercase shadow transition w-full";
-        txtCant.textContent = "Cantidad Real Contada";
-        divRuta.style.display = 'none';
-        divDiff.style.display = 'block';
-        document.getElementById('movDiferencia').value = '0';
-        document.getElementById('movCantidad').oninput = () => {
-           const val = Number(document.getElementById('movCantidad').value) || 0;
-           const diff = val - Number(p.stock);
-           document.getElementById('movDiferencia').value = diff > 0 ? '+'+diff : diff;
-        };
-        selMotivo.innerHTML = `
-          <option value="Conteo físico">Conteo físico</option>
-          <option value="Corrección por error documentado">Corrección por error</option>
-          <option value="Mermas o daños">Mermas o daños</option>
-          <option value="Otro">Otro</option>
-        `;
-      }
-
-      document.getElementById('modalMovimiento').classList.remove('hidden');
-    }
-
     async function ejecutarMovimientoInventario(e) {
       e.preventDefault();
       const id = Number(document.getElementById('movProdId').value);
