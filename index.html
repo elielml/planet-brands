@@ -981,6 +981,47 @@
       </div>
 
       <!-- FORMULARIO DE ASIGNACIÓN INDEPENDIENTE POR ZONA -->
+      <!-- NUEVO: PANEL DE GESTIÓN DE USUARIOS (CREAR Y EDITAR CLAVES) -->
+      <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4 mb-4">
+        <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+          <div>
+            <h2 class="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-1.5">
+              <span>👤</span> Gestión de Empleados
+            </h2>
+            <p class="text-xs text-slate-500">Crea nuevos accesos o cambia contraseñas</p>
+          </div>
+        </div>
+
+        <form onsubmit="ejecutarAccionUsuario(event)" class="space-y-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+          <input type="hidden" id="gestionUserId" value="">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Nombre</label>
+              <input type="text" id="gestionNombre" placeholder="Ej: Juan" class="w-full p-2.5 border rounded-lg text-xs font-bold bg-white border-slate-300 outline-none focus:border-blue-500">
+            </div>
+            <div>
+              <label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Apellido</label>
+              <input type="text" id="gestionApellido" placeholder="Ej: Martinez" class="w-full p-2.5 border rounded-lg text-xs font-bold bg-white border-slate-300 outline-none focus:border-blue-500">
+            </div>
+            <div class="sm:col-span-2">
+              <label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Correo (Usuario)</label>
+              <input type="email" id="gestionEmail" placeholder="juan@planetbrands.com" required class="w-full p-2.5 border rounded-lg text-xs font-bold bg-white border-slate-300 outline-none focus:border-blue-500">
+            </div>
+            <div class="sm:col-span-2">
+              <label class="text-[11px] font-bold text-slate-500 uppercase block mb-1">Contraseña</label>
+              <input type="password" id="gestionPassword" placeholder="Escribe la clave aquí..." required class="w-full p-2.5 border rounded-lg text-xs font-bold bg-white border-slate-300 outline-none focus:border-blue-500">
+              <p class="text-[10px] text-slate-400 mt-1">Mínimo 6 caracteres.</p>
+            </div>
+          </div>
+          
+          <div class="flex gap-2 pt-3 border-t border-slate-200">
+            <button type="button" onclick="limpiarFormGestionUsuarios()" class="px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-xs uppercase shadow-sm transition hover:bg-slate-300">Limpiar / Nuevo</button>
+            <button type="submit" id="btnGuardarGestionUsuario" class="flex-1 py-2 bg-blue-900 hover:bg-blue-800 text-white text-xs font-black uppercase rounded-lg shadow transition">
+              + Crear Usuario
+            </button>
+          </div>
+        </form>
+      </div>
       <div id="panelFormularioPermisos" class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div class="border-b border-slate-100 pb-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
@@ -2029,7 +2070,8 @@ const meta = usuarioActual.user_metadata || {};
       });
     }
 
-    async function seleccionarUsuarioParaPermisos(userId, email) {
+   async function seleccionarUsuarioParaPermisos(userId, email) {
+      // 1. Llenar panel de permisos
       document.getElementById('inputUserIdSeleccionado').value = userId;
       document.getElementById('labelUsuarioSeleccionado').textContent = email;
 
@@ -2060,9 +2102,80 @@ const meta = usuarioActual.user_metadata || {};
         });
       }
 
+      // 2. Llenar panel de Gestión de Usuarios (Editar contraseña)
+      document.getElementById('gestionUserId').value = userId;
+      document.getElementById('gestionEmail').value = email;
+      document.getElementById('gestionEmail').disabled = true;
+      document.getElementById('gestionNombre').value = '';
+      document.getElementById('gestionApellido').value = '';
+      document.getElementById('gestionPassword').value = '';
+      document.getElementById('gestionPassword').required = false; 
+      
+      const btnGestion = document.getElementById('btnGuardarGestionUsuario');
+      btnGestion.textContent = "Actualizar Contraseña";
+      btnGestion.className = "flex-1 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black uppercase rounded-lg shadow transition";
+
       document.getElementById('panelFormularioPermisos').scrollIntoView({ behavior: 'smooth' });
     }
 
+    function limpiarFormGestionUsuarios() {
+      document.getElementById('gestionUserId').value = '';
+      document.getElementById('gestionEmail').value = '';
+      document.getElementById('gestionEmail').disabled = false;
+      document.getElementById('gestionNombre').value = '';
+      document.getElementById('gestionApellido').value = '';
+      document.getElementById('gestionPassword').value = '';
+      document.getElementById('gestionPassword').required = true;
+      
+      const btnGestion = document.getElementById('btnGuardarGestionUsuario');
+      btnGestion.textContent = "+ Crear Usuario";
+      btnGestion.className = "flex-1 py-2 bg-blue-900 hover:bg-blue-800 text-white text-xs font-black uppercase rounded-lg shadow transition";
+    }
+
+    async function ejecutarAccionUsuario(e) {
+      e.preventDefault();
+      const id = document.getElementById('gestionUserId').value;
+      const email = document.getElementById('gestionEmail').value.trim().toLowerCase();
+      const password = document.getElementById('gestionPassword').value;
+      const nombre = document.getElementById('gestionNombre').value.trim();
+      const apellido = document.getElementById('gestionApellido').value.trim();
+
+      const btn = document.getElementById('btnGuardarGestionUsuario');
+      btn.disabled = true;
+      btn.textContent = "Procesando...";
+
+      if (id) {
+         // ACTUALIZAR CONTRASEÑA
+         if (!password) {
+            mostrarMensaje("Escribe la nueva contraseña para actualizar.", "⚠️");
+            btn.disabled = false; btn.textContent = "Actualizar Contraseña"; return;
+         }
+         const { error } = await sbClient.rpc('admin_actualizar_password', { p_user_id: id, p_new_password: password });
+         
+         if (error) { 
+            mostrarMensaje("Error al cambiar clave.", "❌"); 
+         } else {
+            mostrarMensaje("Contraseña actualizada con éxito.", "✅");
+            limpiarFormGestionUsuarios();
+         }
+      } else {
+         // CREAR NUEVO USUARIO
+         const { error } = await sbClient.rpc('admin_crear_usuario', {
+            p_email: email, p_password: password, p_nombre: nombre, p_apellido: apellido
+         });
+         
+         if (error) {
+            mostrarMensaje("Error al crear. Verifica que el correo no exista.", "❌");
+         } else {
+            mostrarMensaje("Empleado creado exitosamente.", "✅");
+            limpiarFormGestionUsuarios();
+            cargarListaUsuariosRegistrados();
+         }
+      }
+      btn.disabled = false;
+    }
+
+     
     function alternarBloqueZona(zona) {
       const activo = document.getElementById(zona === 'cibao' ? 'chkCibaoActivo' : 'chkSurActivo').checked;
       const cont = document.getElementById(zona === 'cibao' ? 'permisosCibaoContainer' : 'permisosSurContainer');
