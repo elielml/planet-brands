@@ -2865,16 +2865,12 @@ const meta = usuarioActual.user_metadata || {};
       document.getElementById('resumenGananciaEmpresa').textContent = `$ ${totalEmpresa.toLocaleString('es-DO', { minimumFractionDigits: 0 })}`;
     }
 
-   // EXCEL: Restaurado exactamente a la estructura original que abría en celular
+  // EXCEL: Formato HTML exportado como .xls
     function exportarExcel() {
       const lista = filtrarLiquidaciones();
       if (lista.length === 0) { mostrarMensaje("No hay datos para exportar.", "⚠️"); return; }
 
       const fechaReporte = document.getElementById('filtroTipoPeriodo').value === 'dia' ? document.getElementById('filtroFechaDia').value : new Date().toISOString().split('T')[0];
-      
-      let fParts = fechaReporte.split('-');
-      let fechaDoc = (fParts.length === 3) ? `${fParts[2]}_${fParts[1]}_${fParts[0]}` : fechaReporte;
-      let fechaVisual = (fParts.length === 3) ? `${fParts[2]}/${fParts[1]}/${fParts[0]}` : fechaReporte;
 
       let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"></head><body>`;
       html += `<table border="1" style="border-collapse: collapse; font-family: sans-serif;">`;
@@ -2883,18 +2879,17 @@ const meta = usuarioActual.user_metadata || {};
       let granTotal = 0;
 
       Object.keys(grupos).forEach(ruta => {
-        // Orden alfabético
+        // Orden alfabético para agrupar clientes
         grupos[ruta].sort((a, b) => a.cliente.toLowerCase().localeCompare(b.cliente.toLowerCase()));
 
-        html += `<tr><td colspan="2" style="background-color:#1e3a8a; color:#ffffff; font-size:16px; font-weight:bold; text-align:center; padding:10px;">REGISTRO ${ruta.toUpperCase()} - ${fechaVisual}</td></tr>`;
+        html += `<tr><td colspan="2" style="background-color:#1e3a8a; color:#ffffff; font-size:16px; font-weight:bold; text-align:center; padding:10px;">${ruta.toUpperCase()} - Fecha: ${fechaReporte}</td></tr>`;
 
         let subtotalRuta = 0;
         grupos[ruta].forEach(item => {
           subtotalRuta += item.gananciaEmpresa;
           granTotal += item.gananciaEmpresa;
           const conceptoLimpio = item.concepto ? ` (${item.concepto})` : "";
-          
-          // Formato: - Cliente (Maquina): $Monto
+          // Se agrega el guion, el espacio y los dos puntos
           html += `<tr><td style="padding:5px;">- ${item.cliente}${conceptoLimpio}:</td><td style="text-align:right; padding:5px;">${formatearMontoLimpio(item.gananciaEmpresa)}</td></tr>`;
         });
 
@@ -2903,7 +2898,7 @@ const meta = usuarioActual.user_metadata || {};
       });
 
       if (Object.keys(grupos).length > 1) {
-         html += `<tr><td style="font-weight:bold; font-size:14px; text-align:right; background-color:#cbd5e1; padding:8px;">TOTAL GENERAL:</td><td style="font-weight:bold; font-size:14px; text-align:right; background-color:#cbd5e1; padding:8px;">${formatearMontoLimpio(granTotal)}</td></tr>`;
+         html += `<tr><td style="font-weight:bold; font-size:14px; text-align:right; background-color:#cbd5e1; padding:8px;">TOTAL GENERAL TODAS LAS RUTAS:</td><td style="font-weight:bold; font-size:14px; text-align:right; background-color:#cbd5e1; padding:8px;">${formatearMontoLimpio(granTotal)}</td></tr>`;
       }
 
       html += `</table></body></html>`;
@@ -2911,39 +2906,33 @@ const meta = usuarioActual.user_metadata || {};
       const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      const tituloZona = zonaActiva.toUpperCase() === 'TODAS' ? 'GENERAL' : zonaActiva.toUpperCase();
-      link.download = `Registro_${tituloZona}_${fechaDoc}.xls`;
+      link.download = `Liquidacion_${zonaActiva.toUpperCase()}_${fechaReporte}.xls`;
       link.click();
     }
 
-    // DOCUMENTO MÓVIL: Vuelve a ser .html como en tu original para evitar bloqueos del celular
+    // DOCUMENTO HTML MÓVIL: Agrupado por rutas
     function exportarDocumento() {
       const lista = filtrarLiquidaciones();
       if (lista.length === 0) { mostrarMensaje("No hay datos para exportar.", "⚠️"); return; }
 
       const fechaReporte = document.getElementById('filtroTipoPeriodo').value === 'dia' ? document.getElementById('filtroFechaDia').value : new Date().toISOString().split('T')[0];
-      
-      let fParts = fechaReporte.split('-');
-      let fechaDoc = (fParts.length === 3) ? `${fParts[2]}_${fParts[1]}_${fParts[0]}` : fechaReporte;
-      let fechaVisual = (fParts.length === 3) ? `${fParts[2]}/${fParts[1]}/${fParts[0]}` : fechaReporte;
 
       let filasHTML = "";
       let granTotal = 0;
       const grupos = agruparPorRuta(lista);
 
       Object.keys(grupos).forEach(ruta => {
-        // Orden alfabético
+        // Orden alfabético para agrupar clientes
         grupos[ruta].sort((a, b) => a.cliente.toLowerCase().localeCompare(b.cliente.toLowerCase()));
 
-        filasHTML += `<tr><td colspan="2" style="padding:12px; font-weight:bold; background-color:#e2e8f0; color:#1e293b; font-size:14px; text-transform:uppercase; text-align:center;">📍 REGISTRO ${ruta.toUpperCase()} - ${fechaVisual}</td></tr>`;
+        filasHTML += `<tr><td colspan="2" style="padding:12px; font-weight:bold; background-color:#e2e8f0; color:#1e293b; font-size:14px; text-transform:uppercase; text-align:center;">📍 ${ruta} - ${fechaReporte}</td></tr>`;
 
         let subtotalRuta = 0;
         grupos[ruta].forEach(item => {
           subtotalRuta += item.gananciaEmpresa;
           granTotal += item.gananciaEmpresa;
           const conceptoLimpio = item.concepto ? ` (${item.concepto})` : "";
-          
-          // Formato: - Cliente (Maquina): $Monto
+          // Se agrega el guion, el espacio y los dos puntos
           filasHTML += `<tr><td style="padding:8px 12px;font-size:13px;border-bottom:1px solid #f1f5f9;">- ${item.cliente}${conceptoLimpio}:</td><td style="padding:8px 12px;text-align:right;font-weight:bold;border-bottom:1px solid #f1f5f9;">${formatearMontoLimpio(item.gananciaEmpresa)}</td></tr>`;
         });
 
@@ -2953,14 +2942,12 @@ const meta = usuarioActual.user_metadata || {};
 
       const totalHtml = Object.keys(grupos).length > 1 ? `<tr style="background-color:#f8fafc;"><td style="padding:12px;font-weight:bold;font-size:14px; text-align:right;">TOTAL GENERAL:</td><td style="padding:12px;text-align:right;font-weight:900;color:#1e3a8a;font-size:16px;">${formatearMontoLimpio(granTotal)}</td></tr>` : '';
 
-      const tituloZona = zonaActiva.toUpperCase() === 'TODAS' ? 'GENERAL' : zonaActiva.toUpperCase();
-      
-      const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Registro PlanetBrands</title></head><body style="font-family:sans-serif;padding:20px;background:#f8fafc;"><div style="max-width:600px;margin:auto;background:#fff;border:1px solid #cbd5e1;padding:20px;border-radius:12px;box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1);"><h2 style="color:#1e3a8a;margin-top:0;font-size:18px;text-align:center;">REGISTRO ${tituloZona}</h2><table style="width:100%;border-collapse:collapse;"><tbody>${filasHTML}${totalHtml}</tbody></table></div></body></html>`;
+      const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Liquidación</title></head><body style="font-family:sans-serif;padding:20px;background:#f8fafc;"><div style="max-width:600px;margin:auto;background:#fff;border:1px solid #cbd5e1;padding:20px;border-radius:12px;box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1);"><h2 style="color:#1e3a8a;margin-top:0;font-size:18px;text-align:center;">REPORTE DE RECOLECCIÓN</h2><table style="width:100%;border-collapse:collapse;"><tbody>${filasHTML}${totalHtml}</tbody></table></div></body></html>`;
 
       const blob = new Blob(["\uFEFF" + html], { type: 'text/html;charset=utf-8;' });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = `Registro_${tituloZona}_${fechaDoc}.html`;
+      link.download = `Liquidacion_${zonaActiva.toUpperCase()}_${fechaReporte}.html`;
       link.click();
     }
     
