@@ -2865,30 +2865,22 @@ const meta = usuarioActual.user_metadata || {};
       document.getElementById('resumenGananciaEmpresa').textContent = `$ ${totalEmpresa.toLocaleString('es-DO', { minimumFractionDigits: 0 })}`;
     }
 
-  // EXCEL: Formato HTML exportado como .xls
+ // EXCEL: Formato CSV universal (Sin errores de compatibilidad)
     function exportarExcel() {
       const lista = filtrarLiquidaciones();
       if (lista.length === 0) { mostrarMensaje("No hay datos para exportar.", "⚠️"); return; }
 
       const fechaReporte = document.getElementById('filtroTipoPeriodo').value === 'dia' ? document.getElementById('filtroFechaDia').value : new Date().toISOString().split('T')[0];
-      
-      // Convertir fecha de AAAA-MM-DD a DD_MM_AAAA para el nombre del archivo y vista
       let fParts = fechaReporte.split('-');
-      let fechaDoc = fechaReporte;
-      let fechaVisual = fechaReporte;
-      if(fParts.length === 3) {
-         fechaDoc = `${fParts[2]}_${fParts[1]}_${fParts[0]}`;
-         fechaVisual = `${fParts[2]}/${fParts[1]}/${fParts[0]}`;
-      }
+      let fechaDoc = (fParts.length === 3) ? `${fParts[2]}_${fParts[1]}_${fParts[0]}` : fechaReporte;
 
-      let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><title>PlanetBrands</title><meta name="author" content="PlanetBrands"></head><body>`;
-      html += `<table border="1" style="border-collapse: collapse; font-family: sans-serif;">`;
-
+      // BOM para que Excel lea los acentos correctamente
+      let csvContent = "\uFEFF"; 
       const grupos = agruparPorRuta(lista);
       let granTotal = 0;
 
       Object.keys(grupos).forEach(ruta => {
-        // Ordenar alfabéticamente por cliente para agrupar las máquinas
+        // Ordenar alfabéticamente
         grupos[ruta].sort((a, b) => {
            const cliA = a.cliente.toLowerCase();
            const cliB = b.cliente.toLowerCase();
@@ -2897,56 +2889,54 @@ const meta = usuarioActual.user_metadata || {};
            return 0;
         });
 
-        html += `<tr><td colspan="2" style="background-color:#1e3a8a; color:#ffffff; font-size:16px; font-weight:bold; text-align:center; padding:10px;">${ruta.toUpperCase()} - Fecha: ${fechaVisual}</td></tr>`;
-
-        let subtotalRuta = 0;
+        csvContent += `RUTA ${ruta.toUpperCase()}\n`;
+        csvContent += `Cliente,Monto\n`;
+        
+        let subtotal = 0;
         grupos[ruta].forEach(item => {
-          subtotalRuta += item.gananciaEmpresa;
+          subtotal += item.gananciaEmpresa;
           granTotal += item.gananciaEmpresa;
           const conceptoLimpio = item.concepto ? ` (${item.concepto})` : "";
-          // Formato: - Cliente (Maquina): $Monto
-          html += `<tr><td style="padding:5px;">- ${item.cliente}${conceptoLimpio}:</td><td style="text-align:right; padding:5px;">${formatearMontoLimpio(item.gananciaEmpresa)}</td></tr>`;
+          // Las comillas evitan que Excel se confunda con comas internas
+          csvContent += `"- ${item.cliente}${conceptoLimpio}:","$ ${item.gananciaEmpresa.toLocaleString('es-DO', { minimumFractionDigits: 2 })}"\n`;
         });
 
-        html += `<tr><td style="font-weight:bold; text-align:right; padding:5px; background-color:#f1f5f9;">Subtotal ${ruta}:</td><td style="font-weight:bold; text-align:right; padding:5px; background-color:#f1f5f9;">${formatearMontoLimpio(subtotalRuta)}</td></tr>`;
-        html += `<tr><td colspan="2" style="height:20px; border:none;"></td></tr>`;
+        csvContent += `"Subtotal ${ruta}:","$ ${subtotal.toLocaleString('es-DO', { minimumFractionDigits: 2 })}"\n\n`;
       });
 
       if (Object.keys(grupos).length > 1) {
-         html += `<tr><td style="font-weight:bold; font-size:14px; text-align:right; background-color:#cbd5e1; padding:8px;">TOTAL GENERAL:</td><td style="font-weight:bold; font-size:14px; text-align:right; background-color:#cbd5e1; padding:8px;">${formatearMontoLimpio(granTotal)}</td></tr>`;
+         csvContent += `"TOTAL GENERAL:","$ ${granTotal.toLocaleString('es-DO', { minimumFractionDigits: 2 })}\n`;
       }
 
-      html += `</table></body></html>`;
-
-      const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
       const tituloZona = zonaActiva.toUpperCase() === 'TODAS' ? 'GENERAL' : zonaActiva.toUpperCase();
-      link.download = `Registro_${tituloZona}_${fechaDoc}.xls`;
+      link.download = `Registro_${tituloZona}_${fechaDoc}.csv`;
       link.click();
     }
 
-    // DOCUMENTO MÓVIL (WORD/DOC): Agrupado por rutas, ordenado y sin marcas de agua
+    // DOCUMENTO MÓVIL (TXT): Universal, ligero, sin errores y perfecto para copiar a WhatsApp
     function exportarDocumento() {
       const lista = filtrarLiquidaciones();
       if (lista.length === 0) { mostrarMensaje("No hay datos para exportar.", "⚠️"); return; }
 
       const fechaReporte = document.getElementById('filtroTipoPeriodo').value === 'dia' ? document.getElementById('filtroFechaDia').value : new Date().toISOString().split('T')[0];
-      
       let fParts = fechaReporte.split('-');
-      let fechaDoc = fechaReporte;
-      let fechaVisual = fechaReporte;
-      if(fParts.length === 3) {
-         fechaDoc = `${fParts[2]}_${fParts[1]}_${fParts[0]}`;
-         fechaVisual = `${fParts[2]}/${fParts[1]}/${fParts[0]}`;
-      }
+      let fechaDoc = (fParts.length === 3) ? `${fParts[2]}_${fParts[1]}_${fParts[0]}` : fechaReporte;
+      let fechaVisual = (fParts.length === 3) ? `${fParts[2]}/${fParts[1]}/${fParts[0]}` : fechaReporte;
 
-      let filasHTML = "";
-      let granTotal = 0;
+      let txtContent = "";
       const grupos = agruparPorRuta(lista);
+      let granTotal = 0;
+      const tituloZona = zonaActiva.toUpperCase() === 'TODAS' ? 'GENERAL' : zonaActiva.toUpperCase();
+
+      txtContent += `REGISTRO ${tituloZona}\n`;
+      txtContent += `Fecha: ${fechaVisual}\n`;
+      txtContent += `==============================\n\n`;
 
       Object.keys(grupos).forEach(ruta => {
-        // Ordenar alfabéticamente por cliente
+        // Ordenar alfabéticamente
         grupos[ruta].sort((a, b) => {
            const cliA = a.cliente.toLowerCase();
            const cliB = b.cliente.toLowerCase();
@@ -2955,35 +2945,32 @@ const meta = usuarioActual.user_metadata || {};
            return 0;
         });
 
-        filasHTML += `<tr><td colspan="2" style="padding:12px; font-weight:bold; background-color:#e2e8f0; color:#1e293b; font-size:14px; text-transform:uppercase; text-align:center;">📍 ${ruta} - ${fechaVisual}</td></tr>`;
-
+        txtContent += `📍 RUTA ${ruta.toUpperCase()}\n`;
+        txtContent += `------------------------------\n`;
+        
         let subtotalRuta = 0;
         grupos[ruta].forEach(item => {
           subtotalRuta += item.gananciaEmpresa;
           granTotal += item.gananciaEmpresa;
           const conceptoLimpio = item.concepto ? ` (${item.concepto})` : "";
-          // Formato: - Cliente (Maquina): $Monto
-          filasHTML += `<tr><td style="padding:8px 12px;font-size:13px;border-bottom:1px solid #f1f5f9;">- ${item.cliente}${conceptoLimpio}:</td><td style="padding:8px 12px;text-align:right;font-weight:bold;border-bottom:1px solid #f1f5f9;">${formatearMontoLimpio(item.gananciaEmpresa)}</td></tr>`;
+          txtContent += `- ${item.cliente}${conceptoLimpio}: $ ${item.gananciaEmpresa.toLocaleString('es-DO', { minimumFractionDigits: 2 })}\n`;
         });
 
-        filasHTML += `<tr><td style="padding:8px 12px; text-align:right; font-size:12px; color:#64748b;">Subtotal ${ruta}:</td><td style="padding:8px 12px; text-align:right; font-weight:bold; color:#0f172a;">${formatearMontoLimpio(subtotalRuta)}</td></tr>`;
-        filasHTML += `<tr><td colspan="2" style="height:15px; border-bottom:2px dashed #cbd5e1;"></td></tr>`;
+        txtContent += `------------------------------\n`;
+        txtContent += `Subtotal ${ruta}: $ ${subtotalRuta.toLocaleString('es-DO', { minimumFractionDigits: 2 })}\n\n`;
       });
 
-      const totalHtml = Object.keys(grupos).length > 1 ? `<tr style="background-color:#f8fafc;"><td style="padding:12px;font-weight:bold;font-size:14px; text-align:right;">TOTAL GENERAL:</td><td style="padding:12px;text-align:right;font-weight:900;color:#1e3a8a;font-size:16px;">${formatearMontoLimpio(granTotal)}</td></tr>` : '';
+      if (Object.keys(grupos).length > 1) {
+         txtContent += `==============================\n`;
+         txtContent += `TOTAL GENERAL: $ ${granTotal.toLocaleString('es-DO', { minimumFractionDigits: 2 })}\n`;
+      }
 
-      const tituloZona = zonaActiva.toUpperCase() === 'TODAS' ? 'GENERAL' : zonaActiva.toUpperCase();
-      
-      // HTML con metadatos de autor, css para evitar el header de URL y estructurado como .doc
-      const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>PlanetBrands</title><meta name="author" content="PlanetBrands"><style>@media print { @page { margin: 0; } body { padding: 1.5cm; } }</style></head><body style="font-family:sans-serif;padding:20px;background:#f8fafc;"><div style="max-width:600px;margin:auto;background:#fff;border:1px solid #cbd5e1;padding:20px;border-radius:12px;box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1);"><h2 style="color:#1e3a8a;margin-top:0;font-size:18px;text-align:center;">REGISTRO ${tituloZona}</h2><table style="width:100%;border-collapse:collapse;"><tbody>${filasHTML}${totalHtml}</tbody></table></div></body></html>`;
-
-      const blob = new Blob(["\uFEFF" + html], { type: 'application/msword;charset=utf-8;' });
+      const blob = new Blob(["\uFEFF" + txtContent], { type: 'text/plain;charset=utf-8;' });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = `Registro_${tituloZona}_${fechaDoc}.doc`;
+      link.download = `Registro_${tituloZona}_${fechaDoc}.txt`;
       link.click();
     }
-
     // ==========================================
     // DEPÓSITO SEMANAL Y GRÁFICOS
     // ==========================================
