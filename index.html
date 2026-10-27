@@ -2865,7 +2865,7 @@ const meta = usuarioActual.user_metadata || {};
       document.getElementById('resumenGananciaEmpresa').textContent = `$ ${totalEmpresa.toLocaleString('es-DO', { minimumFractionDigits: 0 })}`;
     }
 
-    // EXCEL: Restaurado desde el motor de tu index 11 original
+   // EXCEL: Restaurado exactamente a la estructura original que abría en celular
     function exportarExcel() {
       const lista = filtrarLiquidaciones();
       if (lista.length === 0) { mostrarMensaje("No hay datos para exportar.", "⚠️"); return; }
@@ -2876,7 +2876,7 @@ const meta = usuarioActual.user_metadata || {};
       let fechaDoc = (fParts.length === 3) ? `${fParts[2]}_${fParts[1]}_${fParts[0]}` : fechaReporte;
       let fechaVisual = (fParts.length === 3) ? `${fParts[2]}/${fParts[1]}/${fParts[0]}` : fechaReporte;
 
-      let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><title>PlanetBrands</title><meta name="author" content="PlanetBrands"></head><body>`;
+      let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"></head><body>`;
       html += `<table border="1" style="border-collapse: collapse; font-family: sans-serif;">`;
 
       const grupos = agruparPorRuta(lista);
@@ -2916,7 +2916,7 @@ const meta = usuarioActual.user_metadata || {};
       link.click();
     }
 
-    // DOCUMENTO MÓVIL: Restaurado desde el motor de tu index 11 original
+    // DOCUMENTO MÓVIL: Vuelve a ser .html como en tu original para evitar bloqueos del celular
     function exportarDocumento() {
       const lista = filtrarLiquidaciones();
       if (lista.length === 0) { mostrarMensaje("No hay datos para exportar.", "⚠️"); return; }
@@ -2955,12 +2955,12 @@ const meta = usuarioActual.user_metadata || {};
 
       const tituloZona = zonaActiva.toUpperCase() === 'TODAS' ? 'GENERAL' : zonaActiva.toUpperCase();
       
-      const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>PlanetBrands</title><meta name="author" content="PlanetBrands"></head><body style="font-family:sans-serif;padding:20px;background:#f8fafc;"><div style="max-width:600px;margin:auto;background:#fff;border:1px solid #cbd5e1;padding:20px;border-radius:12px;box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1);"><h2 style="color:#1e3a8a;margin-top:0;font-size:18px;text-align:center;">REGISTRO ${tituloZona}</h2><table style="width:100%;border-collapse:collapse;"><tbody>${filasHTML}${totalHtml}</tbody></table></div></body></html>`;
+      const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Registro PlanetBrands</title></head><body style="font-family:sans-serif;padding:20px;background:#f8fafc;"><div style="max-width:600px;margin:auto;background:#fff;border:1px solid #cbd5e1;padding:20px;border-radius:12px;box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1);"><h2 style="color:#1e3a8a;margin-top:0;font-size:18px;text-align:center;">REGISTRO ${tituloZona}</h2><table style="width:100%;border-collapse:collapse;"><tbody>${filasHTML}${totalHtml}</tbody></table></div></body></html>`;
 
-      const blob = new Blob(["\uFEFF" + html], { type: 'application/msword;charset=utf-8;' });
+      const blob = new Blob(["\uFEFF" + html], { type: 'text/html;charset=utf-8;' });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = `Registro_${tituloZona}_${fechaDoc}.doc`;
+      link.download = `Registro_${tituloZona}_${fechaDoc}.html`;
       link.click();
     }
     
