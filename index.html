@@ -2865,7 +2865,8 @@ const meta = usuarioActual.user_metadata || {};
       document.getElementById('resumenGananciaEmpresa').textContent = `$ ${totalEmpresa.toLocaleString('es-DO', { minimumFractionDigits: 0 })}`;
     }
 
-// EXCEL: Formato con etiquetas nativas de Microsoft Excel
+    }
+    // EXCEL: Formato simple y directo (Sin el símbolo ï)
     function exportarExcel() {
       const lista = filtrarLiquidaciones();
       if (lista.length === 0) { mostrarMensaje("No hay datos para exportar.", "⚠️"); return; }
@@ -2875,11 +2876,9 @@ const meta = usuarioActual.user_metadata || {};
       let fechaDoc = (fParts.length === 3) ? `${fParts[2]}_${fParts[1]}_${fParts[0]}` : fechaReporte;
       let fechaVisual = (fParts.length === 3) ? `${fParts[2]}/${fParts[1]}/${fParts[0]}` : fechaReporte;
 
-      // Etiquetas especiales para que Excel no detecte el archivo como dañado
-      let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">`;
-      html += `<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">`;
-      html += `<!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Registro</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body>`;
-      html += `<table border="1" style="border-collapse: collapse; font-family: sans-serif;">`;
+      // HTML simple para evitar bloqueos del celular
+      let html = `<html><head><meta charset="UTF-8"></head><body style="font-family: sans-serif;">`;
+      html += `<table border="1" style="border-collapse: collapse;">`;
 
       const grupos = agruparPorRuta(lista);
       let granTotal = 0;
@@ -2908,8 +2907,8 @@ const meta = usuarioActual.user_metadata || {};
       }
       html += `</table></body></html>`;
 
-      // Se guarda como .xls
-      const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8' });
+      // Creado de forma limpia y directa como .xls
+      const blob = new Blob([html], { type: 'application/vnd.ms-excel' }); 
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
       const tituloZona = zonaActiva.toUpperCase() === 'TODAS' ? 'GENERAL' : zonaActiva.toUpperCase();
@@ -2917,7 +2916,7 @@ const meta = usuarioActual.user_metadata || {};
       link.click();
     }
 
-    // WORD / GOOGLE DOCS: Formato con etiquetas nativas de Microsoft Word
+    // WORD: Formato simple y directo (Sin alertas de daño)
     function exportarDocumento() {
       const lista = filtrarLiquidaciones();
       if (lista.length === 0) { mostrarMensaje("No hay datos para exportar.", "⚠️"); return; }
@@ -2943,7 +2942,7 @@ const meta = usuarioActual.user_metadata || {};
           granTotal += item.gananciaEmpresa;
           const conceptoLimpio = item.concepto ? ` (${item.concepto})` : "";
           
-          filasHTML += `<tr><td style="padding:8px 12px;font-size:13px;border-bottom:1px solid #f1f5f9;">- ${item.cliente}${conceptoLimpio}:</td><td style="padding:8px 12px;text-align:right;font-weight:bold;border-bottom:1px solid #f1f5f9;">${formatearMontoLimpio(item.gananciaEmpresa)}</td></tr>`;
+          filasHTML += `<tr><td style="padding:8px 12px;border-bottom:1px solid #f1f5f9;">- ${item.cliente}${conceptoLimpio}:</td><td style="padding:8px 12px;text-align:right;font-weight:bold;border-bottom:1px solid #f1f5f9;">${formatearMontoLimpio(item.gananciaEmpresa)}</td></tr>`;
         });
 
         filasHTML += `<tr><td style="padding:8px 12px; text-align:right; font-size:12px; color:#64748b;">Subtotal ${ruta}:</td><td style="padding:8px 12px; text-align:right; font-weight:bold; color:#0f172a;">${formatearMontoLimpio(subtotalRuta)}</td></tr>`;
@@ -2954,15 +2953,11 @@ const meta = usuarioActual.user_metadata || {};
 
       const tituloZona = zonaActiva.toUpperCase() === 'TODAS' ? 'GENERAL' : zonaActiva.toUpperCase();
       
-      // Etiquetas especiales de Office para que Word y Google Docs lo abran sin errores
-      let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">`;
-      html += `<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Registro PlanetBrands</title>`;
-      html += `<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom><w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]-->`;
-      html += `<style>@media print { @page { margin: 0; } body { padding: 1.5cm; } }</style></head>`;
-      html += `<body style="font-family:sans-serif;padding:20px;background:#fff;"><div style="max-width:600px;margin:auto;"><h2 style="color:#1e3a8a;margin-top:0;font-size:18px;text-align:center;">REGISTRO ${tituloZona}</h2><table style="width:100%;border-collapse:collapse;"><tbody>${filasHTML}${totalHtml}</tbody></table></div></body></html>`;
+      // HTML simple para evitar bloqueos de seguridad en móviles
+      let html = `<html><head><meta charset="UTF-8"><title>Registro PlanetBrands</title></head><body style="font-family:sans-serif;padding:20px;background:#fff;"><div style="max-width:600px;margin:auto;"><h2 style="color:#1e3a8a;margin-top:0;font-size:18px;text-align:center;">REGISTRO ${tituloZona}</h2><table style="width:100%;border-collapse:collapse;"><tbody>${filasHTML}${totalHtml}</tbody></table></div></body></html>`;
 
-      // Se guarda como .doc
-      const blob = new Blob([html], { type: 'application/msword;charset=utf-8' });
+      // Creado de forma limpia y directa como .doc
+      const blob = new Blob([html], { type: 'application/msword' }); 
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
       link.download = `Registro_${tituloZona}_${fechaDoc}.doc`;
