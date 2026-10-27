@@ -2798,7 +2798,7 @@ const meta = usuarioActual.user_metadata || {};
       return grupos;
     }
 
-    function renderizarHistorial() {
+   function renderizarHistorial() {
       const lista = filtrarLiquidaciones();
       const cuerpo = document.getElementById('cuerpoHistorial');
       const msgVacio = document.getElementById('mensajeHistorialVacio');
@@ -2865,7 +2865,7 @@ const meta = usuarioActual.user_metadata || {};
       document.getElementById('resumenGananciaEmpresa').textContent = `$ ${totalEmpresa.toLocaleString('es-DO', { minimumFractionDigits: 0 })}`;
     }
 
-   // EXCEL: Restaurado desde el motor de tu index 11 original
+    // EXCEL: Restaurado desde el motor de tu index 11 original
     function exportarExcel() {
       const lista = filtrarLiquidaciones();
       if (lista.length === 0) { mostrarMensaje("No hay datos para exportar.", "⚠️"); return; }
