@@ -2865,7 +2865,7 @@ const meta = usuarioActual.user_metadata || {};
       document.getElementById('resumenGananciaEmpresa').textContent = `$ ${totalEmpresa.toLocaleString('es-DO', { minimumFractionDigits: 0 })}`;
     }
 
-// EXCEL: Formato de Tabla HTML (Sin el error del símbolo 'ï')
+// EXCEL: Formato con etiquetas nativas de Microsoft Excel
     function exportarExcel() {
       const lista = filtrarLiquidaciones();
       if (lista.length === 0) { mostrarMensaje("No hay datos para exportar.", "⚠️"); return; }
@@ -2875,14 +2875,17 @@ const meta = usuarioActual.user_metadata || {};
       let fechaDoc = (fParts.length === 3) ? `${fParts[2]}_${fParts[1]}_${fParts[0]}` : fechaReporte;
       let fechaVisual = (fParts.length === 3) ? `${fParts[2]}/${fParts[1]}/${fParts[0]}` : fechaReporte;
 
-      let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"></head><body>`;
+      // Etiquetas especiales para que Excel no detecte el archivo como dañado
+      let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">`;
+      html += `<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">`;
+      html += `<!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Registro</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body>`;
       html += `<table border="1" style="border-collapse: collapse; font-family: sans-serif;">`;
 
       const grupos = agruparPorRuta(lista);
       let granTotal = 0;
 
       Object.keys(grupos).forEach(ruta => {
-        // Ordenar alfabéticamente para que las máquinas del mismo cliente queden juntas
+        // Ordenar alfabéticamente
         grupos[ruta].sort((a, b) => a.cliente.toLowerCase().localeCompare(b.cliente.toLowerCase()));
 
         html += `<tr><td colspan="2" style="background-color:#1e3a8a; color:#ffffff; font-size:16px; font-weight:bold; text-align:center; padding:10px;">REGISTRO RUTA ${ruta.toUpperCase()} - ${fechaVisual}</td></tr>`;
@@ -2893,7 +2896,6 @@ const meta = usuarioActual.user_metadata || {};
           granTotal += item.gananciaEmpresa;
           const conceptoLimpio = item.concepto ? ` (${item.concepto})` : "";
           
-          // FORMATO: - Cliente (Máquina): en la primera columna, el monto en la segunda
           html += `<tr><td style="padding:5px;">- ${item.cliente}${conceptoLimpio}:</td><td style="text-align:right; padding:5px;">${formatearMontoLimpio(item.gananciaEmpresa)}</td></tr>`;
         });
 
@@ -2906,7 +2908,8 @@ const meta = usuarioActual.user_metadata || {};
       }
       html += `</table></body></html>`;
 
-      const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+      // Se guarda como .xls
+      const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8' });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
       const tituloZona = zonaActiva.toUpperCase() === 'TODAS' ? 'GENERAL' : zonaActiva.toUpperCase();
@@ -2914,7 +2917,7 @@ const meta = usuarioActual.user_metadata || {};
       link.click();
     }
 
-    // WORD (DOCUMENTO MÓVIL): Formato de Tabla HTML
+    // WORD / GOOGLE DOCS: Formato con etiquetas nativas de Microsoft Word
     function exportarDocumento() {
       const lista = filtrarLiquidaciones();
       if (lista.length === 0) { mostrarMensaje("No hay datos para exportar.", "⚠️"); return; }
@@ -2929,7 +2932,7 @@ const meta = usuarioActual.user_metadata || {};
       const grupos = agruparPorRuta(lista);
 
       Object.keys(grupos).forEach(ruta => {
-        // Ordenar alfabéticamente para que las máquinas del mismo cliente queden juntas
+        // Ordenar alfabéticamente
         grupos[ruta].sort((a, b) => a.cliente.toLowerCase().localeCompare(b.cliente.toLowerCase()));
 
         filasHTML += `<tr><td colspan="2" style="padding:12px; font-weight:bold; background-color:#e2e8f0; color:#1e293b; font-size:14px; text-transform:uppercase; text-align:center;">📍 RUTA ${ruta.toUpperCase()} - ${fechaVisual}</td></tr>`;
@@ -2940,7 +2943,6 @@ const meta = usuarioActual.user_metadata || {};
           granTotal += item.gananciaEmpresa;
           const conceptoLimpio = item.concepto ? ` (${item.concepto})` : "";
           
-          // FORMATO: - Cliente (Máquina): en la primera columna, el monto en la segunda
           filasHTML += `<tr><td style="padding:8px 12px;font-size:13px;border-bottom:1px solid #f1f5f9;">- ${item.cliente}${conceptoLimpio}:</td><td style="padding:8px 12px;text-align:right;font-weight:bold;border-bottom:1px solid #f1f5f9;">${formatearMontoLimpio(item.gananciaEmpresa)}</td></tr>`;
         });
 
@@ -2952,9 +2954,15 @@ const meta = usuarioActual.user_metadata || {};
 
       const tituloZona = zonaActiva.toUpperCase() === 'TODAS' ? 'GENERAL' : zonaActiva.toUpperCase();
       
-      const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><title>Registro PlanetBrands</title><style>@media print { @page { margin: 0; } body { padding: 1.5cm; } }</style></head><body style="font-family:sans-serif;padding:20px;background:#fff;"><div style="max-width:600px;margin:auto;"><h2 style="color:#1e3a8a;margin-top:0;font-size:18px;text-align:center;">REGISTRO ${tituloZona}</h2><table style="width:100%;border-collapse:collapse;"><tbody>${filasHTML}${totalHtml}</tbody></table></div></body></html>`;
+      // Etiquetas especiales de Office para que Word y Google Docs lo abran sin errores
+      let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">`;
+      html += `<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Registro PlanetBrands</title>`;
+      html += `<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom><w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]-->`;
+      html += `<style>@media print { @page { margin: 0; } body { padding: 1.5cm; } }</style></head>`;
+      html += `<body style="font-family:sans-serif;padding:20px;background:#fff;"><div style="max-width:600px;margin:auto;"><h2 style="color:#1e3a8a;margin-top:0;font-size:18px;text-align:center;">REGISTRO ${tituloZona}</h2><table style="width:100%;border-collapse:collapse;"><tbody>${filasHTML}${totalHtml}</tbody></table></div></body></html>`;
 
-      const blob = new Blob([html], { type: 'application/msword;charset=utf-8;' });
+      // Se guarda como .doc
+      const blob = new Blob([html], { type: 'application/msword;charset=utf-8' });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
       link.download = `Registro_${tituloZona}_${fechaDoc}.doc`;
