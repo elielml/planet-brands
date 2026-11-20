@@ -1487,6 +1487,79 @@ function formatearFechaDMY(fechaStr) {
         actualizarIndicadorSync();
         mostrarMensaje("Sin internet: los datos se guardarán localmente y subirán al volver la señal.", "📴", 3500);
       });
+      async function sincronizarColaOffline() {
+      if (sincronizandoCola || !navigator.onLine || colaOffline.length === 0) {
+        actualizarIndicadorSync();
+        return;
+      }
+      if (!usuarioActual || !usuarioActual.id) return;
+
+      sincronizandoCola = true;
+      actualizarIndicadorSync();
+
+      const restantes = [];
+      let huboCambios = false;
+
+      for (const op of colaOffline) {
+        try {
+          if (op.tipo === 'INSERT_LIQUIDACION') {
+            const { data: nuevaLiq, error } = await sbClient
+              .from('pb_liquidaciones')
+              .insert(op.payload)
+              .select()
+              .single();
+
+            if (error) {
+              restantes.push(op);
+              continue;
+            }
+            huboCambios = true;
+            try {
+              await sbClient.from('pb_auditoria').insert({
+                tabla: 'pb_liquidaciones',
+                registro_id: nuevaLiq.id,
+                accion: 'CREAR',
+                datos_nuevos: nuevaLiq,
+                usuario_id: usuarioActual.id,
+                usuario_email: window.nombreMostrar
+              });
+            } catch (eAud) {}
+          } else if (op.tipo === 'INSERT_GASTO') {
+            const { error } = await sbClient.from('pb_gastos').insert(op.payload);
+            if (error) {
+              restantes.push(op);
+              continue;
+            }
+            huboCambios = true;
+          } else if (op.tipo === 'INSERT_RUTA') {
+            const { error } = await sbClient.from('pb_rutas').insert(op.payload);
+            if (error) {
+              restantes.push(op);
+              continue;
+            }
+            huboCambios = true;
+          } else if (op.tipo === 'INSERT_CLIENTE') {
+            const { error } = await sbClient.from('pb_clientes').insert(op.payload);
+            if (error) {
+              restantes.push(op);
+              continue;
+            }
+            huboCambios = true;
+          }
+        } catch (errRed) {
+          restantes.push(op);
+        }
+      }
+
+      colaOffline = restantes;
+      guardarColaOffline();
+      sincronizandoCola = false;
+
+      if (huboCambios) {
+        await cargarDatosZonaActiva();
+        mostrarMensaje("Datos sincronizados con la nube.", "✅");
+      }
+    }
       const hoy = new Date().toISOString().split('T')[0];
       document.getElementById('fechaCuadre').value = hoy;
       document.getElementById('filtroFechaDia').value = hoy;
