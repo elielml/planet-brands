@@ -2616,44 +2616,63 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
         mostrarMensaje("Ingresa al menos una moneda para guardar.", "⚠️");
         return;
       }
-const fechaCuadreVal = document.getElementById('fechaCuadre').value;
-      const clienteNorm = clienteNombre.trim().toLowerCase();
-      const conceptoNorm = conceptoActual.trim().toLowerCase();
 
-      // 1. Revisar en los registros ya cargados en memoria
-      const duplicadoLocal = liquidacionesGuardadas.some(item =>
-        item.fecha === fechaCuadreVal &&
+      const clienteNombre = document.getElementById('inputCliente').value.trim();
+      if (!clienteNombre) {
+        mostrarMensaje("Escribe o selecciona un cliente.", "⚠️");
+        return;
+      }
+
+      const fechaVal = document.getElementById('fechaCuadre').value;
+      const rutaActual = document.getElementById('selectRutaForm').value;
+      const conceptoActual = document.getElementById('concepto').value;
+
+      const porcInputVal = document.getElementById('porcentajeComision').value;
+      const porc = porcInputVal === '' ? 25 : Number(porcInputVal);
+
+      const clienteNorm = clienteNombre.toLowerCase();
+      const conceptoNorm = (conceptoActual || '').trim().toLowerCase();
+
+      // Revisión de duplicado: mismo cliente, misma máquina y misma fecha
+      let esDuplicado = liquidacionesGuardadas.some(item =>
+        item.fecha === fechaVal &&
         (item.cliente || '').trim().toLowerCase() === clienteNorm &&
         (item.concepto || '').trim().toLowerCase() === conceptoNorm
       );
 
-      // 2. Verificar también directamente en Supabase por si otro dispositivo o pestaña lo guardó
-      const { data: duplicadosNube, error: errDup } = await sbClient
-        .from('pb_liquidaciones')
-        .select('id')
-        .eq('eliminado', false)
-        .eq('fecha', fechaCuadreVal)
-        .eq('concepto', conceptoActual)
-        .ilike('cliente_nombre', clienteNombre.trim())
-        .limit(1);
+      if (!esDuplicado) {
+        try {
+          const { data: dupNube } = await sbClient
+            .from('pb_liquidaciones')
+            .select('id, cliente_nombre, concepto')
+            .eq('eliminado', false)
+            .eq('fecha', fechaVal)
+            .eq('concepto', conceptoActual);
 
-      if (!errDup && (duplicadoLocal || (duplicadosNube && duplicadosNube.length > 0))) {
-        mostrarMensaje(`Ya hay un registro de ${clienteNombre} (${conceptoActual}) en la fecha ${fechaCuadreVal}. Revísalo o elimínalo en Registros.`, "⚠️", 4500);
+          if (dupNube && dupNube.length > 0) {
+            esDuplicado = dupNube.some(r => (r.cliente_nombre || '').trim().toLowerCase() === clienteNorm);
+          }
+        } catch (errConsulta) {
+          console.error("Error verificando duplicados en nube:", errConsulta);
+        }
+      }
+
+      if (esDuplicado) {
+        mostrarMensaje(
+          `Ya hay un registro de ${clienteNombre} (${conceptoActual}) en la fecha ${fechaVal}. Revísalo o elimínalo en Registros.`,
+          "⚠️",
+          4500
+        );
         return;
       }
-      const clienteNombre = document.getElementById('inputCliente').value.trim();
-      const rutaActual = document.getElementById('selectRutaForm').value;
-      const conceptoActual = document.getElementById('concepto').value;
-const porcVal = document.getElementById('porcentajeComision').value;
-const porc = porcVal === '' ? 25 : Number(porcVal);
+
       const comision = (bruto * porc) / 100;
       const ganancia = bruto - comision;
-
       const zonaDestino = (zonaActiva === 'todas' || zonaActiva === 'personal') ? 'cibao' : zonaActiva;
 
       const { data: nuevaLiq, error } = await sbClient.from('pb_liquidaciones').insert({
         zona_id: zonaDestino,
-        fecha: document.getElementById('fechaCuadre').value,
+        fecha: fechaVal,
         ruta_nombre: rutaActual,
         cliente_nombre: clienteNombre,
         concepto: conceptoActual,
@@ -2674,14 +2693,18 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
         return;
       }
 
-      await sbClient.from('pb_auditoria').insert({
-        tabla: 'pb_liquidaciones',
-        registro_id: nuevaLiq.id,
-        accion: 'CREAR',
-        datos_nuevos: nuevaLiq,
-        usuario_id: usuarioActual.id,
-        usuario_email: window.nombreMostrar
-      });
+      try {
+        await sbClient.from('pb_auditoria').insert({
+          tabla: 'pb_liquidaciones',
+          registro_id: nuevaLiq.id,
+          accion: 'CREAR',
+          datos_nuevos: nuevaLiq,
+          usuario_id: usuarioActual.id,
+          usuario_email: window.nombreMostrar
+        });
+      } catch (errAud) {
+        console.error("Error en auditoría:", errAud);
+      }
 
       limpiarFormulario();
       await cargarDatosZonaActiva();
