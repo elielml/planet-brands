@@ -2605,112 +2605,121 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
 
     async function guardarCuadre(e) {
       e.preventDefault();
-      registrarActividad();
-
-      const c25 = Number(document.getElementById('cant25').value) || 0;
-      const c10 = Number(document.getElementById('cant10').value) || 0;
-      const c5 = Number(document.getElementById('cant5').value) || 0;
-      const bruto = (c25 * 25) + (c10 * 10) + (c5 * 5);
-
-      if (bruto <= 0) {
-        mostrarMensaje("Ingresa al menos una moneda para guardar.", "⚠️");
-        return;
-      }
-
-      const clienteNombre = document.getElementById('inputCliente').value.trim();
-      if (!clienteNombre) {
-        mostrarMensaje("Escribe o selecciona un cliente.", "⚠️");
-        return;
-      }
-
-      const fechaVal = document.getElementById('fechaCuadre').value;
-      const rutaActual = document.getElementById('selectRutaForm').value;
-      const conceptoActual = document.getElementById('concepto').value;
-
-      const porcInputVal = document.getElementById('porcentajeComision').value;
-      const porc = porcInputVal === '' ? 25 : Number(porcInputVal);
-
-      const clienteNorm = clienteNombre.toLowerCase();
-      const conceptoNorm = (conceptoActual || '').trim().toLowerCase();
-
-      // Revisión de duplicado: mismo cliente, misma máquina y misma fecha
-      let esDuplicado = liquidacionesGuardadas.some(item =>
-        item.fecha === fechaVal &&
-        (item.cliente || '').trim().toLowerCase() === clienteNorm &&
-        (item.concepto || '').trim().toLowerCase() === conceptoNorm
-      );
-
-      if (!esDuplicado) {
-        try {
-          const { data: dupNube } = await sbClient
-            .from('pb_liquidaciones')
-            .select('id, cliente_nombre, concepto')
-            .eq('eliminado', false)
-            .eq('fecha', fechaVal)
-            .eq('concepto', conceptoActual);
-
-          if (dupNube && dupNube.length > 0) {
-            esDuplicado = dupNube.some(r => (r.cliente_nombre || '').trim().toLowerCase() === clienteNorm);
-          }
-        } catch (errConsulta) {
-          console.error("Error verificando duplicados en nube:", errConsulta);
-        }
-      }
-
-      if (esDuplicado) {
-        mostrarMensaje(
-          `Ya hay un registro de ${clienteNombre} (${conceptoActual}) en la fecha ${fechaVal}. Revísalo o elimínalo en Registros.`,
-          "⚠️",
-          4500
-        );
-        return;
-      }
-
-      const comision = (bruto * porc) / 100;
-      const ganancia = bruto - comision;
-      const zonaDestino = (zonaActiva === 'todas' || zonaActiva === 'personal') ? 'cibao' : zonaActiva;
-
-      const { data: nuevaLiq, error } = await sbClient.from('pb_liquidaciones').insert({
-        zona_id: zonaDestino,
-        fecha: fechaVal,
-        ruta_nombre: rutaActual,
-        cliente_nombre: clienteNombre,
-        concepto: conceptoActual,
-        porcentaje: porc,
-        cant25: c25,
-        cant10: c10,
-        cant5: c5,
-        total_monedas: c25 + c10 + c5,
-        bruto: bruto,
-        comision: comision,
-        ganancia_empresa: ganancia,
-        creado_por: usuarioActual.id,
-        creado_por_email: window.nombreMostrar
-      }).select().single();
-
-      if (error) {
-        mostrarMensaje("Error al guardar: " + error.message, "❌");
-        return;
-      }
-
       try {
-        await sbClient.from('pb_auditoria').insert({
-          tabla: 'pb_liquidaciones',
-          registro_id: nuevaLiq.id,
-          accion: 'CREAR',
-          datos_nuevos: nuevaLiq,
-          usuario_id: usuarioActual.id,
-          usuario_email: window.nombreMostrar
-        });
-      } catch (errAud) {
-        console.error("Error en auditoría:", errAud);
+        registrarActividad();
+
+        if (!usuarioActual || !usuarioActual.id) {
+          mostrarMensaje("Sesión no activa. Vuelve a iniciar sesión.", "⚠️", 4000);
+          return;
+        }
+
+        const c25 = Number(document.getElementById('cant25').value) || 0;
+        const c10 = Number(document.getElementById('cant10').value) || 0;
+        const c5 = Number(document.getElementById('cant5').value) || 0;
+        const bruto = (c25 * 25) + (c10 * 10) + (c5 * 5);
+
+        if (bruto <= 0) {
+          mostrarMensaje("Ingresa al menos una moneda para guardar.", "⚠️");
+          return;
+        }
+
+        const clienteNombre = document.getElementById('inputCliente').value.trim();
+        if (!clienteNombre) {
+          mostrarMensaje("Escribe o selecciona un cliente.", "⚠️");
+          return;
+        }
+
+        const fechaVal = document.getElementById('fechaCuadre').value;
+        const rutaActual = document.getElementById('selectRutaForm').value;
+        const conceptoActual = document.getElementById('concepto').value;
+
+        const porcInputVal = document.getElementById('porcentajeComision').value;
+        const porc = porcInputVal === '' ? 25 : Number(porcInputVal);
+
+        const clienteNorm = clienteNombre.toLowerCase();
+        const conceptoNorm = (conceptoActual || '').trim().toLowerCase();
+
+        // Bloquea solo si coincide MISMO CLIENTE + MISMA MÁQUINA + MISMA FECHA
+        let esDuplicado = liquidacionesGuardadas.some(item =>
+          item.fecha === fechaVal &&
+          (item.cliente || '').trim().toLowerCase() === clienteNorm &&
+          (item.concepto || '').trim().toLowerCase() === conceptoNorm
+        );
+
+        if (!esDuplicado) {
+          try {
+            const { data: dupNube } = await sbClient
+              .from('pb_liquidaciones')
+              .select('id, cliente_nombre, concepto')
+              .eq('eliminado', false)
+              .eq('fecha', fechaVal)
+              .eq('concepto', conceptoActual);
+
+            if (dupNube && dupNube.length > 0) {
+              esDuplicado = dupNube.some(r => (r.cliente_nombre || '').trim().toLowerCase() === clienteNorm);
+            }
+          } catch (errConsulta) {
+            console.error("Error verificando duplicados en nube:", errConsulta);
+          }
+        }
+
+        if (esDuplicado) {
+          mostrarMensaje(
+            `Ya hay un registro de ${clienteNombre} (${conceptoActual}) en la fecha ${fechaVal}. Revísalo o elimínalo en Registros.`,
+            "⚠️",
+            4500
+          );
+          return;
+        }
+
+        const comision = (bruto * porc) / 100;
+        const ganancia = bruto - comision;
+        const zonaDestino = (zonaActiva === 'todas' || zonaActiva === 'personal') ? 'cibao' : zonaActiva;
+
+        const { data: nuevaLiq, error } = await sbClient.from('pb_liquidaciones').insert({
+          zona_id: zonaDestino,
+          fecha: fechaVal,
+          ruta_nombre: rutaActual,
+          cliente_nombre: clienteNombre,
+          concepto: conceptoActual,
+          porcentaje: porc,
+          cant25: c25,
+          cant10: c10,
+          cant5: c5,
+          total_monedas: c25 + c10 + c5,
+          bruto: bruto,
+          comision: comision,
+          ganancia_empresa: ganancia,
+          creado_por: usuarioActual.id,
+          creado_por_email: window.nombreMostrar
+        }).select().single();
+
+        if (error) {
+          mostrarMensaje("Error al guardar: " + error.message, "❌", 4500);
+          return;
+        }
+
+        try {
+          await sbClient.from('pb_auditoria').insert({
+            tabla: 'pb_liquidaciones',
+            registro_id: nuevaLiq.id,
+            accion: 'CREAR',
+            datos_nuevos: nuevaLiq,
+            usuario_id: usuarioActual.id,
+            usuario_email: window.nombreMostrar
+          });
+        } catch (errAud) {
+          console.error("Error en auditoría:", errAud);
+        }
+
+        limpiarFormulario();
+        await cargarDatosZonaActiva();
+        mostrarMensaje("Guardado correctamente.", "✅");
+      } catch (err) {
+        console.error("Error en guardarCuadre:", err);
+        mostrarMensaje("Error al intentar guardar: " + (err.message || err), "❌", 4500);
       }
-
-      limpiarFormulario();
-      await cargarDatosZonaActiva();
-      mostrarMensaje("Guardado correctamente.", "✅");
     }
-
     async function eliminarRegistro(id) {
       const confirmado = await pedirConfirmacion("¿Estás seguro de que quieres eliminarlo?", "ELIMINAR REGISTRO", "🗑️");
       if (confirmado) {
