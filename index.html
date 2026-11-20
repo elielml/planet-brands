@@ -1671,12 +1671,12 @@ function formatearFechaDMY(fechaStr) {
 
       esSuperAdmin = (usuarioActual.email.trim().toLowerCase() === 'elieldejesusml@gmail.com');
 
-const meta = usuarioActual.user_metadata || {};
+      const meta = usuarioActual.user_metadata || {};
       const nombreUsuario = meta.primer_nombre || '';
       const apellidoUsuario = meta.primer_apellido || '';
 
-      window.nombreMostrar = (nombreUsuario || apellidoUsuario) 
-        ? `${nombreUsuario} ${apellidoUsuario}`.trim() 
+      window.nombreMostrar = (nombreUsuario || apellidoUsuario)
+        ? `${nombreUsuario} ${apellidoUsuario}`.trim()
         : usuarioActual.email.split('@')[0];
 
       document.getElementById('labelUsuarioActivo').textContent = window.nombreMostrar;
@@ -1712,6 +1712,7 @@ const meta = usuarioActual.user_metadata || {};
       }
 
       await cargarDatosZonaActiva();
+      await sincronizarColaOffline();
     }
 
     function poblarSelectorZonas() {
