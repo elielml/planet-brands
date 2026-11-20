@@ -1968,7 +1968,7 @@ const meta = usuarioActual.user_metadata || {};
       document.getElementById('modalDetallesZona').classList.add('hidden');
     }
 
-    function exportarDesgloseConceptos(zonaId) {
+html += `<tr><td colspan="3" style="background-color:#1e3a8a; color:#ffffff; font-size:16px; font-weight:bold; text-align:center; padding:10px;">DESGLOSE POR TIPO DE MÁQUINA - ${formatearFechaDMY(desde)} al ${formatearFechaDMY(hasta)}</td></tr>`;
       const desde = document.getElementById('depositoFechaDesde').value;
       const hasta = document.getElementById('depositoFechaHasta').value;
       const liqs = liquidacionesGuardadas.filter(i => i.fecha >= desde && i.fecha <= hasta && (zonaId === 'todas' || i.zona_id === zonaId));
@@ -2404,7 +2404,7 @@ const meta = usuarioActual.user_metadata || {};
 
       document.getElementById('ticketZonaRuta').textContent = textoRutaEncabezado;
       document.getElementById('ticketNoComprobante').textContent = `No. ${data.id ? String(data.id).slice(-4) : Math.floor(1000 + Math.random() * 9000)}`;
-      document.getElementById('ticketFecha').textContent = data.fecha;
+      document.getElementById('ticketFecha').textContent = formatearFechaDMY(data.fecha);
       document.getElementById('ticketCliente').textContent = data.cliente;
 
       document.getElementById('ticketCant5').textContent = data.cant5 || 0;
@@ -3248,7 +3248,7 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
               <td class="p-3 font-bold text-slate-800">
                 ${g.concepto} ${badgeColector}
               </td>
-              <td class="p-3 text-center">${g.fecha}</td>
+              <td class="p-3 text-center">${formatearFechaDMY(g.fecha)}</td>
               <td class="p-3 text-right font-black text-rose-600">- ${formatearMontoLimpio(g.monto)}</td>
               <td class="p-3 text-center accion-eliminar-col"><button onclick="eliminarGasto(${g.id})" class="text-rose-500 font-bold">✕</button></td>
             </tr>
