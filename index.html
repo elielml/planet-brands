@@ -2616,7 +2616,31 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
         mostrarMensaje("Ingresa al menos una moneda para guardar.", "⚠️");
         return;
       }
+const fechaCuadreVal = document.getElementById('fechaCuadre').value;
+      const clienteNorm = clienteNombre.trim().toLowerCase();
+      const conceptoNorm = conceptoActual.trim().toLowerCase();
 
+      // 1. Revisar en los registros ya cargados en memoria
+      const duplicadoLocal = liquidacionesGuardadas.some(item =>
+        item.fecha === fechaCuadreVal &&
+        (item.cliente || '').trim().toLowerCase() === clienteNorm &&
+        (item.concepto || '').trim().toLowerCase() === conceptoNorm
+      );
+
+      // 2. Verificar también directamente en Supabase por si otro dispositivo o pestaña lo guardó
+      const { data: duplicadosNube, error: errDup } = await sbClient
+        .from('pb_liquidaciones')
+        .select('id')
+        .eq('eliminado', false)
+        .eq('fecha', fechaCuadreVal)
+        .eq('concepto', conceptoActual)
+        .ilike('cliente_nombre', clienteNombre.trim())
+        .limit(1);
+
+      if (!errDup && (duplicadoLocal || (duplicadosNube && duplicadosNube.length > 0))) {
+        mostrarMensaje(`Ya hay un registro de ${clienteNombre} (${conceptoActual}) en la fecha ${fechaCuadreVal}. Revísalo o elimínalo en Registros.`, "⚠️", 4500);
+        return;
+      }
       const clienteNombre = document.getElementById('inputCliente').value.trim();
       const rutaActual = document.getElementById('selectRutaForm').value;
       const conceptoActual = document.getElementById('concepto').value;
