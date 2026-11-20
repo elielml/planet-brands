@@ -2436,7 +2436,8 @@ const meta = usuarioActual.user_metadata || {};
         return;
       }
 
-      const porc = Number(document.getElementById('porcentajeComision').value) || 25;
+const porcVal = document.getElementById('porcentajeComision').value;
+const porc = porcVal === '' ? 25 : Number(porcVal);
       const comision = (bruto * porc) / 100;
       const ganancia = bruto - comision;
 
