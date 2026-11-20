@@ -1691,10 +1691,12 @@ const meta = usuarioActual.user_metadata || {};
 
       const [resRutas, resClientes, resLiq, resGastos] = await Promise.all([qRutas, qClientes, qLiq, qGastos]);
 
-      rutasGuardadas = resRutas.data || [];
+     rutasGuardadas = (resRutas.data || []).sort((a, b) => (a.nombre || '').localeCompare(b.nombre || '', 'es', { sensitivity: 'base' }));
       const rutasDesdeTabla = rutasGuardadas.map(r => r.nombre);
       const rutasDesdeLiquidaciones = [...new Set((resLiq.data || []).map(l => l.ruta_nombre))];
-      rutasApp = [...new Set([...rutasDesdeTabla, ...rutasDesdeLiquidaciones])].filter(r => r && r.toString().trim() !== '');
+      rutasApp = [...new Set([...rutasDesdeTabla, ...rutasDesdeLiquidaciones])]
+        .filter(r => r && r.toString().trim() !== '')
+        .sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
 
       catalogoClientes = (resClientes.data || []).map(c => ({ 
         id: c.id, 
