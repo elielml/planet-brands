@@ -1396,6 +1396,17 @@
       return `$ ${str}`;
     }
 
+    function formatearFechaDMY(fechaStr) {
+      if (!fechaStr) return '--/--/----';
+      const limpia = String(fechaStr).split('T')[0].trim();
+      const partes = limpia.split('-');
+      if (partes.length === 3) {
+        const [anio, mes, dia] = partes;
+        return `${dia.padStart(2, '0')}/${mes.padStart(2, '0')}/${anio}`;
+      }
+      return limpia;
+    }
+    
     function registrarActividad() {
       localStorage.setItem('pb_ultima_actividad', Date.now().toString());
     }
@@ -2665,7 +2676,7 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
 
         if (esDuplicado) {
           mostrarMensaje(
-            `Ya hay un registro de ${clienteNombre} (${conceptoActual}) en la fecha ${fechaVal}. Revísalo o elimínalo en Registros.`,
+            `Ya hay un registro de ${clienteNombre} (${conceptoActual}) en la fecha ${formatearFechaDMY(fechaVal)}. Revísalo o elimínalo en Registros.`,
             "⚠️",
             4500
           );
@@ -2962,7 +2973,8 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
       if (lista.length === 0) { mostrarMensaje("No hay datos para exportar.", "⚠️"); return; }
 
       const fechaReporte = document.getElementById('filtroTipoPeriodo').value === 'dia' ? document.getElementById('filtroFechaDia').value : new Date().toISOString().split('T')[0];
-
+      const fechaReporteTexto = formatearFechaDMY(fechaReporte);
+      
       let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"></head><body>`;
       html += `<table border="1" style="border-collapse: collapse; font-family: sans-serif;">`;
 
@@ -2998,7 +3010,7 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
           return (Number(a.id) || 0) - (Number(b.id) || 0);
         });
 
-        html += `<tr><td colspan="2" style="background-color:#1e3a8a; color:#ffffff; font-size:16px; font-weight:bold; text-align:center; padding:10px;">${ruta.toUpperCase()} - Fecha: ${fechaReporte}</td></tr>`;
+        html += `<tr><td colspan="2" style="background-color:#1e3a8a; color:#ffffff; font-size:16px; font-weight:bold; text-align:center; padding:10px;">${ruta.toUpperCase()} - Fecha: ${fechaReporteTexto}</td></tr>`;
 
         let subtotalRuta = 0;
         grupos[ruta].forEach(item => {
@@ -3022,7 +3034,7 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
       const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = `Liquidacion_${zonaActiva.toUpperCase()}_${fechaReporte}.xls`;
+      link.download = `Liquidacion_${zonaActiva.toUpperCase()}_${fechaReporteTexto}.xls`;
       link.click();
     }
 
@@ -3066,7 +3078,7 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
           return (Number(a.id) || 0) - (Number(b.id) || 0);
         });
 
-        filasHTML += `<tr><td colspan="2" style="padding:12px; font-weight:bold; background-color:#e2e8f0; color:#1e293b; font-size:14px; text-transform:uppercase; text-align:center;">📍 ${ruta} - ${fechaReporte}</td></tr>`;
+        filasHTML += `<tr><td colspan="2" style="padding:12px; font-weight:bold; background-color:#e2e8f0; color:#1e293b; font-size:14px; text-transform:uppercase; text-align:center;">📍 ${ruta} - ${fechaReporteTexto}</td></tr>`;
 
         let subtotalRuta = 0;
         grupos[ruta].forEach(item => {
@@ -3088,7 +3100,7 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
       const blob = new Blob(["\uFEFF" + html], { type: 'text/html;charset=utf-8;' });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = `Liquidacion_${zonaActiva.toUpperCase()}_${fechaReporte}.html`;
+      link.download = `Liquidacion_${zonaActiva.toUpperCase()}_${fechaReporteTexto}.html`;
       link.click();
     }
     
