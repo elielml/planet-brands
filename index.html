@@ -1475,6 +1475,18 @@ function formatearFechaDMY(fechaStr) {
         try { arqueosSemanalesGuardados = JSON.parse(arqueosLocales); } catch(e){}
       }
 
+      cargarColaOffline();
+
+      window.addEventListener('online', async () => {
+        actualizarIndicadorSync();
+        mostrarMensaje("Conexión recuperada. Sincronizando datos...", "🌐", 3000);
+        await sincronizarColaOffline();
+      });
+
+      window.addEventListener('offline', () => {
+        actualizarIndicadorSync();
+        mostrarMensaje("Sin internet: los datos se guardarán localmente y subirán al volver la señal.", "📴", 3500);
+      });
       const hoy = new Date().toISOString().split('T')[0];
       document.getElementById('fechaCuadre').value = hoy;
       document.getElementById('filtroFechaDia').value = hoy;
