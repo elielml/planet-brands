@@ -1672,7 +1672,7 @@ const meta = usuarioActual.user_metadata || {};
 
       let qRutas = sbClient.from('pb_rutas').select('*').eq('eliminado', false);
       let qClientes = sbClient.from('pb_clientes').select('*').eq('eliminado', false);
-      let qLiq = sbClient.from('pb_liquidaciones').select('*').eq('eliminado', false).order('fecha', { ascending: false });
+    let qLiq = sbClient.from('pb_liquidaciones').select('*').eq('eliminado', false).order('fecha', { ascending: false }).order('id', { ascending: true });
       let qGastos = sbClient.from('pb_gastos').select('*').eq('eliminado', false).order('fecha', { ascending: false });
 
       if (permisosUsuario.length === 0 && !esSuperAdmin) {
@@ -2804,6 +2804,39 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
 
    function renderizarHistorial() {
       const lista = filtrarLiquidaciones();
+     function renderizarHistorial() {
+      const lista = filtrarLiquidaciones();
+      const ordenConcepto = {
+        'Dulces': 1,
+        'Peluches': 2,
+        'Kiddie Rides': 3,
+        'Boxing Machine': 4
+      };
+
+      // Guardamos el orden de aparición original de cada cliente (normalizado)
+      const primeraAparicionCliente = new Map();
+      lista.forEach((item, idx) => {
+        const claveCli = (item.cliente || '').trim().toLowerCase();
+        if (!primeraAparicionCliente.has(claveCli)) {
+          primeraAparicionCliente.set(claveCli, idx);
+        }
+      });
+
+      // Ordenamos para que máquinas del mismo cliente queden juntas en orden: Dulces -> Peluches -> Kiddie Rides -> Boxing Machine
+      lista.sort((a, b) => {
+        const cliA = (a.cliente || '').trim().toLowerCase();
+        const cliB = (b.cliente || '').trim().toLowerCase();
+
+        if (cliA !== cliB) {
+          return primeraAparicionCliente.get(cliA) - primeraAparicionCliente.get(cliB);
+        }
+
+        const rankA = ordenConcepto[a.concepto] ?? 99;
+        const rankB = ordenConcepto[b.concepto] ?? 99;
+        if (rankA !== rankB) return rankA - rankB;
+
+        return (Number(a.id) || 0) - (Number(b.id) || 0);
+      });
       const cuerpo = document.getElementById('cuerpoHistorial');
       const msgVacio = document.getElementById('mensajeHistorialVacio');
       cuerpo.innerHTML = '';
