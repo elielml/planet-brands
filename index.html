@@ -1395,18 +1395,16 @@
       }
       return `$ ${str}`;
     }
-
-    function formatearFechaDMY(fechaStr) {
+function formatearFechaDMY(fechaStr) {
       if (!fechaStr) return '--/--/----';
       const limpia = String(fechaStr).split('T')[0].trim();
       const partes = limpia.split('-');
-      if (partes.length === 3) {
-        const [anio, mes, dia] = partes;
-        return `${dia.padStart(2, '0')}/${mes.padStart(2, '0')}/${anio}`;
+      if (partes.length === 3 && partes[0].length === 4) {
+        return `${partes[2].padStart(2, '0')}/${partes[1].padStart(2, '0')}/${partes[0]}`;
       }
       return limpia;
     }
-    
+       
     function registrarActividad() {
       localStorage.setItem('pb_ultima_actividad', Date.now().toString());
     }
