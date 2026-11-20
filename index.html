@@ -2876,8 +2876,8 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
           return primeraAparicionCliente.get(cliA) - primeraAparicionCliente.get(cliB);
         }
 
-        const rankA = ordenConcepto[a.concepto] ?? 99;
-        const rankB = ordenConcepto[b.concepto] ?? 99;
+        const rankA = ordenConcepto[a.concepto] || 99;
+        const rankB = ordenConcepto[b.concepto] || 99;
         if (rankA !== rankB) return rankA - rankB;
 
         return (Number(a.id) || 0) - (Number(b.id) || 0);
@@ -2983,8 +2983,8 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
           if (cliA !== cliB) {
             return primeraAparicion.get(cliA) - primeraAparicion.get(cliB);
           }
-          const rankA = ordenConcepto[a.concepto] ?? 99;
-          const rankB = ordenConcepto[b.concepto] ?? 99;
+          const rankA = ordenConcepto[a.concepto] || 99;
+          const rankB = ordenConcepto[b.concepto] || 99;
           if (rankA !== rankB) return rankA - rankB;
           return (Number(a.id) || 0) - (Number(b.id) || 0);
         });
@@ -3051,8 +3051,8 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
           if (cliA !== cliB) {
             return primeraAparicion.get(cliA) - primeraAparicion.get(cliB);
           }
-          const rankA = ordenConcepto[a.concepto] ?? 99;
-          const rankB = ordenConcepto[b.concepto] ?? 99;
+          const rankA = ordenConcepto[a.concepto] || 99;
+          const rankB = ordenConcepto[b.concepto] || 99;
           if (rankA !== rankB) return rankA - rankB;
           return (Number(a.id) || 0) - (Number(b.id) || 0);
         });
