@@ -1781,7 +1781,7 @@ const meta = usuarioActual.user_metadata || {};
       }
     }
 
-    // ==========================================
+   // ==========================================
     // DETALLES DEL RESUMEN (MODAL Y PIE CHARTS)
     // ==========================================
     function abrirDetallesZona(zonaId) {
@@ -1966,7 +1966,7 @@ const meta = usuarioActual.user_metadata || {};
       document.getElementById('modalDetallesZona').classList.add('hidden');
     }
 
-html += `<tr><td colspan="3" style="background-color:#1e3a8a; color:#ffffff; font-size:16px; font-weight:bold; text-align:center; padding:10px;">DESGLOSE POR TIPO DE MÁQUINA - ${formatearFechaDMY(desde)} al ${formatearFechaDMY(hasta)}</td></tr>`;
+    function exportarDesgloseConceptos(zonaId) {
       const desde = document.getElementById('depositoFechaDesde').value;
       const hasta = document.getElementById('depositoFechaHasta').value;
       const liqs = liquidacionesGuardadas.filter(i => i.fecha >= desde && i.fecha <= hasta && (zonaId === 'todas' || i.zona_id === zonaId));
@@ -1978,7 +1978,7 @@ html += `<tr><td colspan="3" style="background-color:#1e3a8a; color:#ffffff; fon
 
       let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"></head><body>`;
       html += `<table border="1" style="border-collapse: collapse; font-family: sans-serif;">`;
-      html += `<tr><td colspan="3" style="background-color:#1e3a8a; color:#ffffff; font-size:16px; font-weight:bold; text-align:center; padding:10px;">DESGLOSE POR TIPO DE MÁQUINA - ${desde} al ${hasta}</td></tr>`;
+      html += `<tr><td colspan="3" style="background-color:#1e3a8a; color:#ffffff; font-size:16px; font-weight:bold; text-align:center; padding:10px;">DESGLOSE POR TIPO DE MÁQUINA - ${formatearFechaDMY(desde)} al ${formatearFechaDMY(hasta)}</td></tr>`;
 
       const conceptosMap = {};
       let granTotal = 0;
@@ -2032,7 +2032,6 @@ html += `<tr><td colspan="3" style="background-color:#1e3a8a; color:#ffffff; fon
 
       el.style.background = `conic-gradient(#ef4444 0% ${pGas}%, #10b981 ${pGas}% 100%)`;
     }
-
     // ==========================================
     // SECCIÓN DE PERMISOS SUPERADMIN 
     // ==========================================
