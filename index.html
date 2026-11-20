@@ -2391,7 +2391,7 @@ html += `<tr><td colspan="3" style="background-color:#1e3a8a; color:#ffffff; fon
     // ==========================================
     // IMPRESIÓN DE TICKETS TÉRMICOS (BLUETOOTH)
     // ==========================================
-    function poblarYDispararTicket(data) {
+ function poblarYDispararTicket(data) {
       let textoRutaEncabezado = "RUTA CIBAO";
       const zona = (data.zona_id || zonaActiva || "").toLowerCase();
       if (zona.includes("sur") || (data.ruta && data.ruta.toLowerCase().includes("sur"))) {
