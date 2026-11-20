@@ -2829,9 +2829,11 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
 
         const comision = (bruto * porc) / 100;
         const ganancia = bruto - comision;
+     const comision = (bruto * porc) / 100;
+        const ganancia = bruto - comision;
         const zonaDestino = (zonaActiva === 'todas' || zonaActiva === 'personal') ? 'cibao' : zonaActiva;
 
-        const { data: nuevaLiq, error } = await sbClient.from('pb_liquidaciones').insert({
+        const payloadLiq = {
           zona_id: zonaDestino,
           fecha: fechaVal,
           ruta_nombre: rutaActual,
@@ -2847,7 +2849,41 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
           ganancia_empresa: ganancia,
           creado_por: usuarioActual.id,
           creado_por_email: window.nombreMostrar
-        }).select().single();
+        };
+
+        if (!navigator.onLine) {
+          encolarOperacionOffline({ tipo: 'INSERT_LIQUIDACION', payload: payloadLiq });
+          liquidacionesGuardadas.push({
+            id: 'offline_' + Date.now(),
+            fecha: fechaVal,
+            ruta: rutaActual,
+            cliente: clienteNombre,
+            concepto: conceptoActual,
+            porcentaje: porc,
+            cant25: c25,
+            cant10: c10,
+            cant5: c5,
+            totalMonedas: c25 + c10 + c5,
+            bruto: bruto,
+            comision: comision,
+            gananciaEmpresa: ganancia,
+            zona_id: zonaDestino,
+            creadoPorEmail: window.nombreMostrar,
+            esMio: true
+          });
+          limpiarFormulario();
+          poblarFiltroColectores();
+          renderizarHistorial();
+          alCambiarRangoSemana();
+          mostrarMensaje("Guardado sin internet. Se sincronizará al volver la red.", "📴", 3500);
+          return;
+        }
+
+        const { data: nuevaLiq, error } = await sbClient
+          .from('pb_liquidaciones')
+          .insert(payloadLiq)
+          .select()
+          .single();
 
         if (error) {
           mostrarMensaje("Error al guardar: " + error.message, "❌", 4500);
