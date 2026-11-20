@@ -2036,7 +2036,7 @@ html += `<tr><td colspan="3" style="background-color:#1e3a8a; color:#ffffff; fon
     // ==========================================
     // SECCIÓN DE PERMISOS SUPERADMIN 
     // ==========================================
-    async function cargarListaUsuariosRegistrados() {
+   async function cargarListaUsuariosRegistrados() {
       if (!esSuperAdmin) return;
       const cont = document.getElementById('listaTarjetasUsuarios');
       const msgVacio = document.getElementById('mensajeSinUsuarios');
@@ -2063,13 +2063,20 @@ html += `<tr><td colspan="3" style="background-color:#1e3a8a; color:#ffffff; fon
         if (u.tiene_sur) zonasEtiqueta.push('<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[10px] font-bold">Sur</span>');
         if (zonasEtiqueta.length === 0) zonasEtiqueta.push('<span class="bg-slate-100 text-slate-500 px-2 py-0.5 rounded text-[10px] font-medium">Sin acceso</span>');
 
+        let fechaRegistro = '--';
+        if (u.creado_en) {
+          const parteFecha = String(u.creado_en).split('T')[0];
+          const partes = parteFecha.split('-');
+          fechaRegistro = partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : parteFecha;
+        }
+
         const card = document.createElement('div');
         card.className = "bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2.5 shadow-sm";
         card.innerHTML = `
           <div class="space-y-1 w-full sm:w-auto">
             <span class="font-bold text-slate-900 text-xs block break-all">${u.email}</span>
             <div class="flex items-center gap-2">
-              <span class="text-[10px] text-slate-400">Registrado: ${u.creado_en ? u.creado_en.split('T')[0] : '--'}</span>
+              <span class="text-[10px] text-slate-400">Registrado: ${fechaRegistro}</span>
               <div class="flex items-center gap-1">${zonasEtiqueta.join(' ')}</div>
             </div>
           </div>
@@ -2081,7 +2088,7 @@ html += `<tr><td colspan="3" style="background-color:#1e3a8a; color:#ffffff; fon
       });
     }
 
-   async function seleccionarUsuarioParaPermisos(userId, email) {
+    async function seleccionarUsuarioParaPermisos(userId, email) {
       // 1. Llenar panel de permisos
       document.getElementById('inputUserIdSeleccionado').value = userId;
       document.getElementById('labelUsuarioSeleccionado').textContent = email;
@@ -2120,8 +2127,8 @@ html += `<tr><td colspan="3" style="background-color:#1e3a8a; color:#ffffff; fon
       document.getElementById('gestionNombre').value = '';
       document.getElementById('gestionApellido').value = '';
       document.getElementById('gestionPassword').value = '';
-      document.getElementById('gestionPassword').required = false; 
-      
+      document.getElementById('gestionPassword').required = false;
+
       const btnGestion = document.getElementById('btnGuardarGestionUsuario');
       btnGestion.textContent = "Actualizar Contraseña";
       btnGestion.className = "flex-1 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black uppercase rounded-lg shadow transition";
@@ -2137,7 +2144,7 @@ html += `<tr><td colspan="3" style="background-color:#1e3a8a; color:#ffffff; fon
       document.getElementById('gestionApellido').value = '';
       document.getElementById('gestionPassword').value = '';
       document.getElementById('gestionPassword').required = true;
-      
+
       const btnGestion = document.getElementById('btnGuardarGestionUsuario');
       btnGestion.textContent = "+ Crear Usuario";
       btnGestion.className = "flex-1 py-2 bg-blue-900 hover:bg-blue-800 text-white text-xs font-black uppercase rounded-lg shadow transition";
@@ -2156,37 +2163,38 @@ html += `<tr><td colspan="3" style="background-color:#1e3a8a; color:#ffffff; fon
       btn.textContent = "Procesando...";
 
       if (id) {
-         // ACTUALIZAR CONTRASEÑA
-         if (!password) {
-            mostrarMensaje("Escribe la nueva contraseña para actualizar.", "⚠️");
-            btn.disabled = false; btn.textContent = "Actualizar Contraseña"; return;
-         }
-         const { error } = await sbClient.rpc('admin_actualizar_password', { p_user_id: id, p_new_password: password });
-         
-         if (error) { 
-            mostrarMensaje("Error al cambiar clave.", "❌"); 
-         } else {
-            mostrarMensaje("Contraseña actualizada con éxito.", "✅");
-            limpiarFormGestionUsuarios();
-         }
+        // ACTUALIZAR CONTRASEÑA
+        if (!password) {
+          mostrarMensaje("Escribe la nueva contraseña para actualizar.", "⚠️");
+          btn.disabled = false;
+          btn.textContent = "Actualizar Contraseña";
+          return;
+        }
+        const { error } = await sbClient.rpc('admin_actualizar_password', { p_user_id: id, p_new_password: password });
+
+        if (error) {
+          mostrarMensaje("Error al cambiar clave.", "❌");
+        } else {
+          mostrarMensaje("Contraseña actualizada con éxito.", "✅");
+          limpiarFormGestionUsuarios();
+        }
       } else {
-         // CREAR NUEVO USUARIO
-         const { error } = await sbClient.rpc('admin_crear_usuario', {
-            p_email: email, p_password: password, p_nombre: nombre, p_apellido: apellido
-         });
-         
-         if (error) {
-            mostrarMensaje("Error al crear. Verifica que el correo no exista.", "❌");
-         } else {
-            mostrarMensaje("Empleado creado exitosamente.", "✅");
-            limpiarFormGestionUsuarios();
-            cargarListaUsuariosRegistrados();
-         }
+        // CREAR NUEVO USUARIO
+        const { error } = await sbClient.rpc('admin_crear_usuario', {
+          p_email: email, p_password: password, p_nombre: nombre, p_apellido: apellido
+        });
+
+        if (error) {
+          mostrarMensaje("Error al crear. Verifica que el correo no exista.", "❌");
+        } else {
+          mostrarMensaje("Empleado creado exitosamente.", "✅");
+          limpiarFormGestionUsuarios();
+          cargarListaUsuariosRegistrados();
+        }
       }
       btn.disabled = false;
     }
 
-     
     function alternarBloqueZona(zona) {
       const activo = document.getElementById(zona === 'cibao' ? 'chkCibaoActivo' : 'chkSurActivo').checked;
       const cont = document.getElementById(zona === 'cibao' ? 'permisosCibaoContainer' : 'permisosSurContainer');
@@ -2284,6 +2292,13 @@ html += `<tr><td colspan="3" style="background-color:#1e3a8a; color:#ffffff; fon
 
       msgVacio.classList.add('hidden');
       eliminados.forEach(item => {
+        let fechaBorrado = '--';
+        if (item.eliminado_en) {
+          const parteFecha = String(item.eliminado_en).split('T')[0];
+          const partes = parteFecha.split('-');
+          fechaBorrado = partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : parteFecha;
+        }
+
         const tr = document.createElement('tr');
         tr.className = "hover:bg-slate-50 border-b border-slate-100";
         tr.innerHTML = `
@@ -2292,7 +2307,7 @@ html += `<tr><td colspan="3" style="background-color:#1e3a8a; color:#ffffff; fon
             <span class="text-[10px] text-slate-400 block">${item.ruta_nombre} (${item.concepto})</span>
           </td>
           <td class="p-2.5 text-center uppercase font-bold text-[10px] text-blue-900">${item.zona_id}</td>
-          <td class="p-2.5 text-center text-slate-500">${item.eliminado_en ? item.eliminado_en.split('T')[0] : '--'}</td>
+          <td class="p-2.5 text-center text-slate-500">${fechaBorrado}</td>
           <td class="p-2.5 text-right font-black text-slate-800">${formatearMontoLimpio(item.ganancia_empresa)}</td>
           <td class="p-2.5 text-center space-x-1">
             <button onclick="restaurarRegistro(${item.id})" class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-[11px] font-bold hover:bg-emerald-200">Restaurar</button>
@@ -2349,11 +2364,11 @@ html += `<tr><td colspan="3" style="background-color:#1e3a8a; color:#ffffff; fon
         const correos = [...new Set([...liquidacionesGuardadas.map(l => l.creadoPorEmail), ...gastosGuardados.map(g => g.creadoPorEmail)])].filter(c => c);
         correos.forEach(c => {
           if (c !== window.nombreMostrar) {
-             filtro.innerHTML += `<option value="${c}">${c}</option>`;
+            filtro.innerHTML += `<option value="${c}">${c}</option>`;
           }
         });
       }
-      
+
       const hayOpcion = Array.from(filtro.options).some(opt => opt.value === valorAnterior);
       filtro.value = hayOpcion ? valorAnterior : "TODOS";
     }
@@ -2382,12 +2397,11 @@ html += `<tr><td colspan="3" style="background-color:#1e3a8a; color:#ffffff; fon
             <span class="font-bold text-slate-800">${log.usuario_email || 'Sistema'}</span>
             <span class="text-slate-500"> ejecutó <strong>${log.accion}</strong> en <em>${log.tabla}</em></span>
           </div>
-          <span class="text-[10px] text-slate-400 font-mono">${new Date(log.fecha).toLocaleString()}</span>
+          <span class="text-[10px] text-slate-400 font-mono">${new Date(log.fecha).toLocaleString('es-DO')}</span>
         `;
         cont.appendChild(item);
       });
     }
-
     // ==========================================
     // IMPRESIÓN DE TICKETS TÉRMICOS (BLUETOOTH)
     // ==========================================
