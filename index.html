@@ -2902,7 +2902,7 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
       document.getElementById('resumenGananciaEmpresa').textContent = `$ ${totalEmpresa.toLocaleString('es-DO', { minimumFractionDigits: 0 })}`;
     }
 
-  // EXCEL: Formato HTML exportado como .xls
+ // EXCEL: Formato HTML exportado como .xls
     function exportarExcel() {
       const lista = filtrarLiquidaciones();
       if (lista.length === 0) { mostrarMensaje("No hay datos para exportar.", "⚠️"); return; }
@@ -2915,9 +2915,34 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
       const grupos = agruparPorRuta(lista);
       let granTotal = 0;
 
+      const ordenConcepto = {
+        'Dulces': 1,
+        'Peluches': 2,
+        'Kiddie Rides': 3,
+        'Boxing Machine': 4
+      };
+
       Object.keys(grupos).forEach(ruta => {
-        // Orden alfabético para agrupar clientes
-        grupos[ruta].sort((a, b) => a.cliente.toLowerCase().localeCompare(b.cliente.toLowerCase()));
+        // Orden de registro por cliente, pero agrupando máquinas del mismo cliente en orden Dulces -> Peluches -> Kiddie Rides -> Boxing Machine
+        const primeraAparicion = new Map();
+        grupos[ruta].forEach((item, idx) => {
+          const claveCli = (item.cliente || '').trim().toLowerCase();
+          if (!primeraAparicion.has(claveCli)) {
+            primeraAparicion.set(claveCli, idx);
+          }
+        });
+
+        grupos[ruta].sort((a, b) => {
+          const cliA = (a.cliente || '').trim().toLowerCase();
+          const cliB = (b.cliente || '').trim().toLowerCase();
+          if (cliA !== cliB) {
+            return primeraAparicion.get(cliA) - primeraAparicion.get(cliB);
+          }
+          const rankA = ordenConcepto[a.concepto] ?? 99;
+          const rankB = ordenConcepto[b.concepto] ?? 99;
+          if (rankA !== rankB) return rankA - rankB;
+          return (Number(a.id) || 0) - (Number(b.id) || 0);
+        });
 
         html += `<tr><td colspan="2" style="background-color:#1e3a8a; color:#ffffff; font-size:16px; font-weight:bold; text-align:center; padding:10px;">${ruta.toUpperCase()} - Fecha: ${fechaReporte}</td></tr>`;
 
@@ -2958,9 +2983,34 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
       let granTotal = 0;
       const grupos = agruparPorRuta(lista);
 
+      const ordenConcepto = {
+        'Dulces': 1,
+        'Peluches': 2,
+        'Kiddie Rides': 3,
+        'Boxing Machine': 4
+      };
+
       Object.keys(grupos).forEach(ruta => {
-        // Orden alfabético para agrupar clientes
-        grupos[ruta].sort((a, b) => a.cliente.toLowerCase().localeCompare(b.cliente.toLowerCase()));
+        // Orden de registro por cliente, pero agrupando máquinas del mismo cliente en orden Dulces -> Peluches -> Kiddie Rides -> Boxing Machine
+        const primeraAparicion = new Map();
+        grupos[ruta].forEach((item, idx) => {
+          const claveCli = (item.cliente || '').trim().toLowerCase();
+          if (!primeraAparicion.has(claveCli)) {
+            primeraAparicion.set(claveCli, idx);
+          }
+        });
+
+        grupos[ruta].sort((a, b) => {
+          const cliA = (a.cliente || '').trim().toLowerCase();
+          const cliB = (b.cliente || '').trim().toLowerCase();
+          if (cliA !== cliB) {
+            return primeraAparicion.get(cliA) - primeraAparicion.get(cliB);
+          }
+          const rankA = ordenConcepto[a.concepto] ?? 99;
+          const rankB = ordenConcepto[b.concepto] ?? 99;
+          if (rankA !== rankB) return rankA - rankB;
+          return (Number(a.id) || 0) - (Number(b.id) || 0);
+        });
 
         filasHTML += `<tr><td colspan="2" style="padding:12px; font-weight:bold; background-color:#e2e8f0; color:#1e293b; font-size:14px; text-transform:uppercase; text-align:center;">📍 ${ruta} - ${fechaReporte}</td></tr>`;
 
