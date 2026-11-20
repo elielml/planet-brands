@@ -3054,6 +3054,7 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
       if (lista.length === 0) { mostrarMensaje("No hay datos para exportar.", "⚠️"); return; }
 
       const fechaReporte = document.getElementById('filtroTipoPeriodo').value === 'dia' ? document.getElementById('filtroFechaDia').value : new Date().toISOString().split('T')[0];
+      const fechaReporteTexto = formatearFechaDMY(fechaReporte);
 
       let filasHTML = "";
       let granTotal = 0;
