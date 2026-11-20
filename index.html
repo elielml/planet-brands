@@ -3379,8 +3379,8 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
       const ruta = document.getElementById('selectRutaParaCliente').value;
       const nombre = document.getElementById('nuevoClienteNombre').value.trim();
       const concepto = document.getElementById('nuevoClienteConcepto').value;
-      const porcentaje = Number(document.getElementById('nuevoClientePorcentaje').value) || 25;
-
+const porcVal = document.getElementById('nuevoClientePorcentaje').value;
+const porcentaje = porcVal === '' ? 25 : Number(porcVal);
       const zonaDestino = (zonaActiva === 'todas' || zonaActiva === 'personal') ? 'cibao' : zonaActiva;
 
       const { error } = await sbClient.from('pb_clientes').insert({
