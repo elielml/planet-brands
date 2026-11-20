@@ -2612,7 +2612,7 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
       calcularTodo();
     }
 
-    async function guardarCuadre(e) {
+   async function guardarCuadre(e) {
       e.preventDefault();
       try {
         registrarActividad();
@@ -2648,7 +2648,6 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
         const clienteNorm = clienteNombre.toLowerCase();
         const conceptoNorm = (conceptoActual || '').trim().toLowerCase();
 
-        // Bloquea solo si coincide MISMO CLIENTE + MISMA MÁQUINA + MISMA FECHA
         let esDuplicado = liquidacionesGuardadas.some(item =>
           item.fecha === fechaVal &&
           (item.cliente || '').trim().toLowerCase() === clienteNorm &&
