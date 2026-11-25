@@ -543,6 +543,7 @@
             <input type="date" id="depositoFechaHasta" onchange="alCambiarRangoSemana()" class="w-full p-2.5 border rounded-xl text-xs font-bold bg-slate-50 border-slate-300 outline-none">
           </div>
         </div>
+      </div>
 
       <!-- VISTA NORMAL (Ruta Cibao o Ruta Sur Seleccionadas) -->
       <div id="vistaDepositoNormal" class="space-y-4">
@@ -740,7 +741,8 @@
             </button>
           </div>
         </div>
-        
+      </div>
+
       <!-- VISTA CONSOLIDADA (Ambas Rutas, Solo Visible si se selecciona Consolidado General) -->
       <div id="vistaDepositoConsolidado" class="hidden space-y-4">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pt-2">
@@ -3673,8 +3675,10 @@ function fijarEstaSemanaDeposito() {
           document.getElementById('vistaDepositoConsolidado').classList.add('hidden');
           return;
         }
-        document.getElementById('vistaDepositoNormal').classList.add('hidden');
-        document.getElementById('vistaDepositoConsolidado').classList.remove('hidden');
+        const vNorm = document.getElementById('vistaDepositoNormal');
+        const vCons = document.getElementById('vistaDepositoConsolidado');
+        if (vNorm) { vNorm.classList.add('hidden'); vNorm.style.display = 'none'; }
+        if (vCons) { vCons.classList.remove('hidden'); vCons.classList.remove('seccion-oculta'); vCons.style.display = 'block'; }
 
         const badgeSoloCons = document.getElementById('badgeSoloConsultaConsolidado');
         if (badgeSoloCons) {
@@ -3682,13 +3686,14 @@ function fijarEstaSemanaDeposito() {
           badgeSoloCons.classList.toggle('hidden', esSuperAdmin || tieneOperativo);
         }
 
-        const liqsGen = liquidacionesGuardadas.filter(i => i.fecha >= desde && i.fecha <= hasta && (i.zona_id === 'cibao' || i.zona_id === 'sur'));
-        const gastosGen = gastosGuardados.filter(g => g.fecha >= desde && g.fecha <= hasta && (g.zona_id === 'cibao' || g.zona_id === 'sur'));
+        const normZ = (z) => String(z || '').trim().toLowerCase();
+        const liqsGen = liquidacionesGuardadas.filter(i => i.fecha >= desde && i.fecha <= hasta && (normZ(i.zona_id) === 'cibao' || normZ(i.zona_id) === 'sur'));
+        const gastosGen = gastosGuardados.filter(g => g.fecha >= desde && g.fecha <= hasta && (normZ(g.zona_id) === 'cibao' || normZ(g.zona_id) === 'sur'));
 
-        const liqsCibao = liqsGen.filter(i => i.zona_id === 'cibao');
+        const liqsCibao = liqsGen.filter(i => normZ(i.zona_id) === 'cibao');
         const gastosCibao = gastosGen.filter(i => i.zona_id === 'cibao');
 
-        const liqsSur = liqsGen.filter(i => i.zona_id === 'sur');
+        const liqsSur = liqsGen.filter(i => normZ(i.zona_id) === 'sur');
         const gastosSur = gastosGen.filter(i => i.zona_id === 'sur');
 
         const recCibao = liqsCibao.reduce((acc, i) => acc + i.gananciaEmpresa, 0);
@@ -3782,8 +3787,10 @@ function fijarEstaSemanaDeposito() {
         return;
       }
 
-      document.getElementById('vistaDepositoNormal').classList.remove('hidden');
-      document.getElementById('vistaDepositoConsolidado').classList.add('hidden');
+      const vNorm = document.getElementById('vistaDepositoNormal');
+      const vCons = document.getElementById('vistaDepositoConsolidado');
+      if (vNorm) { vNorm.classList.remove('hidden'); vNorm.style.display = ''; }
+      if (vCons) { vCons.classList.add('hidden'); vCons.style.display = 'none'; }
 
      const liqs = liquidacionesGuardadas.filter(i => i.fecha >= desde && i.fecha <= hasta && (esSuperAdmin || tienePermiso('leer', i.zona_id)));
       const resumenPorColectorYRuta = {};
@@ -4878,4 +4885,3 @@ function cambiarPestana(p) {
   </script>
 </body>
 </html>
-```[cite: 14]
