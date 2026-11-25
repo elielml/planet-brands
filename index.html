@@ -1871,7 +1871,51 @@ function formatearFechaDMY(fechaStr) {
           }
         });
       }
+      
+function formatearNombreUsuario(valor) {
+        if (!valor) return window.nombreMostrar || 'Usuario';
+        const limpio = String(valor).trim().toLowerCase();
+        if (limpio === 'dejesuseliel12@gmail.com') {
+          return 'ELIEL MARTINEZ';
+        }
+        if (limpio === 'elieldejesusml@gmail.com') {
+          return 'ADMIN';
+        }
+        if (limpio.includes('@')) {
+          return limpio.split('@')[0].replace(/[._-]+/g, ' ').toUpperCase();
+        }
+        return String(valor).trim();
+      }
 
+      liquidacionesGuardadas = (resLiq.data || []).map(l => ({
+        id: l.id,
+        fecha: l.fecha,
+        ruta: l.ruta_nombre,
+        cliente: l.cliente_nombre,
+        concepto: l.concepto,
+        porcentaje: l.porcentaje,
+        cant25: l.cant25,
+        cant10: l.cant10,
+        cant5: l.cant5,
+        totalMonedas: l.total_monedas,
+        bruto: Number(l.bruto),
+        comision: Number(l.comision),
+        gananciaEmpresa: Number(l.ganancia_empresa),
+        zona_id: l.zona_id,
+        creadoPorEmail: formatearNombreUsuario(l.creado_por_email),
+        esMio: l.creado_por === usuarioActual.id
+      }));
+
+      gastosGuardados = (resGastos.data || []).map(g => ({
+        id: g.id,
+        concepto: g.concepto,
+        fecha: g.fecha,
+        monto: Number(g.monto),
+        zona_id: g.zona_id,
+        creadoPorEmail: formatearNombreUsuario(g.creado_por_email),
+        esMio: g.creado_por === usuarioActual.id
+      }));
+      
       liquidacionesGuardadas = (resLiq.data || []).map(l => ({
         id: l.id,
         fecha: l.fecha,
