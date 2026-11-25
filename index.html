@@ -1395,32 +1395,33 @@
 
     function tienePermiso(accion, zonaId = null) {
       if (esSuperAdmin) return true;
-      if (!permisosUsuario || permisosUsuario.length === 0) return true; // Usuario sin restricciones de zona asignadas (modo personal)
+      if (!permisosUsuario || permisosUsuario.length === 0) return false;
 
-      if (zonaId === 'todas' || (!zonaId && zonaActiva === 'todas')) {
+      if (zonaId === 'todas' || (!zonaId && (zonaActiva === 'todas' || zonaActiva === 'sin_acceso'))) {
         return permisosUsuario.some(p => {
-          if (!p.puede_leer) return false;
-          if (accion === 'leer') return Boolean(p.puede_leer);
-          if (accion === 'crear') return Boolean(p.puede_crear);
-          if (accion === 'editar') return Boolean(p.puede_editar);
-          if (accion === 'eliminar') return Boolean(p.puede_eliminar);
+          const pLeer = Boolean(p.puede_leer ?? p.leer);
+          if (!pLeer) return false;
+          if (accion === 'leer') return pLeer;
+          if (accion === 'crear') return Boolean(p.puede_crear ?? p.crear);
+          if (accion === 'editar') return Boolean(p.puede_editar ?? p.editar);
+          if (accion === 'eliminar') return Boolean(p.puede_eliminar ?? p.eliminar);
           return false;
         });
       }
 
       const zona = resolverZonaPermiso(zonaId);
       const perm = permisosUsuario.find(p => String(p.zona_id).toLowerCase() === zona);
-      const pLeer = perm ? (perm.puede_leer ?? perm.leer) : false;
-      const pCrear = perm ? (perm.puede_crear ?? perm.crear) : false;
-      const pEditar = perm ? (perm.puede_editar ?? perm.editar) : false;
-      const pEliminar = perm ? (perm.puede_eliminar ?? perm.eliminar) : false;
+      const pLeer = perm ? Boolean(perm.puede_leer ?? perm.leer) : false;
+      const pCrear = perm ? Boolean(perm.puede_crear ?? perm.crear) : false;
+      const pEditar = perm ? Boolean(perm.puede_editar ?? perm.editar) : false;
+      const pEliminar = perm ? Boolean(perm.puede_eliminar ?? perm.eliminar) : false;
 
       if (!perm || !pLeer) return false;
 
-      if (accion === 'leer') return Boolean(pLeer);
-      if (accion === 'crear') return Boolean(pCrear);
-      if (accion === 'editar') return Boolean(pEditar);
-      if (accion === 'eliminar') return Boolean(pEliminar);
+      if (accion === 'leer') return pLeer;
+      if (accion === 'crear') return pCrear;
+      if (accion === 'editar') return pEditar;
+      if (accion === 'eliminar') return pEliminar;
       return false;
     }
 
@@ -1785,12 +1786,14 @@ function formatearFechaDMY(fechaStr) {
       }
 
       const tabCuadre = document.getElementById('tabCuadre');
-      const puedeCrearEnAlguna = permisosUsuario.some(p => p.puede_crear === true);
+      const puedeLeerEnAlguna = esSuperAdmin || permisosUsuario.some(p => Boolean(p.puede_leer ?? p.leer));
+      const puedeCrearEnAlguna = esSuperAdmin || permisosUsuario.some(p => Boolean(p.puede_leer ?? p.leer) && Boolean(p.puede_crear ?? p.crear));
 
-      if (permisosUsuario.length === 0 && !esSuperAdmin) {
-        zonaActiva = 'personal';
+      if (!puedeLeerEnAlguna && !esSuperAdmin) {
+        zonaActiva = 'sin_acceso';
         document.getElementById('barraSelectorZona').classList.add('hidden');
-        tabCuadre.classList.remove('hidden');
+        tabCuadre.classList.add('hidden');
+        cambiarPestana('historial');
       } else {
         document.getElementById('barraSelectorZona').classList.remove('hidden');
         if (!puedeCrearEnAlguna && !esSuperAdmin) {
@@ -1810,8 +1813,8 @@ function formatearFechaDMY(fechaStr) {
       const select = document.getElementById('selectZonaActiva');
       select.innerHTML = '';
 
-      const tieneCibao = permisosUsuario.some(p => p.zona_id === 'cibao' && p.puede_leer);
-      const tieneSur = permisosUsuario.some(p => p.zona_id === 'sur' && p.puede_leer);
+      const tieneCibao = esSuperAdmin || permisosUsuario.some(p => String(p.zona_id).toLowerCase() === 'cibao' && Boolean(p.puede_leer ?? p.leer));
+      const tieneSur = esSuperAdmin || permisosUsuario.some(p => String(p.zona_id).toLowerCase() === 'sur' && Boolean(p.puede_leer ?? p.leer));
 
       if (tieneCibao) select.innerHTML += `<option value="cibao">Ruta Cibao</option>`;
       if (tieneSur) select.innerHTML += `<option value="sur">Ruta Sur</option>`;
@@ -1825,7 +1828,8 @@ function formatearFechaDMY(fechaStr) {
       } else if (tieneSur) {
         zonaActiva = 'sur';
       } else {
-        zonaActiva = 'todas';
+        zonaActiva = 'sin_acceso';
+        select.innerHTML = `<option value="sin_acceso">Sin rutas asignadas</option>`;
       }
       select.value = zonaActiva;
     }
@@ -1836,12 +1840,28 @@ function formatearFechaDMY(fechaStr) {
     }
 
     async function cargarDatosZonaActiva() {
-      if (!esSuperAdmin && permisosUsuario.length > 0 && zonaActiva !== 'personal' && !tienePermiso('leer', zonaActiva)) {
-        const primeraZonaValida = permisosUsuario.find(p => p.puede_leer);
+      if (!esSuperAdmin && !tienePermiso('leer', zonaActiva)) {
+        const primeraZonaValida = permisosUsuario.find(p => Boolean(p.puede_leer ?? p.leer));
         if (primeraZonaValida) {
-          zonaActiva = primeraZonaValida.zona_id;
+          zonaActiva = String(primeraZonaValida.zona_id).toLowerCase();
           const selZona = document.getElementById('selectZonaActiva');
           if (selZona) selZona.value = zonaActiva;
+        } else {
+          zonaActiva = 'sin_acceso';
+          rutasGuardadas = [];
+          rutasApp = [];
+          catalogoClientes = [];
+          liquidacionesGuardadas = [];
+          gastosGuardados = [];
+          poblarFiltroColectores();
+          poblarSelectoresRuta();
+          renderizarAdminRutas();
+          actualizarClientesSegunRuta();
+          renderizarHistorial();
+          renderizarListaClientesConfig();
+          alCambiarRangoSemana();
+          aplicarEstadoPermisosUI();
+          return;
         }
       }
       const permisoActual = permisosUsuario.find(p => p.zona_id === zonaActiva) || { puede_leer: esSuperAdmin, puede_crear: esSuperAdmin, puede_editar: esSuperAdmin, puede_eliminar: esSuperAdmin };
@@ -1920,16 +1940,36 @@ function formatearFechaDMY(fechaStr) {
     let qLiq = sbClient.from('pb_liquidaciones').select('*').eq('eliminado', false).order('fecha', { ascending: false }).order('id', { ascending: true });
       let qGastos = sbClient.from('pb_gastos').select('*').eq('eliminado', false).order('fecha', { ascending: false });
 
-      if (permisosUsuario.length === 0 && !esSuperAdmin) {
-        qRutas = qRutas.eq('creado_por', usuarioActual.id);
-        qClientes = qClientes.eq('creado_por', usuarioActual.id);
-        qLiq = qLiq.eq('creado_por', usuarioActual.id);
-        qGastos = qGastos.eq('creado_por', usuarioActual.id);
+      if (!esSuperAdmin) {
+        const zonasPermitidas = permisosUsuario
+          .filter(p => Boolean(p.puede_leer ?? p.leer))
+          .map(p => String(p.zona_id).toLowerCase());
+
+        if (zonasPermitidas.length === 0) {
+          rutasGuardadas = [];
+          rutasApp = [];
+          catalogoClientes = [];
+          liquidacionesGuardadas = [];
+          gastosGuardados = [];
+          renderizarHistorial();
+          alCambiarRangoSemana();
+          aplicarEstadoPermisosUI();
+          return;
+        }
+
+        if (zonaActiva !== 'todas') {
+          qRutas = qRutas.eq('zona_id', zonaActiva);
+          qClientes = qClientes.eq('zona_id', zonaActiva);
+          qLiq = qLiq.eq('zona_id', zonaActiva);
+          qGastos = qGastos.eq('zona_id', zonaActiva);
+        } else {
+          qRutas = qRutas.in('zona_id', zonasPermitidas);
+          qClientes = qClientes.in('zona_id', zonasPermitidas);
+          qLiq = qLiq.in('zona_id', zonasPermitidas);
+          qGastos = qGastos.in('zona_id', zonasPermitidas);
+        }
       } else if (zonaActiva !== 'todas') {
         qRutas = qRutas.eq('zona_id', zonaActiva);
-        if (!esSuperAdmin) {
-           qClientes = qClientes.eq('zona_id', zonaActiva);
-        }
         qLiq = qLiq.eq('zona_id', zonaActiva);
         qGastos = qGastos.eq('zona_id', zonaActiva);
       }
@@ -2498,15 +2538,15 @@ function formatearNombreUsuario(valor) {
         const { error } = await sbClient.rpc('guardar_permisos_usuario_granular', {
           p_user_id: userId,
           p_cibao_activo: cibaoActivo,
-          p_cibao_leer: document.getElementById('chkCibaoLeer').checked,
-          p_cibao_crear: document.getElementById('chkCibaoCrear').checked,
-          p_cibao_editar: document.getElementById('chkCibaoEditar').checked,
-          p_cibao_eliminar: document.getElementById('chkCibaoEliminar').checked,
+          p_cibao_leer: cibaoActivo && document.getElementById('chkCibaoLeer').checked,
+          p_cibao_crear: cibaoActivo && document.getElementById('chkCibaoCrear').checked,
+          p_cibao_editar: cibaoActivo && document.getElementById('chkCibaoEditar').checked,
+          p_cibao_eliminar: cibaoActivo && document.getElementById('chkCibaoEliminar').checked,
           p_sur_activo: surActivo,
-          p_sur_leer: document.getElementById('chkSurLeer').checked,
-          p_sur_crear: document.getElementById('chkSurCrear').checked,
-          p_sur_editar: document.getElementById('chkSurEditar').checked,
-          p_sur_eliminar: document.getElementById('chkSurEliminar').checked
+          p_sur_leer: surActivo && document.getElementById('chkSurLeer').checked,
+          p_sur_crear: surActivo && document.getElementById('chkSurCrear').checked,
+          p_sur_editar: surActivo && document.getElementById('chkSurEditar').checked,
+          p_sur_eliminar: surActivo && document.getElementById('chkSurEliminar').checked
         });
 
         if (error) {
@@ -3161,6 +3201,7 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
       const tipo = document.getElementById('filtroTipoPeriodo').value;
 
       return liquidacionesGuardadas.filter(item => {
+        if (!esSuperAdmin && !tienePermiso('leer', item.zona_id)) return false;
         if (colector === "MIO" && !item.esMio) return false;
         if (colector !== "TODOS" && colector !== "MIO" && item.creadoPorEmail !== colector) return false;
         if (ruta !== "TODAS" && item.ruta !== ruta) return false;
@@ -3504,7 +3545,7 @@ function fijarEstaSemanaDeposito() {
       document.getElementById('vistaDepositoNormal').classList.remove('hidden');
       document.getElementById('vistaDepositoConsolidado').classList.add('hidden');
 
-     const liqs = liquidacionesGuardadas.filter(i => i.fecha >= desde && i.fecha <= hasta);
+     const liqs = liquidacionesGuardadas.filter(i => i.fecha >= desde && i.fecha <= hasta && (esSuperAdmin || tienePermiso('leer', i.zona_id)));
       const resumenPorColectorYRuta = {};
       let totalRecoleccion = 0;
 
@@ -3554,7 +3595,7 @@ function fijarEstaSemanaDeposito() {
       }
       document.getElementById('subtotalRecoleccionSemanaCard').textContent = formatearMontoLimpio(totalRecoleccion);
 
-      const gastos = gastosGuardados.filter(g => g.fecha >= desde && g.fecha <= hasta);
+      const gastos = gastosGuardados.filter(g => g.fecha >= desde && g.fecha <= hasta && (esSuperAdmin || tienePermiso('leer', g.zona_id)));
       const cuerpoG = document.getElementById('cuerpoGastosSemana');
       cuerpoG.innerHTML = '';
       let totalGastos = 0;
