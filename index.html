@@ -1382,6 +1382,87 @@
 
     let totalNetoDepositoCalculado = 0;
     let debounceTimerArqueo = null;
+
+    function resolverZonaPermiso(zonaId = null) {
+      if (zonaId && zonaId !== 'todas' && zonaId !== 'personal') {
+        return String(zonaId).toLowerCase();
+      }
+      if (zonaActiva && zonaActiva !== 'todas' && zonaActiva !== 'personal') {
+        return String(zonaActiva).toLowerCase();
+      }
+      return 'cibao';
+    }
+
+    function tienePermiso(accion, zonaId = null) {
+      if (esSuperAdmin) return true;
+      if (!permisosUsuario || permisosUsuario.length === 0) return true; // Usuario sin restricciones de zona asignadas (modo personal)
+
+      if (zonaId === 'todas' || (!zonaId && zonaActiva === 'todas')) {
+        return permisosUsuario.some(p => {
+          if (!p.puede_leer) return false;
+          if (accion === 'leer') return Boolean(p.puede_leer);
+          if (accion === 'crear') return Boolean(p.puede_crear);
+          if (accion === 'editar') return Boolean(p.puede_editar);
+          if (accion === 'eliminar') return Boolean(p.puede_eliminar);
+          return false;
+        });
+      }
+
+      const zona = resolverZonaPermiso(zonaId);
+      const perm = permisosUsuario.find(p => String(p.zona_id).toLowerCase() === zona);
+      if (!perm || !perm.puede_leer) return false;
+
+      if (accion === 'leer') return Boolean(perm.puede_leer);
+      if (accion === 'crear') return Boolean(perm.puede_crear);
+      if (accion === 'editar') return Boolean(perm.puede_editar);
+      if (accion === 'eliminar') return Boolean(perm.puede_eliminar);
+      return false;
+    }
+
+    function aplicarEstadoPermisosUI() {
+      const puedeCrear = tienePermiso('crear');
+      const puedeEditar = tienePermiso('editar');
+      const puedeEliminar = tienePermiso('eliminar');
+
+      const btnGuardarCuadre = document.querySelector('#vistaCuadre button[type="submit"]');
+      if (btnGuardarCuadre) {
+        btnGuardarCuadre.disabled = !puedeCrear;
+        btnGuardarCuadre.classList.toggle('opacity-50', !puedeCrear);
+        btnGuardarCuadre.classList.toggle('cursor-not-allowed', !puedeCrear);
+      }
+
+      const formGasto = document.getElementById('formGastoEfectivo');
+      if (formGasto) {
+        formGasto.classList.toggle('hidden', !puedeCrear);
+      }
+
+      const btnCrearRuta = document.querySelector('#vistaRutas button[onclick="agregarRuta()"]');
+      if (btnCrearRuta) {
+        btnCrearRuta.disabled = !puedeCrear;
+        btnCrearRuta.classList.toggle('opacity-50', !puedeCrear);
+        btnCrearRuta.classList.toggle('cursor-not-allowed', !puedeCrear);
+      }
+      const inpNuevaRuta = document.getElementById('nuevaRutaNombre');
+      if (inpNuevaRuta) inpNuevaRuta.disabled = !puedeCrear;
+
+      const formClienteCat = document.querySelector('#vistaRutas form[onsubmit="agregarClienteCatalogo(event)"]');
+      if (formClienteCat) {
+        formClienteCat.classList.toggle('hidden', !puedeCrear);
+      }
+
+      const btnNuevoInv = document.querySelector('#vistaInventario button[onclick="abrirModalFormProducto()"]');
+      if (btnNuevoInv) {
+        btnNuevoInv.classList.toggle('hidden', !puedeCrear);
+      }
+
+      document.querySelectorAll('.accion-eliminar-col').forEach(el => {
+        if (!puedeEliminar && !puedeEditar && !esSuperAdmin) {
+          el.style.display = 'none';
+        } else {
+          el.style.display = '';
+        }
+      });
+    }
     const CLAVE_COLA_OFFLINE = 'pb_cola_offline_v1';
     let colaOffline = [];
     let sincronizandoCola = false;
@@ -1673,9 +1754,16 @@ function formatearFechaDMY(fechaStr) {
       const nombreUsuario = meta.primer_nombre || '';
       const apellidoUsuario = meta.primer_apellido || '';
 
-      window.nombreMostrar = (nombreUsuario || apellidoUsuario)
-        ? `${nombreUsuario} ${apellidoUsuario}`.trim()
-        : usuarioActual.email.split('@')[0];
+      const emailLower = usuarioActual.email.trim().toLowerCase();
+      if (emailLower === 'elieldejesusml@gmail.com') {
+        window.nombreMostrar = 'ADMIN';
+      } else if (emailLower === 'dejesuseliel12@gmail.com') {
+        window.nombreMostrar = 'ELIEL MARTINEZ';
+      } else {
+        window.nombreMostrar = (nombreUsuario || apellidoUsuario)
+          ? `${nombreUsuario} ${apellidoUsuario}`.trim()
+          : usuarioActual.email.split('@')[0];
+      }
 
       document.getElementById('labelUsuarioActivo').textContent = window.nombreMostrar;
       const tabAdmin = document.getElementById('tabAdminMaster');
@@ -1743,7 +1831,15 @@ function formatearFechaDMY(fechaStr) {
     }
 
     async function cargarDatosZonaActiva() {
-      const permisoActual = permisosUsuario.find(p => p.zona_id === zonaActiva) || { puede_leer: esSuperAdmin, puede_crear: esSuperAdmin, puede_eliminar: esSuperAdmin };
+      if (!esSuperAdmin && permisosUsuario.length > 0 && zonaActiva !== 'personal' && !tienePermiso('leer', zonaActiva)) {
+        const primeraZonaValida = permisosUsuario.find(p => p.puede_leer);
+        if (primeraZonaValida) {
+          zonaActiva = primeraZonaValida.zona_id;
+          const selZona = document.getElementById('selectZonaActiva');
+          if (selZona) selZona.value = zonaActiva;
+        }
+      }
+      const permisoActual = permisosUsuario.find(p => p.zona_id === zonaActiva) || { puede_leer: esSuperAdmin, puede_crear: esSuperAdmin, puede_editar: esSuperAdmin, puede_eliminar: esSuperAdmin };
       const esModoConsulta = !permisoActual.puede_crear && permisosUsuario.length > 0;
 
       const formGasto = document.getElementById('formGastoEfectivo');
@@ -1824,7 +1920,7 @@ function formatearFechaDMY(fechaStr) {
         qGastos = qGastos.eq('creado_por', usuarioActual.id);
       } else if (zonaActiva !== 'todas') {
         qRutas = qRutas.eq('zona_id', zonaActiva);
-        if (!esSuperAdmin && !esModoConsulta) {
+        if (!esSuperAdmin) {
            qClientes = qClientes.eq('zona_id', zonaActiva);
         }
         qLiq = qLiq.eq('zona_id', zonaActiva);
@@ -1927,6 +2023,7 @@ function formatearNombreUsuario(valor) {
       if(vistaCli && !vistaCli.classList.contains('seccion-oculta')) {
          renderizarListaGlobalClientes();
       }
+      aplicarEstadoPermisosUI();
     }
 
    // ==========================================
@@ -2678,20 +2775,22 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
           return;
        }
        rutasGuardadas.forEach(r => {
+          const zRuta = r.zona_id || zonaActiva;
+          const btnEditarHtml = tienePermiso('editar', zRuta)
+            ? `<button onclick="editarRuta(${r.id}, '${r.nombre}')" class="text-blue-600 hover:text-blue-800 font-bold text-xs bg-blue-50 px-2 py-1 rounded">Editar</button>`
+            : '';
+          const btnEliminarHtml = tienePermiso('eliminar', zRuta)
+            ? `<button onclick="eliminarRuta(${r.id}, '${r.nombre}')" class="text-rose-500 hover:text-rose-700 font-bold text-xs bg-rose-50 px-2 py-1 rounded">Eliminar</button>`
+            : '';
           cont.innerHTML += `
             <li class="p-3 flex justify-between items-center hover:bg-slate-50 border-b border-slate-100">
               <strong class="text-slate-800 text-xs">${r.nombre}</strong>
               <div class="flex gap-2">
-                <button onclick="editarRuta(${r.id}, '${r.nombre}')" class="text-blue-600 hover:text-blue-800 font-bold text-xs bg-blue-50 px-2 py-1 rounded">Editar</button>
-                <button onclick="eliminarRuta(${r.id}, '${r.nombre}')" class="text-rose-500 hover:text-rose-700 font-bold text-xs bg-rose-50 px-2 py-1 rounded accion-eliminar-col">Eliminar</button>
+                ${btnEditarHtml}
+                ${btnEliminarHtml}
               </div>
             </li>
           `;
-       });
-
-       const permisoActual = permisosUsuario.find(p => p.zona_id === zonaActiva) || { puede_eliminar: esSuperAdmin, puede_editar: esSuperAdmin };
-       document.querySelectorAll('.accion-eliminar-col').forEach(el => {
-          if (!permisoActual.puede_eliminar && !esSuperAdmin) el.style.display = 'none';
        });
     }
 
@@ -2780,6 +2879,12 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
 
         if (!usuarioActual || !usuarioActual.id) {
           mostrarMensaje("Sesión no activa. Vuelve a iniciar sesión.", "⚠️", 4000);
+          return;
+        }
+
+        const zonaDestinoCheck = (zonaActiva === 'todas' || zonaActiva === 'personal') ? 'cibao' : zonaActiva;
+        if (!tienePermiso('crear', zonaDestinoCheck)) {
+          mostrarMensaje(`No tienes permiso para CREAR registros en la zona ${zonaDestinoCheck.toUpperCase()}.`, "⛔", 3500);
           return;
         }
 
@@ -2924,6 +3029,12 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
       }
     }
     async function eliminarRegistro(id) {
+      const regObj = liquidacionesGuardadas.find(x => x.id === id);
+      const zonaReg = regObj ? regObj.zona_id : zonaActiva;
+      if (!tienePermiso('eliminar', zonaReg)) {
+        mostrarMensaje("No tienes permiso para ELIMINAR registros en esta zona.", "⛔", 3500);
+        return;
+      }
       const confirmado = await pedirConfirmacion("¿Estás seguro de que quieres eliminarlo?", "ELIMINAR REGISTRO", "🗑️");
       if (confirmado) {
         await sbClient.from('pb_liquidaciones').update({
@@ -2946,6 +3057,12 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
     }
 
    async function editarFechaRegistro(id, fechaActual) {
+      const regObj = liquidacionesGuardadas.find(x => x.id === id);
+      const zonaReg = regObj ? regObj.zona_id : zonaActiva;
+      if (!tienePermiso('editar', zonaReg)) {
+        mostrarMensaje("No tienes permiso para EDITAR registros en esta zona.", "⛔", 3500);
+        return;
+      }
       const modalHtml = `
         <div id="modalEditarFecha" class="fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
           <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-5 border border-slate-200 space-y-4">
@@ -3111,7 +3228,7 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
           totalComisiones += item.comision;
           totalEmpresa += item.gananciaEmpresa;
 
-         const badgeColector = `<span class="text-[10px] sm:text-[11px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-bold">${item.creadoPorEmail}</span>`;
+         const badgeColector = `<span class="text-[10px] sm:text-[11px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-bold">${g.creadoPorEmail}</span>`;
 
           // CONVERTIR FECHA DE AAAA-MM-DD A DD/MM/AAAA
           let fechaFormateada = item.fecha;
@@ -3141,9 +3258,9 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
             </td>
            <td class="p-3 text-center accion-eliminar-col">
               <div class="flex items-center justify-center gap-2">
-                <button onclick="editarRutaRegistro(${item.id}, '${item.ruta}')" title="Cambiar Ruta" class="text-indigo-600 hover:text-indigo-800 font-bold text-sm bg-indigo-50 px-2.5 py-1.5 rounded">📍</button>
-                <button onclick="editarFechaRegistro(${item.id}, '${item.fecha}')" title="Editar Fecha" class="text-blue-500 hover:text-blue-700 font-bold text-sm bg-blue-50 px-2.5 py-1.5 rounded">📅</button>
-                <button onclick="eliminarRegistro(${item.id})" title="Eliminar" class="text-rose-500 hover:text-rose-700 font-bold text-sm bg-rose-50 px-2.5 py-1.5 rounded">✕</button>
+                ${tienePermiso('editar', item.zona_id) ? `<button onclick="editarRutaRegistro(${item.id}, '${item.ruta}')" title="Cambiar Ruta" class="text-indigo-600 hover:text-indigo-800 font-bold text-sm bg-indigo-50 px-2.5 py-1.5 rounded">📍</button>` : ''}
+                ${tienePermiso('editar', item.zona_id) ? `<button onclick="editarFechaRegistro(${item.id}, '${item.fecha}')" title="Editar Fecha" class="text-blue-500 hover:text-blue-700 font-bold text-sm bg-blue-50 px-2.5 py-1.5 rounded">📅</button>` : ''}
+                ${tienePermiso('eliminar', item.zona_id) ? `<button onclick="eliminarRegistro(${item.id})" title="Eliminar" class="text-rose-500 hover:text-rose-700 font-bold text-sm bg-rose-50 px-2.5 py-1.5 rounded">✕</button>` : ''}
               </div>
             </td>
           `;
@@ -3446,7 +3563,7 @@ function fijarEstaSemanaDeposito() {
               </td>
               <td class="p-3 text-center">${formatearFechaDMY(g.fecha)}</td>
               <td class="p-3 text-right font-black text-rose-600">- ${formatearMontoLimpio(g.monto)}</td>
-              <td class="p-3 text-center accion-eliminar-col"><button onclick="eliminarGasto(${g.id})" class="text-rose-500 font-bold">✕</button></td>
+              <td class="p-3 text-center accion-eliminar-col">${tienePermiso('eliminar', g.zona_id) ? `<button onclick="eliminarGasto(${g.id})" class="text-rose-500 font-bold">✕</button>` : ''}</td>
             </tr>
           `;
         });
@@ -3461,6 +3578,11 @@ function fijarEstaSemanaDeposito() {
     async function agregarGasto(e) {
       e.preventDefault();
       registrarActividad();
+      const zonaDestinoCheck = (zonaActiva === 'todas' || zonaActiva === 'personal') ? 'cibao' : zonaActiva;
+      if (!tienePermiso('crear', zonaDestinoCheck)) {
+        mostrarMensaje("No tienes permiso para CREAR gastos en esta zona.", "⛔", 3500);
+        return;
+      }
       const concepto = document.getElementById('gastoConcepto').value.trim();
       const fecha = document.getElementById('gastoFecha').value;
       const monto = Number(document.getElementById('gastoMonto').value) || 0;
@@ -3484,6 +3606,12 @@ function fijarEstaSemanaDeposito() {
     }
 
     async function eliminarGasto(id) {
+      const gastoObj = gastosGuardados.find(x => x.id === id);
+      const zonaGasto = gastoObj ? gastoObj.zona_id : zonaActiva;
+      if (!tienePermiso('eliminar', zonaGasto)) {
+        mostrarMensaje("No tienes permiso para ELIMINAR gastos en esta zona.", "⛔", 3500);
+        return;
+      }
       const confirmado = await pedirConfirmacion("¿Estás seguro de que quieres eliminarlo?", "ELIMINAR GASTO", "🗑️");
       if (confirmado) {
         await sbClient.from('pb_gastos').update({ eliminado: true, eliminado_por: usuarioActual.id, eliminado_en: new Date().toISOString() }).eq('id', id);
@@ -3673,6 +3801,11 @@ function fijarEstaSemanaDeposito() {
     // RUTAS Y CLIENTES (CATÁLOGO)
     // ==========================================
     async function agregarRuta() {
+      const zonaDestinoCheck = (zonaActiva === 'todas' || zonaActiva === 'personal') ? 'cibao' : zonaActiva;
+      if (!tienePermiso('crear', zonaDestinoCheck)) {
+        mostrarMensaje("No tienes permiso para CREAR rutas en esta zona.", "⛔", 3500);
+        return;
+      }
       const nombre = document.getElementById('nuevaRutaNombre').value.trim().toUpperCase();
       if (!nombre) return;
 
@@ -3741,6 +3874,12 @@ function fijarEstaSemanaDeposito() {
     }
 
     async function editarRuta(id, nombreActual) {
+      const rutaObj = rutasGuardadas.find(x => x.id === id);
+      const zonaRuta = rutaObj ? rutaObj.zona_id : zonaActiva;
+      if (!tienePermiso('editar', zonaRuta)) {
+        mostrarMensaje("No tienes permiso para EDITAR rutas en esta zona.", "⛔", 3500);
+        return;
+      }
       const nuevoNombre = await pedirTextoModal(
         `Escribe el nuevo nombre para la ruta ${nombreActual}:`,
         nombreActual,
@@ -3766,6 +3905,12 @@ function fijarEstaSemanaDeposito() {
     }
 
     async function eliminarRuta(id, nombreActual) {
+      const rutaObj = rutasGuardadas.find(x => x.id === id);
+      const zonaRuta = rutaObj ? rutaObj.zona_id : zonaActiva;
+      if (!tienePermiso('eliminar', zonaRuta)) {
+        mostrarMensaje("No tienes permiso para ELIMINAR rutas en esta zona.", "⛔", 3500);
+        return;
+      }
       const confirmado = await pedirConfirmacion(`¿Estás seguro de que deseas eliminar la ruta ${nombreActual}?`, "ELIMINAR RUTA", "⚠️");
       if (confirmado) {
         await sbClient.from('pb_rutas').update({ eliminado: true }).eq('id', id);
@@ -3776,6 +3921,11 @@ function fijarEstaSemanaDeposito() {
 
     async function agregarClienteCatalogo(e) {
       e.preventDefault();
+      const zonaDestinoCheck = (zonaActiva === 'todas' || zonaActiva === 'personal') ? 'cibao' : zonaActiva;
+      if (!tienePermiso('crear', zonaDestinoCheck)) {
+        mostrarMensaje("No tienes permiso para CREAR clientes en esta zona.", "⛔", 3500);
+        return;
+      }
       const ruta = document.getElementById('selectRutaParaCliente').value;
       const nombre = document.getElementById('nuevoClienteNombre').value.trim();
       const concepto = document.getElementById('nuevoClienteConcepto').value;
@@ -3807,11 +3957,21 @@ const porcentaje = porcVal === '' ? 25 : Number(porcVal);
       if (lista.length === 0) { cont.innerHTML = '<li class="p-3 text-slate-400 text-center">No hay clientes configurados en esta ruta.</li>'; return; }
 
       lista.forEach(c => {
-        cont.innerHTML += `<li class="p-3 flex justify-between items-center hover:bg-slate-50 border-b border-slate-100"><div><strong class="text-slate-800 text-xs block">${c.nombre}</strong><span class="text-[11px] text-slate-500 font-semibold">${c.concepto} - ${c.porcentaje}%</span></div><button onclick="eliminarClienteCatalogo(${c.id})" class="text-rose-500 font-bold text-xs accion-eliminar-col">Eliminar</button></li>`;
+        const zCli = c.zona_id || zonaActiva;
+        const btnDelCli = tienePermiso('eliminar', zCli)
+          ? `<button onclick="eliminarClienteCatalogo(${c.id})" class="text-rose-500 font-bold text-xs">Eliminar</button>`
+          : '';
+        cont.innerHTML += `<li class="p-3 flex justify-between items-center hover:bg-slate-50 border-b border-slate-100"><div><strong class="text-slate-800 text-xs block">${c.nombre}</strong><span class="text-[11px] text-slate-500 font-semibold">${c.concepto} - ${c.porcentaje}%</span></div>${btnDelCli}</li>`;
       });
     }
 
     async function eliminarClienteCatalogo(id) {
+      const cliObj = catalogoClientes.find(x => x.id === id);
+      const zonaCli = cliObj ? cliObj.zona_id : zonaActiva;
+      if (!tienePermiso('eliminar', zonaCli)) {
+        mostrarMensaje("No tienes permiso para ELIMINAR clientes en esta zona.", "⛔", 3500);
+        return;
+      }
       const confirmado = await pedirConfirmacion("¿Estás seguro de que quieres eliminarlo?", "ELIMINAR CLIENTE", "🗑️");
       if (confirmado) {
         await sbClient.from('pb_clientes').update({ eliminado: true, eliminado_por: usuarioActual.id, eliminado_en: new Date().toISOString() }).eq('id', id);
@@ -3997,6 +4157,12 @@ function cambiarPestana(p) {
     }
 
     async function editarRutaRegistro(id, rutaActual) {
+      const regObj = liquidacionesGuardadas.find(x => x.id === id);
+      const zonaReg = regObj ? regObj.zona_id : zonaActiva;
+      if (!tienePermiso('editar', zonaReg)) {
+        mostrarMensaje("No tienes permiso para EDITAR registros en esta zona.", "⛔", 3500);
+        return;
+      }
       if (rutasApp.length === 0) {
         mostrarMensaje("No hay rutas disponibles para cambiar.", "⚠️");
         return;
@@ -4108,7 +4274,7 @@ function cambiarPestana(p) {
                 <h4 class="font-black text-slate-900 text-base sm:text-lg uppercase leading-tight">${p.nombre}</h4>
                 <div class="flex items-center gap-1.5 ml-2">
                   <button onclick="abrirHistorialInventario(${p.id})" title="Historial" class="text-slate-500 hover:text-slate-800 bg-slate-200 px-2.5 py-1.5 rounded shadow-sm text-sm transition">📜</button>
-                  <button onclick="abrirModalFormProducto(${p.id})" title="Editar" class="text-blue-500 hover:text-blue-700 bg-white border border-slate-200 px-2.5 py-1.5 rounded shadow-sm text-sm transition">✏️</button>
+                  ${tienePermiso('editar') ? `<button onclick="abrirModalFormProducto(${p.id})" title="Editar" class="text-blue-500 hover:text-blue-700 bg-white border border-slate-200 px-2.5 py-1.5 rounded shadow-sm text-sm transition">✏️</button>` : ''}
                 </div>
               </div>
               <p class="text-[11px] sm:text-xs text-slate-500 font-mono mb-3">${p.codigo ? 'Ref: '+p.codigo : ''}</p>
@@ -4125,6 +4291,7 @@ function cambiarPestana(p) {
               </div>
             </div>
             
+            ${tienePermiso('editar') || tienePermiso('crear') ? `
             <div class="grid grid-cols-2 gap-3 mt-1 pt-4 border-t border-slate-200">
               <button onclick="abrirModalMovimiento(${p.id}, 'SALIDA')" class="bg-rose-600 hover:bg-rose-700 text-white font-black text-sm py-3 rounded-lg uppercase shadow-sm flex items-center justify-center gap-1.5 transition">
                 <span>➖</span> Salida
@@ -4132,7 +4299,7 @@ function cambiarPestana(p) {
               <button onclick="abrirModalMovimiento(${p.id}, 'ENTRADA')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm py-3 rounded-lg uppercase shadow-sm flex items-center justify-center gap-1.5 transition">
                 <span>➕</span> Entrada
               </button>
-            </div>
+            </div>` : ''}
           </div>
         `;
       });
@@ -4142,6 +4309,14 @@ function cambiarPestana(p) {
     }
 
     function abrirModalFormProducto(id = null) {
+      if (id && !tienePermiso('editar')) {
+        mostrarMensaje("No tienes permiso para EDITAR productos.", "⛔", 3500);
+        return;
+      }
+      if (!id && !tienePermiso('crear')) {
+        mostrarMensaje("No tienes permiso para CREAR productos.", "⛔", 3500);
+        return;
+      }
       document.getElementById('invProdId').value = id || '';
       if (id) {
         const p = inventarioGuardado.find(i => i.id === id);
@@ -4230,6 +4405,10 @@ function cambiarPestana(p) {
     }
 
   function abrirModalMovimiento(id, tipo) {
+      if (!tienePermiso('editar') && !tienePermiso('crear')) {
+        mostrarMensaje("No tienes permiso para registrar movimientos de inventario.", "⛔", 3500);
+        return;
+      }
       const p = inventarioGuardado.find(i => i.id === id);
       if(!p) {
         mostrarMensaje("Producto no encontrado.", "⚠️");
