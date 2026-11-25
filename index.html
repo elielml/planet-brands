@@ -3675,6 +3675,79 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
       mostrarMensaje("Ruta creada correctamente.", "✅");
     }
 
+    function pedirTextoModal(mensaje, valorInicial = "", titulo = "EDITAR RUTA", icono = "✏️") {
+      return new Promise((resolve) => {
+        const modal = document.createElement('div');
+        modal.className = "fixed inset-0 bg-slate-900/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm";
+        modal.innerHTML = `
+          <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-5 border border-slate-200 space-y-4">
+            <div class="flex items-start gap-3">
+              <span class="text-2xl">${icono}</span>
+              <div class="space-y-1 flex-1">
+                <h3 class="text-sm font-black text-slate-900 uppercase tracking-wide">${titulo}</h3>
+                <p class="text-xs text-slate-600 leading-relaxed">${mensaje}</p>
+              </div>
+            </div>
+            <input type="text" id="inputModalTextoPropio" value="${valorInicial}" class="w-full p-2.5 border rounded-xl text-sm font-bold bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-600 outline-none uppercase">
+            <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+              <button type="button" id="btnModalTextoCancelar" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs uppercase transition">Cancelar</button>
+              <button type="button" id="btnModalTextoAceptar" class="px-4 py-2 bg-blue-900 hover:bg-blue-800 text-white font-black rounded-xl text-xs uppercase shadow transition">Aceptar</button>
+            </div>
+          </div>
+        `;
+
+        document.body.appendChild(modal);
+        const input = modal.querySelector('#inputModalTextoPropio');
+        const btnAceptar = modal.querySelector('#btnModalTextoAceptar');
+        const btnCancelar = modal.querySelector('#btnModalTextoCancelar');
+
+        setTimeout(() => {
+          input.focus();
+          input.select();
+        }, 50);
+
+        const limpiar = (resultado) => {
+          modal.remove();
+          resolve(resultado);
+        };
+
+        btnAceptar.addEventListener('click', () => limpiar(input.value));
+        btnCancelar.addEventListener('click', () => limpiar(null));
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            limpiar(input.value);
+          } else if (e.key === 'Escape') {
+            limpiar(null);
+          }
+        });
+      });
+    }
+
+    async function editarRuta(id, nombreActual) {
+      const nuevoNombre = await pedirTextoModal(
+        `Escribe el nuevo nombre para la ruta ${nombreActual}:`,
+        nombreActual,
+        "EDITAR RUTA",
+        "✏️"
+      );
+
+      if (nuevoNombre && nuevoNombre.trim().toUpperCase() !== nombreActual) {
+        const nombreFinal = nuevoNombre.trim().toUpperCase();
+
+        const { error } = await sbClient.from('pb_rutas').update({ nombre: nombreFinal }).eq('id', id);
+        if (error) {
+          mostrarMensaje("Error al actualizar la base de datos.", "❌");
+          return;
+        }
+
+        await sbClient.from('pb_clientes').update({ ruta_nombre: nombreFinal }).eq('ruta_nombre', nombreActual);
+        await sbClient.from('pb_liquidaciones').update({ ruta_nombre: nombreFinal }).eq('ruta_nombre', nombreActual);
+
+        await cargarDatosZonaActiva();
+        mostrarMensaje("Ruta y registros actualizados.", "✅");
+      }
+    }
     async function editarRuta(id, nombreActual) {
       const nuevoNombre = prompt("Editar nombre de la ruta:", nombreActual);
       if (nuevoNombre && nuevoNombre.trim().toUpperCase() !== nombreActual) {
