@@ -3362,17 +3362,20 @@ function fijarEstaSemanaDeposito() {
       document.getElementById('vistaDepositoNormal').classList.remove('hidden');
       document.getElementById('vistaDepositoConsolidado').classList.add('hidden');
 
-      const liqs = liquidacionesGuardadas.filter(i => i.fecha >= desde && i.fecha <= hasta);
+     const liqs = liquidacionesGuardadas.filter(i => i.fecha >= desde && i.fecha <= hasta);
       const resumenPorColectorYRuta = {};
       let totalRecoleccion = 0;
 
       liqs.forEach(i => {
         totalRecoleccion += i.gananciaEmpresa;
-        const clave = `${i.ruta_nombre || i.ruta}__${i.creadoPorEmail}`;
+        const nombreUsuarioFila = i.creadoPorEmail || i.creado_por_email || window.nombreMostrar || 'Usuario';
+        const rutaFila = i.ruta_nombre || i.ruta || 'Sin ruta';
+        const clave = `${rutaFila}__${nombreUsuarioFila}`;
+
         if (!resumenPorColectorYRuta[clave]) {
           resumenPorColectorYRuta[clave] = {
-            ruta: i.ruta_nombre || i.ruta,
-            colector: i.creadoPorEmail,
+            ruta: rutaFila,
+            colector: nombreUsuarioFila,
             esMio: i.esMio,
             total: 0,
             cant: 0
@@ -3393,9 +3396,9 @@ function fijarEstaSemanaDeposito() {
         document.getElementById('sinRutasSemanaMsg').classList.add('hidden');
         claves.forEach(k => {
           const item = resumenPorColectorYRuta[k];
-          const badgeColector = `<span class="text-[10px] sm:text-[11px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-bold">${item.creadoPorEmail}</span>`;
-          
-         cuerpoRutas.innerHTML += `
+          const badgeColector = `<span class="text-[10px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-bold">${item.colector}</span>`;
+
+          cuerpoRutas.innerHTML += `
             <tr class="border-b border-slate-100 hover:bg-slate-50">
               <td class="p-3">
                 <span class="font-bold text-slate-800 uppercase block text-xs">${item.ruta}</span>
