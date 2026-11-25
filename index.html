@@ -3675,7 +3675,7 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
       mostrarMensaje("Ruta creada correctamente.", "✅");
     }
 
-    function pedirTextoModal(mensaje, valorInicial = "", titulo = "EDITAR RUTA", icono = "✏️") {
+  function pedirTextoModal(mensaje, valorInicial = "", titulo = "EDITAR RUTA", icono = "✏️") {
       return new Promise((resolve) => {
         const modal = document.createElement('div');
         modal.className = "fixed inset-0 bg-slate-900/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm";
@@ -3739,24 +3739,6 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
         if (error) {
           mostrarMensaje("Error al actualizar la base de datos.", "❌");
           return;
-        }
-
-        await sbClient.from('pb_clientes').update({ ruta_nombre: nombreFinal }).eq('ruta_nombre', nombreActual);
-        await sbClient.from('pb_liquidaciones').update({ ruta_nombre: nombreFinal }).eq('ruta_nombre', nombreActual);
-
-        await cargarDatosZonaActiva();
-        mostrarMensaje("Ruta y registros actualizados.", "✅");
-      }
-    }
-    async function editarRuta(id, nombreActual) {
-      const nuevoNombre = prompt("Editar nombre de la ruta:", nombreActual);
-      if (nuevoNombre && nuevoNombre.trim().toUpperCase() !== nombreActual) {
-        const nombreFinal = nuevoNombre.trim().toUpperCase();
-
-        const { error } = await sbClient.from('pb_rutas').update({ nombre: nombreFinal }).eq('id', id);
-        if (error) {
-            mostrarMensaje("Error al actualizar la base de datos.", "❌");
-            return;
         }
 
         await sbClient.from('pb_clientes').update({ ruta_nombre: nombreFinal }).eq('ruta_nombre', nombreActual);
