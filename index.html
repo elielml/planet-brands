@@ -2025,18 +2025,28 @@ function formatearFechaDMY(fechaStr) {
       }
       
 function formatearNombreUsuario(valor) {
-        if (!valor) return window.nombreMostrar || 'Usuario';
-        const limpio = String(valor).trim().toLowerCase();
-        if (limpio === 'dejesuseliel12@gmail.com') {
+        if (!valor) return window.nombreMostrar || 'ADMIN';
+        const limpio = String(valor).trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        if (
+          limpio === 'dejesuseliel12@gmail.com' ||
+          limpio === 'dejesuseliel12' ||
+          limpio === 'eliel martinez' ||
+          limpio === 'eliel martínez'
+        ) {
           return 'ELIEL MARTINEZ';
         }
-        if (limpio === 'elieldejesusml@gmail.com') {
+        if (
+          limpio === 'elieldejesusml@gmail.com' ||
+          limpio === 'elieldejesusml' ||
+          limpio === 'admin'
+        ) {
           return 'ADMIN';
         }
         if (limpio.includes('@')) {
-          return limpio.split('@')[0].replace(/[._-]+/g, ' ').toUpperCase();
+          const base = limpio.split('@')[0].replace(/[._-]+/g, ' ').toUpperCase();
+          return base.includes('ELIEL') ? 'ELIEL MARTINEZ' : 'ADMIN';
         }
-        return String(valor).trim();
+        return limpio.includes('ELIEL') ? 'ELIEL MARTINEZ' : 'ADMIN';
       }
 
       liquidacionesGuardadas = (resLiq.data || []).map(l => ({
@@ -2662,11 +2672,9 @@ function formatearNombreUsuario(valor) {
       filtro.innerHTML = '<option value="TODOS">Todos los usuarios</option><option value="MIO">Solo mis registros</option>';
 
       if (esSuperAdmin) {
-        const correos = [...new Set([...liquidacionesGuardadas.map(l => l.creadoPorEmail), ...gastosGuardados.map(g => g.creadoPorEmail)])].filter(c => c);
-        correos.forEach(c => {
-          if (c !== window.nombreMostrar) {
-            filtro.innerHTML += `<option value="${c}">${c}</option>`;
-          }
+        const usuariosPermitidos = ['ADMIN', 'ELIEL MARTINEZ'];
+        usuariosPermitidos.forEach(uNombre => {
+          filtro.innerHTML += `<option value="${uNombre}">${uNombre}</option>`;
         });
       }
 
@@ -3213,7 +3221,7 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
       return liquidacionesGuardadas.filter(item => {
         if (!esSuperAdmin && !tienePermiso('leer', item.zona_id)) return false;
         if (colector === "MIO" && !item.esMio) return false;
-        if (colector !== "TODOS" && colector !== "MIO" && item.creadoPorEmail !== colector) return false;
+        if (colector !== "TODOS" && colector !== "MIO" && formatearNombreUsuario(item.creadoPorEmail) !== colector) return false;
         if (ruta !== "TODAS" && item.ruta !== ruta) return false;
 
         // Nuevos Filtros
