@@ -529,21 +529,20 @@
             <p class="text-xs text-slate-500">Resumen para depósito bancario y control de gastos</p>
           </div>
           <button type="button" onclick="fijarEstaSemanaDeposito()" class="bg-blue-100 hover:bg-blue-200 text-blue-900 text-xs font-bold px-3 py-1.5 rounded-lg transition">
-            📅 Lunes a Sábado
+            📅 Semana actual
           </button>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
           <div>
-            <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Desde (Lunes)</label>
+            <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Desde</label>
             <input type="date" id="depositoFechaDesde" onchange="alCambiarRangoSemana()" class="w-full p-2.5 border rounded-xl text-xs font-bold bg-slate-50 border-slate-300 outline-none">
           </div>
           <div>
-            <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Hasta (Sábado)</label>
+            <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">Hasta</label>
             <input type="date" id="depositoFechaHasta" onchange="alCambiarRangoSemana()" class="w-full p-2.5 border rounded-xl text-xs font-bold bg-slate-50 border-slate-300 outline-none">
           </div>
         </div>
-      </div>
 
       <!-- VISTA NORMAL (Ruta Cibao o Ruta Sur Seleccionadas) -->
       <div id="vistaDepositoNormal" class="space-y-4">
