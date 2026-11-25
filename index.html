@@ -1410,12 +1410,17 @@
 
       const zona = resolverZonaPermiso(zonaId);
       const perm = permisosUsuario.find(p => String(p.zona_id).toLowerCase() === zona);
-      if (!perm || !perm.puede_leer) return false;
+      const pLeer = perm ? (perm.puede_leer ?? perm.leer) : false;
+      const pCrear = perm ? (perm.puede_crear ?? perm.crear) : false;
+      const pEditar = perm ? (perm.puede_editar ?? perm.editar) : false;
+      const pEliminar = perm ? (perm.puede_eliminar ?? perm.eliminar) : false;
 
-      if (accion === 'leer') return Boolean(perm.puede_leer);
-      if (accion === 'crear') return Boolean(perm.puede_crear);
-      if (accion === 'editar') return Boolean(perm.puede_editar);
-      if (accion === 'eliminar') return Boolean(perm.puede_eliminar);
+      if (!perm || !pLeer) return false;
+
+      if (accion === 'leer') return Boolean(pLeer);
+      if (accion === 'crear') return Boolean(pCrear);
+      if (accion === 'editar') return Boolean(pEditar);
+      if (accion === 'eliminar') return Boolean(pEliminar);
       return false;
     }
 
@@ -1855,6 +1860,8 @@ function formatearFechaDMY(fechaStr) {
         if (tabAdmin) tabAdmin.classList.add('hidden');
         if (tabClientes) tabClientes.classList.add('hidden');
         if (cajaFiltro) cajaFiltro.classList.add('hidden');
+        const selFiltroCol = document.getElementById('filtroColector');
+        if (selFiltroCol) selFiltroCol.value = 'TODOS';
       } else {
         if (tabAdmin) tabAdmin.classList.remove('hidden');
         if (tabClientes) tabClientes.classList.remove('hidden');
@@ -2613,8 +2620,12 @@ function formatearNombreUsuario(valor) {
         });
       }
 
-      const hayOpcion = Array.from(filtro.options).some(opt => opt.value === valorAnterior);
-      filtro.value = hayOpcion ? valorAnterior : "TODOS";
+      if (!esSuperAdmin) {
+        filtro.value = "TODOS";
+      } else {
+        const hayOpcion = Array.from(filtro.options).some(opt => opt.value === valorAnterior);
+        filtro.value = hayOpcion ? valorAnterior : "TODOS";
+      }
     }
 
     async function cargarAuditoria() {
@@ -3228,7 +3239,7 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
           totalComisiones += item.comision;
           totalEmpresa += item.gananciaEmpresa;
 
-         const badgeColector = `<span class="text-[10px] sm:text-[11px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-bold">${g.creadoPorEmail}</span>`;
+         const badgeColector = `<span class="text-[10px] sm:text-[11px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-bold">${item.creadoPorEmail}</span>`;
 
           // CONVERTIR FECHA DE AAAA-MM-DD A DD/MM/AAAA
           let fechaFormateada = item.fecha;
