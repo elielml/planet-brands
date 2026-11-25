@@ -3399,13 +3399,13 @@ function fijarEstaSemanaDeposito() {
             ? `<span class="text-[10px] bg-blue-100 text-blue-900 px-2 py-0.5 rounded font-bold">Mi liquidación</span>` 
             : `<span class="text-[10px] bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-bold">Liquidó: ${item.colector}</span>`;
 
-          cuerpoRutas.innerHTML += `
+         cuerpoRutas.innerHTML += `
             <tr class="border-b border-slate-100 hover:bg-slate-50">
               <td class="p-3">
                 <span class="font-bold text-slate-800 uppercase block text-xs">${item.ruta}</span>
                 ${badgeColector}
               </td>
-              <td class="p-3 text-center font-medium">${item.cant} clientes</td>
+              <td class="p-3 text-center font-medium">${item.cant} ${item.cant === 1 ? 'registro' : 'registros'}</td>
               <td class="p-3 text-right font-black text-blue-950">${formatearMontoLimpio(item.total)}</td>
             </tr>
           `;
