@@ -805,7 +805,7 @@
    <section id="vistaRutas" class="seccion-oculta space-y-4">
 
       <!-- BLOQUE DE COPIAS DE SEGURIDAD (SOLO SUPERADMIN) -->
-      <div id="bloqueCopiasSeguridad" class="w-full bg-slate-900 text-white p-4 sm:p-5 rounded-xl shadow border border-slate-800 space-y-3 box-border overflow-hidden">
+      <div id="bloqueCopiasSeguridad" class="hidden w-full bg-slate-900 text-white p-4 sm:p-5 rounded-xl shadow border border-slate-800 space-y-3 box-border overflow-hidden">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
             <h2 class="text-sm font-bold flex items-center gap-2">
@@ -1459,6 +1459,16 @@
       const btnNuevoInv = document.querySelector('#vistaInventario button[onclick="abrirModalFormProducto()"]');
       if (btnNuevoInv) {
         btnNuevoInv.classList.toggle('hidden', !puedeCrear);
+      }
+
+      const bloqueBackup = document.getElementById('bloqueCopiasSeguridad');
+      const tabRutasBtn = document.getElementById('tabRutas');
+      if (esSuperAdmin) {
+        if (bloqueBackup) bloqueBackup.classList.remove('hidden');
+        if (tabRutasBtn) tabRutasBtn.innerHTML = '⚙️ Rutas/Nube';
+      } else {
+        if (bloqueBackup) bloqueBackup.classList.add('hidden');
+        if (tabRutasBtn) tabRutasBtn.innerHTML = '⚙️ Rutas';
       }
 
       document.querySelectorAll('.accion-eliminar-col').forEach(el => {
