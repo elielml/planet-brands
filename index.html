@@ -743,7 +743,15 @@
         
       <!-- VISTA CONSOLIDADA (Ambas Rutas, Solo Visible si se selecciona Consolidado General) -->
       <div id="vistaDepositoConsolidado" class="hidden space-y-4">
-        <h2 class="text-base sm:text-lg font-black text-slate-800 uppercase tracking-wide text-center pt-2">Resumen Consolidado Semanal</h2>
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pt-2">
+          <div>
+            <h2 class="text-base sm:text-lg font-black text-slate-800 uppercase tracking-wide">Resumen Consolidado Semanal</h2>
+            <p class="text-xs text-slate-500">Recaudación, gastos, depósitos y distribución por tipo de máquina (Cibao y Sur)</p>
+          </div>
+          <span id="badgeSoloConsultaConsolidado" class="hidden text-[11px] font-black uppercase bg-indigo-100 text-indigo-900 px-3 py-1 rounded-full border border-indigo-300">
+            👁️ Solo Consulta Consolidada
+          </span>
+        </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <!-- ZONA CIBAO -->
@@ -758,6 +766,8 @@
               <div class="flex justify-between items-center text-rose-500"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 bg-rose-500"></div> Gastos (Rojo):</span><span id="consCibaoGas">$ 0.00</span></div>
               <div class="flex justify-between items-center text-emerald-700 bg-emerald-50 p-2 rounded-lg mt-1"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 bg-emerald-500"></div> Depósito (Verde):</span><span id="consCibaoDep" class="text-sm font-black">$ 0.00</span></div>
             </div>
+
+            <div id="consCibaoMaquinas" class="w-full mt-3 pt-2.5 border-t border-slate-100 space-y-1 text-[11px]"></div>
 
             <button onclick="abrirDetallesZona('cibao')" class="mt-4 w-full bg-blue-50 hover:bg-blue-100 text-blue-700 py-2 rounded-lg text-xs font-bold uppercase transition">Ver Detalles</button>
           </div>
@@ -775,6 +785,8 @@
               <div class="flex justify-between items-center text-emerald-700 bg-emerald-50 p-2 rounded-lg mt-1"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 bg-emerald-500"></div> Depósito (Verde):</span><span id="consSurDep" class="text-sm font-black">$ 0.00</span></div>
             </div>
 
+            <div id="consSurMaquinas" class="w-full mt-3 pt-2.5 border-t border-slate-100 space-y-1 text-[11px]"></div>
+
             <button onclick="abrirDetallesZona('sur')" class="mt-4 w-full bg-amber-50 hover:bg-amber-100 text-amber-800 py-2 rounded-lg text-xs font-bold uppercase transition">Ver Detalles</button>
           </div>
 
@@ -791,7 +803,27 @@
               <div class="flex justify-between items-center text-emerald-400 bg-slate-800 p-2 rounded-lg mt-1"><span class="flex items-center gap-1"><div class="w-2.5 h-2.5 bg-emerald-500"></div> Gran Total a Depositar:</span><span id="consGenDep" class="text-base font-black">$ 0.00</span></div>
             </div>
 
+            <div id="consGenMaquinas" class="w-full mt-3 pt-2.5 border-t border-slate-800 space-y-1 text-[11px] text-slate-200"></div>
+
             <button onclick="abrirDetallesZona('todas')" class="mt-4 w-full bg-slate-800 hover:bg-slate-700 text-slate-300 py-2 rounded-lg text-xs font-bold uppercase transition">Ver Detalles Generales</button>
+          </div>
+        </div>
+
+        <!-- DISTRIBUCIÓN SEMANAL POR TIPO DE MÁQUINA CON GRÁFICA CIRCULAR -->
+        <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-100 pb-2">
+            <div>
+              <h3 class="text-xs sm:text-sm font-black text-slate-800 uppercase tracking-wide">🎰 Recaudación Semanal por Tipo de Máquina</h3>
+              <p class="text-xs text-slate-500">Distribución consolidada (Dulces, Peluches, Kiddie Rides, Boxing Machine)</p>
+            </div>
+            <button type="button" onclick="exportarDesgloseConceptos('todas')" class="text-xs bg-blue-100 text-blue-800 px-3 py-1.5 rounded-lg font-bold hover:bg-blue-200 transition">
+              📊 Exportar Desglose
+            </button>
+          </div>
+
+          <div class="flex flex-col md:flex-row items-center gap-6 justify-center pt-1">
+            <div id="graficoConsolidadoMaquinas" class="w-32 h-32 rounded-full border-4 border-slate-200 shadow-sm flex-shrink-0" style="background:#e2e8f0"></div>
+            <div id="desgloseConsolidadoMaquinasLista" class="flex-1 w-full bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1.5 text-xs"></div>
           </div>
         </div>
 
@@ -1096,6 +1128,18 @@
             </div>
           </div>
 
+          <!-- PERMISO INDEPENDIENTE: VER RESUMEN CONSOLIDADO -->
+          <div class="p-3.5 rounded-xl border border-indigo-200 bg-indigo-50/50 space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="flex items-center gap-2 font-black text-xs text-indigo-950 uppercase cursor-pointer">
+                <input type="checkbox" id="chkVerResumenConsolidado" class="w-4 h-4 text-indigo-600 rounded">
+                <span>Ver resumen consolidado</span>
+              </label>
+              <span class="text-[10px] text-indigo-700 font-semibold uppercase">Solo Consulta (Cibao + Sur)</span>
+            </div>
+            <p class="text-[11px] text-indigo-900/75">Permite consultar el Resumen General Consolidado de Cibao y Sur sin otorgar permisos para liquidar, registrar, editar o eliminar.</p>
+          </div>
+
           <button type="button" onclick="guardarPermisosGranulares()" class="w-full py-3.5 bg-blue-900 hover:bg-blue-800 text-white font-black rounded-xl text-xs uppercase tracking-wider shadow transition">
             💾 Guardar Permisos
           </button>
@@ -1393,11 +1437,83 @@
       return 'cibao';
     }
 
+    let permisoConsolidadoActual = false;
+    const CLAVE_PERMISOS_CONSOLIDADO = 'pb_permisos_consolidado_v1';
+
+    function leerMapaConsolidadoLocal() {
+      try {
+        const raw = localStorage.getItem(CLAVE_PERMISOS_CONSOLIDADO);
+        const parsed = raw ? JSON.parse(raw) : {};
+        return parsed && typeof parsed === 'object' ? parsed : {};
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function guardarMapaConsolidadoLocal(userId, permitido) {
+      if (!userId) return;
+      const mapa = leerMapaConsolidadoLocal();
+      mapa[String(userId)] = Boolean(permitido);
+      localStorage.setItem(CLAVE_PERMISOS_CONSOLIDADO, JSON.stringify(mapa));
+    }
+
+    async function consultarPermisoConsolidadoUsuario(userId) {
+      if (!userId) return false;
+      const mapaLocal = leerMapaConsolidadoLocal();
+      try {
+        const { data, error } = await sbClient
+          .from('pb_permisos_consolidado')
+          .select('ver_resumen_consolidado')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+        if (!error && data !== null) {
+          const val = Boolean(data.ver_resumen_consolidado);
+          guardarMapaConsolidadoLocal(userId, val);
+          return val;
+        }
+      } catch (e) {
+        // Fallback a caché local si la tabla aún no fue creada en el entorno
+      }
+      return Boolean(mapaLocal[String(userId)]);
+    }
+
+    async function persistirPermisoConsolidadoUsuario(userId, permitido) {
+      guardarMapaConsolidadoLocal(userId, Boolean(permitido));
+      try {
+        const { error } = await sbClient
+          .from('pb_permisos_consolidado')
+          .upsert({
+            user_id: userId,
+            ver_resumen_consolidado: Boolean(permitido),
+            actualizado_en: new Date().toISOString()
+          }, { onConflict: 'user_id' });
+
+        if (error) {
+          return { ok: false, error };
+        }
+        return { ok: true };
+      } catch (err) {
+        return { ok: false, error: err };
+      }
+    }
+
+    function puedeVerResumenConsolidado() {
+      if (esSuperAdmin) return true;
+      return Boolean(permisoConsolidadoActual);
+    }
+
     function tienePermiso(accion, zonaId = null) {
       if (esSuperAdmin) return true;
+      if (zonaId === 'todas' && accion === 'leer' && puedeVerResumenConsolidado()) {
+        return true;
+      }
       if (!permisosUsuario || permisosUsuario.length === 0) return false;
 
       if (zonaId === 'todas' || (!zonaId && (zonaActiva === 'todas' || zonaActiva === 'sin_acceso'))) {
+        if (zonaActiva === 'todas' && accion === 'leer' && puedeVerResumenConsolidado()) {
+          return true;
+        }
         return permisosUsuario.some(p => {
           const pLeer = Boolean(p.puede_leer ?? p.leer);
           if (!pLeer) return false;
@@ -1785,6 +1901,7 @@ function formatearFechaDMY(fechaStr) {
       const tabAdmin = document.getElementById('tabAdminMaster');
       if (esSuperAdmin) {
         tabAdmin.classList.remove('hidden');
+        permisoConsolidadoActual = true;
         permisosUsuario = [
           { zona_id: 'cibao', puede_leer: true, puede_crear: true, puede_editar: true, puede_eliminar: true },
           { zona_id: 'sur', puede_leer: true, puede_crear: true, puede_editar: true, puede_eliminar: true }
@@ -1793,13 +1910,15 @@ function formatearFechaDMY(fechaStr) {
         tabAdmin.classList.add('hidden');
         const { data: perms } = await sbClient.from('pb_permisos_zona').select('*').eq('user_id', usuarioActual.id);
         permisosUsuario = perms || [];
+        permisoConsolidadoActual = await consultarPermisoConsolidadoUsuario(usuarioActual.id);
       }
 
       const tabCuadre = document.getElementById('tabCuadre');
       const puedeLeerEnAlguna = esSuperAdmin || permisosUsuario.some(p => Boolean(p.puede_leer ?? p.leer));
       const puedeCrearEnAlguna = esSuperAdmin || permisosUsuario.some(p => Boolean(p.puede_leer ?? p.leer) && Boolean(p.puede_crear ?? p.crear));
+      const puedeSoloConsolidado = !esSuperAdmin && puedeVerResumenConsolidado();
 
-      if (!puedeLeerEnAlguna && !esSuperAdmin) {
+      if (!puedeLeerEnAlguna && !puedeSoloConsolidado) {
         zonaActiva = 'sin_acceso';
         document.getElementById('barraSelectorZona').classList.add('hidden');
         tabCuadre.classList.add('hidden');
@@ -1808,6 +1927,13 @@ function formatearFechaDMY(fechaStr) {
         document.getElementById('barraSelectorZona').classList.remove('hidden');
         if (!puedeCrearEnAlguna && !esSuperAdmin) {
           tabCuadre.classList.add('hidden');
+          if (puedeSoloConsolidado && !puedeLeerEnAlguna) {
+            poblarSelectorZonas();
+            await cargarDatosZonaActiva();
+            cambiarPestana('deposito');
+            await sincronizarColaOffline();
+            return;
+          }
           cambiarPestana('historial');
         } else {
           tabCuadre.classList.remove('hidden');
@@ -1825,11 +1951,12 @@ function formatearFechaDMY(fechaStr) {
 
       const tieneCibao = esSuperAdmin || permisosUsuario.some(p => String(p.zona_id).toLowerCase() === 'cibao' && Boolean(p.puede_leer ?? p.leer));
       const tieneSur = esSuperAdmin || permisosUsuario.some(p => String(p.zona_id).toLowerCase() === 'sur' && Boolean(p.puede_leer ?? p.leer));
+      const puedeConsolidado = puedeVerResumenConsolidado();
 
       if (tieneCibao) select.innerHTML += `<option value="cibao">Ruta Cibao</option>`;
       if (tieneSur) select.innerHTML += `<option value="sur">Ruta Sur</option>`;
 
-      if ((tieneCibao && tieneSur) || esSuperAdmin) {
+      if (puedeConsolidado) {
         select.innerHTML += `<option value="todas">🌐 Resumen General Consolidado</option>`;
       }
 
@@ -1837,6 +1964,8 @@ function formatearFechaDMY(fechaStr) {
         zonaActiva = 'cibao';
       } else if (tieneSur) {
         zonaActiva = 'sur';
+      } else if (puedeConsolidado) {
+        zonaActiva = 'todas';
       } else {
         zonaActiva = 'sin_acceso';
         select.innerHTML = `<option value="sin_acceso">Sin rutas asignadas</option>`;
@@ -1850,12 +1979,17 @@ function formatearFechaDMY(fechaStr) {
     }
 
     async function cargarDatosZonaActiva() {
-      if (!esSuperAdmin && !tienePermiso('leer', zonaActiva)) {
+      const autorizadoConsolidado = (zonaActiva === 'todas' && puedeVerResumenConsolidado());
+      if (!esSuperAdmin && !autorizadoConsolidado && !tienePermiso('leer', zonaActiva)) {
         const primeraZonaValida = permisosUsuario.find(p => Boolean(p.puede_leer ?? p.leer));
         if (primeraZonaValida) {
           zonaActiva = String(primeraZonaValida.zona_id).toLowerCase();
           const selZona = document.getElementById('selectZonaActiva');
           if (selZona) selZona.value = zonaActiva;
+        } else if (puedeVerResumenConsolidado()) {
+          zonaActiva = 'todas';
+          const selZona = document.getElementById('selectZonaActiva');
+          if (selZona) selZona.value = 'todas';
         } else {
           zonaActiva = 'sin_acceso';
           rutasGuardadas = [];
@@ -1955,7 +2089,12 @@ function formatearFechaDMY(fechaStr) {
           .filter(p => Boolean(p.puede_leer ?? p.leer))
           .map(p => String(p.zona_id).toLowerCase());
 
-        if (zonasPermitidas.length === 0) {
+        if (zonaActiva === 'todas' && puedeVerResumenConsolidado()) {
+          qRutas = qRutas.in('zona_id', ['cibao', 'sur']);
+          qClientes = qClientes.in('zona_id', ['cibao', 'sur']);
+          qLiq = qLiq.in('zona_id', ['cibao', 'sur']);
+          qGastos = qGastos.in('zona_id', ['cibao', 'sur']);
+        } else if (zonasPermitidas.length === 0) {
           rutasGuardadas = [];
           rutasApp = [];
           catalogoClientes = [];
@@ -1965,9 +2104,7 @@ function formatearFechaDMY(fechaStr) {
           alCambiarRangoSemana();
           aplicarEstadoPermisosUI();
           return;
-        }
-
-        if (zonaActiva !== 'todas') {
+        } else if (zonaActiva !== 'todas') {
           qRutas = qRutas.eq('zona_id', zonaActiva);
           qClientes = qClientes.eq('zona_id', zonaActiva);
           qLiq = qLiq.eq('zona_id', zonaActiva);
@@ -2408,6 +2545,7 @@ function formatearNombreUsuario(valor) {
 
       document.getElementById('chkCibaoActivo').checked = false;
       document.getElementById('chkSurActivo').checked = false;
+      document.getElementById('chkVerResumenConsolidado').checked = await consultarPermisoConsolidadoUsuario(userId);
       alternarBloqueZona('cibao');
       alternarBloqueZona('sur');
 
@@ -2553,6 +2691,7 @@ function formatearNombreUsuario(valor) {
 
       const cibaoActivo = document.getElementById('chkCibaoActivo').checked;
       const surActivo = document.getElementById('chkSurActivo').checked;
+      const verConsolidado = document.getElementById('chkVerResumenConsolidado').checked;
 
       try {
         const { error } = await sbClient.rpc('guardar_permisos_usuario_granular', {
@@ -2571,11 +2710,23 @@ function formatearNombreUsuario(valor) {
 
         if (error) {
           mostrarMensaje("Error al guardar permisos.", "❌");
+          return;
+        }
+
+        const resCons = await persistirPermisoConsolidadoUsuario(userId, verConsolidado);
+        if (usuarioActual && usuarioActual.id === userId) {
+          permisoConsolidadoActual = Boolean(verConsolidado);
+          poblarSelectorZonas();
+          await cargarDatosZonaActiva();
+        }
+
+        if (!resCons.ok) {
+          mostrarMensaje(`Permisos de zona guardados para ${email} (resumen consolidado guardado localmente).`, "✅");
         } else {
           mostrarMensaje(`Permisos actualizados para ${email}.`, "✅");
-          cargarListaUsuariosRegistrados();
-          cargarAuditoria();
         }
+        cargarListaUsuariosRegistrados();
+        cargarAuditoria();
       } catch (err) {
         mostrarMensaje("Fallo al conectar con la base de datos.", "❌");
       }
@@ -3219,7 +3370,7 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
       const tipo = document.getElementById('filtroTipoPeriodo').value;
 
       return liquidacionesGuardadas.filter(item => {
-        if (!esSuperAdmin && !tienePermiso('leer', item.zona_id)) return false;
+        if (!esSuperAdmin && !(zonaActiva === 'todas' && puedeVerResumenConsolidado()) && !tienePermiso('leer', item.zona_id)) return false;
         if (colector === "MIO" && !item.esMio) return false;
         if (colector !== "TODOS" && colector !== "MIO" && formatearNombreUsuario(item.creadoPorEmail) !== colector) return false;
         if (ruta !== "TODAS" && item.ruta !== ruta) return false;
@@ -3518,11 +3669,21 @@ function fijarEstaSemanaDeposito() {
       if (!desde || !hasta) return;
 
       if (zonaActiva === 'todas') {
+        if (!puedeVerResumenConsolidado()) {
+          document.getElementById('vistaDepositoConsolidado').classList.add('hidden');
+          return;
+        }
         document.getElementById('vistaDepositoNormal').classList.add('hidden');
         document.getElementById('vistaDepositoConsolidado').classList.remove('hidden');
 
-        const liqsGen = liquidacionesGuardadas.filter(i => i.fecha >= desde && i.fecha <= hasta);
-        const gastosGen = gastosGuardados.filter(g => g.fecha >= desde && g.fecha <= hasta);
+        const badgeSoloCons = document.getElementById('badgeSoloConsultaConsolidado');
+        if (badgeSoloCons) {
+          const tieneOperativo = tienePermiso('crear', 'cibao') || tienePermiso('crear', 'sur') || tienePermiso('editar', 'cibao') || tienePermiso('editar', 'sur') || tienePermiso('eliminar', 'cibao') || tienePermiso('eliminar', 'sur');
+          badgeSoloCons.classList.toggle('hidden', esSuperAdmin || tieneOperativo);
+        }
+
+        const liqsGen = liquidacionesGuardadas.filter(i => i.fecha >= desde && i.fecha <= hasta && (i.zona_id === 'cibao' || i.zona_id === 'sur'));
+        const gastosGen = gastosGuardados.filter(g => g.fecha >= desde && g.fecha <= hasta && (g.zona_id === 'cibao' || g.zona_id === 'sur'));
 
         const liqsCibao = liqsGen.filter(i => i.zona_id === 'cibao');
         const gastosCibao = gastosGen.filter(i => i.zona_id === 'cibao');
@@ -3556,6 +3717,67 @@ function fijarEstaSemanaDeposito() {
         document.getElementById('consGenGas').textContent = formatearMontoLimpio(gasGen);
         document.getElementById('consGenDep').textContent = formatearMontoLimpio(depGen);
         actualizarGraficoPieSolido('graficoGen', recGen, gasGen);
+
+        const sumarPorConcepto = (arr) => {
+          const mapa = {};
+          arr.forEach(item => {
+            const c = item.concepto || 'General';
+            mapa[c] = (mapa[c] || 0) + (Number(item.gananciaEmpresa) || 0);
+          });
+          return mapa;
+        };
+
+        const pintarMiniMaquinas = (elId, mapa, esOscuro = false) => {
+          const el = document.getElementById(elId);
+          if (!el) return;
+          const entries = Object.entries(mapa).sort((a, b) => b[1] - a[1]);
+          if (entries.length === 0) {
+            el.innerHTML = `<p class="text-[11px] ${esOscuro ? 'text-slate-400' : 'text-slate-400'} italic">Sin recaudación por máquina en el período.</p>`;
+            return;
+          }
+          el.innerHTML = entries.map(([nombreC, montoC]) => `
+            <div class="flex justify-between items-center ${esOscuro ? 'text-slate-300' : 'text-slate-600'}">
+              <span>🎰 ${nombreC}:</span>
+              <span class="font-black ${esOscuro ? 'text-white' : 'text-slate-800'}">${formatearMontoLimpio(montoC)}</span>
+            </div>
+          `).join('');
+        };
+
+        pintarMiniMaquinas('consCibaoMaquinas', sumarPorConcepto(liqsCibao), false);
+        pintarMiniMaquinas('consSurMaquinas', sumarPorConcepto(liqsSur), false);
+        pintarMiniMaquinas('consGenMaquinas', sumarPorConcepto(liqsGen), true);
+
+        const mapaGenConceptos = sumarPorConcepto(liqsGen);
+        const entriesGen = Object.entries(mapaGenConceptos).sort((a, b) => b[1] - a[1]);
+        const graficoMaq = document.getElementById('graficoConsolidadoMaquinas');
+        const listaMaq = document.getElementById('desgloseConsolidadoMaquinasLista');
+        const coloresMaq = ['#ec4899', '#8b5cf6', '#f59e0b', '#10b981', '#3b82f6', '#06b6d4'];
+
+        if (graficoMaq && listaMaq) {
+          if (recGen <= 0 || entriesGen.length === 0) {
+            graficoMaq.style.background = '#e2e8f0';
+            listaMaq.innerHTML = '<p class="text-xs text-slate-400 italic">No hay recaudación por tipo de máquina en el rango seleccionado.</p>';
+          } else {
+            let grad = '';
+            let acum = 0;
+            listaMaq.innerHTML = entriesGen.map(([nomC, valC], idx) => {
+              const porc = (valC / recGen) * 100;
+              const col = coloresMaq[idx % coloresMaq.length];
+              grad += `${col} ${acum}% ${acum + porc}%, `;
+              acum += porc;
+              return `
+                <div class="flex justify-between items-center py-1 border-b border-slate-100 last:border-0">
+                  <span class="flex items-center gap-2 font-bold text-slate-700">
+                    <span class="w-3 h-3 rounded-full inline-block" style="background:${col}"></span>
+                    ${nomC} (${porc.toFixed(1)}%)
+                  </span>
+                  <span class="font-black text-slate-900">${formatearMontoLimpio(valC)}</span>
+                </div>
+              `;
+            }).join('');
+            graficoMaq.style.background = `conic-gradient(${grad.slice(0, -2)})`;
+          }
+        }
 
         return;
       }
@@ -4656,3 +4878,4 @@ function cambiarPestana(p) {
   </script>
 </body>
 </html>
+```[cite: 14]
