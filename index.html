@@ -3393,10 +3393,8 @@ function fijarEstaSemanaDeposito() {
         document.getElementById('sinRutasSemanaMsg').classList.add('hidden');
         claves.forEach(k => {
           const item = resumenPorColectorYRuta[k];
-          const badgeColector = item.esMio 
-            ? `<span class="text-[10px] bg-blue-100 text-blue-900 px-2 py-0.5 rounded font-bold">Mi liquidación</span>` 
-            : `<span class="text-[10px] bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-bold">Liquidó: ${item.colector}</span>`;
-
+          const badgeColector = `<span class="text-[10px] sm:text-[11px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-bold">${item.creadoPorEmail}</span>`;
+          
          cuerpoRutas.innerHTML += `
             <tr class="border-b border-slate-100 hover:bg-slate-50">
               <td class="p-3">
