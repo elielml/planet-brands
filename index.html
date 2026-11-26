@@ -10,6 +10,10 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Supabase JS Library -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Librerías de Exportación Real: SheetJS (XLSX) y jsPDF + AutoTable (PDF) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
   <style>
     .seccion-oculta { display: none !important; }
 
@@ -463,11 +467,14 @@
         </div>
 
         <div class="flex flex-wrap gap-2 pt-2 border-t border-slate-100">
-          <button type="button" onclick="exportarExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg text-xs font-bold uppercase shadow transition flex items-center gap-2">
-            <span>📊 Exportar a Excel</span>
+          <button type="button" onclick="exportarSeccion('historial', 'pdf')" class="bg-rose-700 hover:bg-rose-800 text-white px-4 py-2.5 rounded-lg text-xs font-bold uppercase shadow transition flex items-center gap-2">
+            <span>📕 Exportar PDF</span>
           </button>
-          <button type="button" onclick="exportarDocumento()" class="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2.5 rounded-lg text-xs font-bold uppercase shadow transition flex items-center gap-2">
-            <span>📄 Exportar Documento (Móvil)</span>
+          <button type="button" onclick="exportarSeccion('historial', 'xlsx')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg text-xs font-bold uppercase shadow transition flex items-center gap-2">
+            <span>📊 Exportar Excel (.xlsx)</span>
+          </button>
+          <button type="button" onclick="exportarSeccion('historial', 'csv')" class="bg-slate-700 hover:bg-slate-800 text-white px-4 py-2.5 rounded-lg text-xs font-bold uppercase shadow transition flex items-center gap-2">
+            <span>🧾 CSV</span>
           </button>
         </div>
       </div>
@@ -549,9 +556,15 @@
       <div id="vistaDepositoNormal" class="space-y-4">
         <!-- DESGLOSE POR RUTAS -->
         <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
-          <div class="flex justify-between items-center">
-            <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">1. Rutas Trabajadas en esta Semana</h2>
-            <span class="text-xs font-bold text-slate-400" id="totalRutasSemanaLabel">0 rutas</span>
+          <div class="flex flex-wrap justify-between items-center gap-2">
+            <div class="flex items-center gap-2">
+              <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">1. Rutas Trabajadas en esta Semana</h2>
+              <span class="text-xs font-bold text-slate-400" id="totalRutasSemanaLabel">0 rutas</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="exportarSeccion('liquidaciones_rutas', 'pdf')" class="text-[11px] bg-rose-100 hover:bg-rose-200 text-rose-800 px-2.5 py-1 rounded-lg font-bold transition">📕 PDF</button>
+              <button type="button" onclick="exportarSeccion('liquidaciones_rutas', 'xlsx')" class="text-[11px] bg-emerald-100 hover:bg-emerald-200 text-emerald-800 px-2.5 py-1 rounded-lg font-bold transition">📊 Excel</button>
+            </div>
           </div>
 
           <div class="border border-slate-100 rounded-xl overflow-x-auto w-full">
@@ -579,9 +592,16 @@
 
         <!-- GASTOS EN EFECTIVO -->
         <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-          <div class="flex justify-between items-center">
-            <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">2. Gastos en Efectivo de la Semana</h2>
-            <span class="text-[11px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">Se resta del depósito</span>
+          <div class="flex flex-wrap justify-between items-center gap-2">
+            <div class="flex items-center gap-2">
+              <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">2. Gastos en Efectivo de la Semana</h2>
+              <span class="text-[11px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">Se resta del depósito</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="exportarSeccion('gastos', 'pdf')" class="text-[11px] bg-rose-100 hover:bg-rose-200 text-rose-800 px-2.5 py-1 rounded-lg font-bold transition">📕 PDF</button>
+              <button type="button" onclick="exportarSeccion('gastos', 'xlsx')" class="text-[11px] bg-emerald-100 hover:bg-emerald-200 text-emerald-800 px-2.5 py-1 rounded-lg font-bold transition">📊 Excel</button>
+              <button type="button" onclick="exportarSeccion('gastos', 'csv')" class="text-[11px] bg-slate-200 hover:bg-slate-300 text-slate-800 px-2.5 py-1 rounded-lg font-bold transition">🧾 CSV</button>
+            </div>
           </div>
 
           <form id="formGastoEfectivo" onsubmit="agregarGasto(event)" class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-3">
@@ -630,13 +650,17 @@
 
         <!-- CONTEO DE EFECTIVO -->
         <div id="seccionArqueoFisico" class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-          <div class="flex justify-between items-center">
+          <div class="flex flex-wrap justify-between items-center gap-2">
             <div>
               <h2 class="text-xs font-black uppercase tracking-wider text-slate-700">3. Conteo de Efectivo</h2>
-              </div>
-            <button type="button" id="btnReiniciarConteo" onclick="limpiarArqueoFisico()" class="text-xs text-slate-400 hover:text-rose-600 underline font-semibold">
-              Reiniciar Conteo
-            </button>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="exportarSeccion('conteo_efectivo', 'pdf')" class="text-[11px] bg-rose-100 hover:bg-rose-200 text-rose-800 px-2.5 py-1 rounded-lg font-bold transition">📕 PDF</button>
+              <button type="button" onclick="exportarSeccion('conteo_efectivo', 'xlsx')" class="text-[11px] bg-emerald-100 hover:bg-emerald-200 text-emerald-800 px-2.5 py-1 rounded-lg font-bold transition">📊 Excel</button>
+              <button type="button" id="btnReiniciarConteo" onclick="limpiarArqueoFisico()" class="text-xs text-slate-400 hover:text-rose-600 underline font-semibold ml-1">
+                Reiniciar Conteo
+              </button>
+            </div>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -732,12 +756,15 @@
 
           <p id="mensajeAuditoria" class="text-sm font-bold text-center pt-2 text-slate-400"></p>
 
-          <div class="flex flex-wrap gap-3 pt-3 border-t border-slate-800">
-            <button type="button" id="btnGuardarArqueoMaster" onclick="guardarArqueoSemanaActual(true)" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl text-xs sm:text-sm uppercase px-5 py-3.5 shadow transition flex items-center justify-center gap-2">
+          <div class="flex flex-wrap gap-2.5 pt-3 border-t border-slate-800">
+            <button type="button" id="btnGuardarArqueoMaster" onclick="guardarArqueoSemanaActual(true)" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl text-xs sm:text-sm uppercase px-4 py-3.5 shadow transition flex items-center justify-center gap-2">
               <span>💾</span> Guardar Arqueo
             </button>
-            <button type="button" onclick="exportarDepositoDocumento()" class="flex-1 py-3.5 bg-blue-700 hover:bg-blue-800 text-white font-black rounded-xl text-xs sm:text-sm uppercase shadow transition flex items-center justify-center gap-2">
-              <span>📄 Exportar Comprobante</span>
+            <button type="button" onclick="exportarSeccion('resumen_deposito', 'pdf')" class="flex-1 py-3.5 bg-rose-700 hover:bg-rose-800 text-white font-black rounded-xl text-xs sm:text-sm uppercase shadow transition flex items-center justify-center gap-1.5">
+              <span>📕 PDF Depósito</span>
+            </button>
+            <button type="button" onclick="exportarSeccion('resumen_deposito', 'xlsx')" class="flex-1 py-3.5 bg-blue-700 hover:bg-blue-800 text-white font-black rounded-xl text-xs sm:text-sm uppercase shadow transition flex items-center justify-center gap-1.5">
+              <span>📊 Excel (.xlsx)</span>
             </button>
           </div>
         </div>
@@ -745,14 +772,22 @@
 
       <!-- VISTA CONSOLIDADA (Ambas Rutas, Solo Visible si se selecciona Consolidado General) -->
       <div id="vistaDepositoConsolidado" class="hidden space-y-4">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pt-2">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pt-2 bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
           <div>
             <h2 class="text-base sm:text-lg font-black text-slate-800 uppercase tracking-wide">Resumen Consolidado Semanal</h2>
             <p class="text-xs text-slate-500">Recaudación, gastos, depósitos y distribución por tipo de máquina (Cibao y Sur)</p>
           </div>
-          <span id="badgeSoloConsultaConsolidado" class="hidden text-[11px] font-black uppercase bg-indigo-100 text-indigo-900 px-3 py-1 rounded-full border border-indigo-300">
-            👁️ Solo Consulta Consolidada
-          </span>
+          <div class="flex flex-wrap items-center gap-2">
+            <span id="badgeSoloConsultaConsolidado" class="hidden text-[11px] font-black uppercase bg-indigo-100 text-indigo-900 px-3 py-1 rounded-full border border-indigo-300">
+              👁️ Solo Consulta Consolidada
+            </span>
+            <button type="button" onclick="exportarSeccion('resumen_consolidado', 'pdf')" class="bg-rose-700 hover:bg-rose-800 text-white px-3.5 py-2 rounded-xl text-xs font-black uppercase shadow transition flex items-center gap-1.5">
+              <span>📕 PDF Consolidado</span>
+            </button>
+            <button type="button" onclick="exportarSeccion('resumen_consolidado', 'xlsx')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-xs font-black uppercase shadow transition flex items-center gap-1.5">
+              <span>📊 Excel (.xlsx)</span>
+            </button>
+          </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -818,9 +853,14 @@
               <h3 class="text-xs sm:text-sm font-black text-slate-800 uppercase tracking-wide">🎰 Recaudación Semanal por Tipo de Máquina</h3>
               <p class="text-xs text-slate-500">Distribución consolidada (Dulces, Peluches, Kiddie Rides, Boxing Machine)</p>
             </div>
-            <button type="button" onclick="exportarDesgloseConceptos('todas')" class="text-xs bg-blue-100 text-blue-800 px-3 py-1.5 rounded-lg font-bold hover:bg-blue-200 transition">
-              📊 Exportar Desglose
-            </button>
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="exportarSeccion('desglose_maquinas', 'pdf', 'todas')" class="text-xs bg-rose-100 text-rose-800 px-3 py-1.5 rounded-lg font-bold hover:bg-rose-200 transition">
+                📕 PDF
+              </button>
+              <button type="button" onclick="exportarSeccion('desglose_maquinas', 'xlsx', 'todas')" class="text-xs bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-lg font-bold hover:bg-emerald-200 transition">
+                📊 Excel (.xlsx)
+              </button>
+            </div>
           </div>
 
           <div class="flex flex-col md:flex-row items-center gap-6 justify-center pt-1">
@@ -929,8 +969,10 @@
           <h2 class="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-1.5">
             <span>📋</span> Base de Datos de Clientes
           </h2>
-          <div class="flex gap-2">
-            <button type="button" onclick="exportarListaClientesExcel()" class="text-xs bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-lg font-bold hover:bg-emerald-200 transition">📊 Exportar</button>
+          <div class="flex gap-1.5">
+            <button type="button" onclick="exportarSeccion('clientes', 'pdf')" class="text-xs bg-rose-100 text-rose-800 px-3 py-1.5 rounded-lg font-bold hover:bg-rose-200 transition">📕 PDF</button>
+            <button type="button" onclick="exportarSeccion('clientes', 'xlsx')" class="text-xs bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-lg font-bold hover:bg-emerald-200 transition">📊 Excel (.xlsx)</button>
+            <button type="button" onclick="exportarSeccion('clientes', 'csv')" class="text-xs bg-slate-200 text-slate-800 px-3 py-1.5 rounded-lg font-bold hover:bg-slate-300 transition">🧾 CSV</button>
           </div>
         </div>
 
@@ -2323,7 +2365,7 @@ function formatearNombreUsuario(valor) {
           <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 mt-4">
              <div class="flex justify-between items-center mb-4">
                <h4 class="font-black text-xs text-slate-500 uppercase tracking-wider">Aporte por Tipo de Máquina</h4>
-               <button onclick="exportarDesgloseConceptos('${zonaId}')" class="text-[10px] bg-blue-100 text-blue-800 px-2 py-1 rounded font-bold hover:bg-blue-200 flex items-center gap-1">📊 Exportar</button>
+               <div class="flex items-center gap-1"><button type="button" onclick="exportarSeccion('desglose_maquinas', 'pdf', '${zonaId}')" class="text-[10px] bg-rose-100 text-rose-800 px-2 py-1 rounded font-bold hover:bg-rose-200">📕 PDF</button><button type="button" onclick="exportarSeccion('desglose_maquinas', 'xlsx', '${zonaId}')" class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-1 rounded font-bold hover:bg-emerald-200">📊 Excel</button></div>
              </div>
              <div class="flex flex-col md:flex-row items-center gap-6 justify-center">
                  <div class="w-32 h-32 rounded-full border border-slate-300 shadow-md flex-shrink-0" style="background: conic-gradient(${conicConcepto})"></div>
@@ -2417,7 +2459,8 @@ function formatearNombreUsuario(valor) {
       document.getElementById('modalDetallesZona').classList.add('hidden');
     }
 
-    function exportarDesgloseConceptos(zonaId) {
+    function exportarDesgloseConceptos(zonaId) { return exportarSeccion('desglose_maquinas', 'xlsx', zonaId); }
+    function _legacyExportarDesgloseConceptos(zonaId) {
       const desde = document.getElementById('depositoFechaDesde').value;
       const hasta = document.getElementById('depositoFechaHasta').value;
       const liqs = liquidacionesGuardadas.filter(i => i.fecha >= desde && i.fecha <= hasta && (zonaId === 'todas' || i.zona_id === zonaId));
@@ -3498,7 +3541,8 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
     }
 
  // EXCEL: Formato HTML exportado como .xls
-    function exportarExcel() {
+    function exportarExcel() { return exportarSeccion('historial', 'xlsx'); }
+    function _legacyExportarExcel() {
       const lista = filtrarLiquidaciones();
       if (lista.length === 0) { mostrarMensaje("No hay datos para exportar.", "⚠️"); return; }
 
@@ -3569,7 +3613,8 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
     }
 
     // DOCUMENTO HTML MÓVIL: Agrupado por rutas
-    function exportarDocumento() {
+    function exportarDocumento() { return exportarSeccion('historial', 'pdf'); }
+    function _legacyExportarDocumento() {
       const lista = filtrarLiquidaciones();
       if (lista.length === 0) { mostrarMensaje("No hay datos para exportar.", "⚠️"); return; }
 
@@ -4022,7 +4067,8 @@ function fijarEstaSemanaDeposito() {
       }
     }
 
-    function exportarDepositoDocumento() {
+    function exportarDepositoDocumento() { return exportarSeccion('resumen_deposito', 'pdf'); }
+    function _legacyExportarDepositoDocumento() {
       const desde = document.getElementById('depositoFechaDesde').value;
       const hasta = document.getElementById('depositoFechaHasta').value;
       const totalRec = document.getElementById('subtotalRecoleccionSemanaCard').textContent;
@@ -4435,7 +4481,8 @@ function cambiarPestana(p) {
        }
     }
 
-    function exportarListaClientesExcel() {
+    function exportarListaClientesExcel() { return exportarSeccion('clientes', 'xlsx'); }
+    function _legacyExportarListaClientesExcel() {
       if (catalogoClientes.length === 0) { mostrarMensaje("No hay datos para exportar.", "⚠️"); return; }
 
       let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"></head><body>`;
@@ -4882,6 +4929,1211 @@ function cambiarPestana(p) {
     function cerrarModal(id) {
        document.getElementById(id).classList.add('hidden');
     }
+  
+    // =========================================================================
+    // SISTEMA UNIFICADO DE EXPORTACIÓN (PDF REAL, EXCEL .XLSX REAL, CSV Y JSON)
+    // =========================================================================
+    function pbSanitizarArchivo(texto) {
+      return String(texto || '')
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-zA-Z0-9_-]+/g, '_')
+        .replace(/^_+|_+$/g, '');
+    }
+
+    function pbFechaHoraActual() {
+      const ahora = new Date();
+      const dd = String(ahora.getDate()).padStart(2, '0');
+      const mm = String(ahora.getMonth() + 1).padStart(2, '0');
+      const yyyy = ahora.getFullYear();
+      const hh = String(ahora.getHours()).padStart(2, '0');
+      const min = String(ahora.getMinutes()).padStart(2, '0');
+      return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
+    }
+
+    function pbEtiquetaZona(z) {
+      const val = String(z || zonaActiva || 'cibao').trim().toLowerCase();
+      if (val === 'cibao') return 'RUTA CIBAO';
+      if (val === 'sur') return 'RUTA SUR';
+      if (val === 'todas' || val === 'general') return 'CONSOLIDADO GENERAL (CIBAO Y SUR)';
+      return val.toUpperCase();
+    }
+
+    function pbObtenerRangoDeposito() {
+      const desde = document.getElementById('depositoFechaDesde')?.value || '';
+      const hasta = document.getElementById('depositoFechaHasta')?.value || '';
+      const texto = (desde && hasta)
+        ? `Del ${formatearFechaDMY(desde)} al ${formatearFechaDMY(hasta)}`
+        : 'Período completo';
+      const slug = (desde && hasta) ? `${desde}_al_${hasta}` : new Date().toISOString().split('T')[0];
+      return { desde, hasta, texto, slug };
+    }
+
+    function pbObtenerRangoHistorial() {
+      const tipo = document.getElementById('filtroTipoPeriodo')?.value || 'todos';
+      const ruta = document.getElementById('filtroRuta')?.value || 'TODAS';
+      const maq = document.getElementById('filtroTipoMaquina')?.value || 'TODOS';
+      let texto = 'Todos los registros';
+      let slug = new Date().toISOString().split('T')[0];
+
+      if (tipo === 'dia') {
+        const d = document.getElementById('filtroFechaDia')?.value || '';
+        texto = `Día: ${formatearFechaDMY(d)}`;
+        slug = d || slug;
+      } else if (tipo === 'semana') {
+        const d = document.getElementById('filtroFechaDesde')?.value || '';
+        const h = document.getElementById('filtroFechaHasta')?.value || '';
+        texto = `Del ${formatearFechaDMY(d)} al ${formatearFechaDMY(h)}`;
+        slug = (d && h) ? `${d}_al_${h}` : slug;
+      }
+      if (ruta !== 'TODAS') texto += ` | Ruta: ${ruta}`;
+      if (maq !== 'TODOS') texto += ` | Máquina: ${maq}`;
+      return { texto, slug };
+    }
+
+    function pbPuedeExportarSeccion(seccion, zonaObjetivo = null) {
+      if (esSuperAdmin) return true;
+      if (seccion === 'resumen_consolidado') {
+        return puedeVerResumenConsolidado();
+      }
+      if (seccion === 'desglose_maquinas' && (zonaObjetivo === 'todas' || zonaActiva === 'todas')) {
+        return puedeVerResumenConsolidado();
+      }
+      if (seccion === 'historial' && zonaActiva === 'todas' && puedeVerResumenConsolidado()) {
+        return true;
+      }
+      if (seccion === 'clientes') {
+        return esSuperAdmin;
+      }
+      const z = zonaObjetivo && zonaObjetivo !== 'todas' ? zonaObjetivo : zonaActiva;
+      if (z === 'todas') {
+        return tienePermiso('leer', 'cibao') || tienePermiso('leer', 'sur') || puedeVerResumenConsolidado();
+      }
+      return tienePermiso('leer', z);
+    }
+
+    function pbDeduplicarRegistros(lista) {
+      const vistos = new Set();
+      return (lista || []).filter(item => {
+        const clave = item.id !== undefined && item.id !== null
+          ? `id_${item.id}`
+          : `${item.fecha}_${item.ruta}_${item.cliente}_${item.concepto}_${item.bruto}`;
+        if (vistos.has(clave)) return false;
+        vistos.add(clave);
+        return true;
+      });
+    }
+
+    function pbLeerArqueoZona(zonaId, desde, hasta) {
+      const zonaStr = (zonaId === 'todas' || zonaId === 'general') ? 'general' : String(zonaId).toLowerCase();
+      const clave = `${zonaStr}_${desde}_${hasta}`;
+      const raw = arqueosSemanalesGuardados[clave] || {};
+      const billetesDenom = [2000, 1000, 500, 200, 100, 50];
+      const monedasDenom = [25, 10, 5, 1];
+
+      const filas = [];
+      let totalBilletes = 0;
+      let totalMonedas = 0;
+
+      billetesDenom.forEach(d => {
+        const cant = Number(raw[`b${d}`]) || 0;
+        const sub = cant * d;
+        totalBilletes += sub;
+        filas.push({ tipo: 'Billete', denominacion: d, cantidad: cant, subtotal: sub });
+      });
+
+      monedasDenom.forEach(d => {
+        const cant = Number(raw[`m${d}`]) || 0;
+        const sub = cant * d;
+        totalMonedas += sub;
+        filas.push({ tipo: 'Moneda', denominacion: d, cantidad: cant, subtotal: sub });
+      });
+
+      return {
+        filas,
+        totalBilletes,
+        totalMonedas,
+        totalFisico: totalBilletes + totalMonedas
+      };
+    }
+
+    // Exportación CSV real (UTF-8 con BOM para Excel y móviles)
+    function pbDescargarCSV(nombreArchivo, encabezados, filas) {
+      const escapar = (val) => {
+        if (val === null || val === undefined) return '';
+        const str = String(val);
+        if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+          return `"${str.replace(/"/g, '""')}"`;
+        }
+        return str;
+      };
+      const lineas = [
+        encabezados.map(escapar).join(','),
+        ...filas.map(fila => fila.map(escapar).join(','))
+      ];
+      const blob = new Blob(["\uFEFF" + lineas.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = nombreArchivo.endsWith('.csv') ? nombreArchivo : `${nombreArchivo}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+    }
+
+    // Exportación Excel (.xlsx) real usando SheetJS (XLSX) con múltiples hojas y valores numéricos puros
+    function pbDescargarXLSX(nombreArchivo, hojas) {
+      if (typeof XLSX === 'undefined') {
+        mostrarMensaje("La librería Excel (.xlsx) no cargó. Verifica tu conexión a internet.", "❌", 4000);
+        return false;
+      }
+      const wb = XLSX.utils.book_new();
+      hojas.forEach(hoja => {
+        const nombreHoja = String(hoja.nombre || 'Datos').slice(0, 31).replace(/[\\/?*[\]]/g, '_');
+        const aoa = [];
+        if (hoja.encabezadoEmpresa) {
+          aoa.push(['PLANET BRANDS SRL - CONTROL DE RUTAS']);
+          aoa.push([hoja.titulo || nombreHoja]);
+          aoa.push([`Zona: ${hoja.zonaTexto || ''}`, `Período: ${hoja.periodoTexto || ''}`, `Generado: ${pbFechaHoraActual()}`]);
+          aoa.push([]);
+        }
+        if (hoja.columnas && hoja.columnas.length > 0) {
+          aoa.push(hoja.columnas);
+        }
+        (hoja.filas || []).forEach(f => aoa.push(f));
+
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+
+        // Ajuste automático de ancho de columnas
+        const colWidths = [];
+        aoa.forEach(row => {
+          row.forEach((cell, cIdx) => {
+            const len = cell !== null && cell !== undefined ? String(cell).length : 8;
+            colWidths[cIdx] = Math.min(45, Math.max(colWidths[cIdx] || 10, len + 3));
+          });
+        });
+        ws['!cols'] = colWidths.map(w => ({ wch: w }));
+
+        // Formato numérico RD$ para columnas monetarias declaradas
+        if (hoja.colsMoneda && hoja.colsMoneda.length > 0) {
+          const startRow = hoja.encabezadoEmpresa ? 5 : 1;
+          for (let r = startRow; r < aoa.length; r++) {
+            hoja.colsMoneda.forEach(cIdx => {
+              const cellRef = XLSX.utils.encode_cell({ r, c: cIdx });
+              if (ws[cellRef] && typeof ws[cellRef].v === 'number') {
+                ws[cellRef].z = '#,##0.00';
+              }
+            });
+          }
+        }
+
+        XLSX.utils.book_append_sheet(wb, ws, nombreHoja);
+      });
+
+      const finalName = nombreArchivo.endsWith('.xlsx') ? nombreArchivo : `${nombreArchivo}.xlsx`;
+      XLSX.writeFile(wb, finalName);
+      return true;
+    }
+
+    // Exportación PDF real usando jsPDF + AutoTable con diseño empresarial uniforme
+    function pbDescargarPDF(nombreArchivo, config) {
+      if (!window.jspdf || !window.jspdf.jsPDF) {
+        mostrarMensaje("La librería PDF no cargó. Verifica tu conexión a internet.", "❌", 4000);
+        return false;
+      }
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({
+        orientation: config.orientacion || 'portrait',
+        unit: 'mm',
+        format: 'letter'
+      });
+
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 14;
+
+      // Encabezado corporativo
+      doc.setFillColor(30, 58, 138); // #1e3a8a
+      doc.rect(0, 0, pageWidth, 26, 'F');
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.text('PLANET BRANDS SRL', margin, 11);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.text('Control de Rutas y Recaudación | Autopista Duarte Km 10 1/2, Santo Domingo, R.D.', margin, 17);
+      doc.text(`Generado: ${pbFechaHoraActual()}`, pageWidth - margin, 11, { align: 'right' });
+      doc.text(`Usuario: ${window.nombreMostrar || 'Usuario'}`, pageWidth - margin, 17, { align: 'right' });
+
+      // Sub-banda de metadatos del reporte
+      doc.setFillColor(241, 245, 249);
+      doc.rect(margin, 30, pageWidth - margin * 2, 16, 'F');
+      doc.setDrawColor(203, 213, 225);
+      doc.rect(margin, 30, pageWidth - margin * 2, 16, 'S');
+
+      doc.setTextColor(15, 23, 42);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.text(String(config.titulo || 'REPORTE').toUpperCase(), margin + 4, 36.5);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.setTextColor(51, 65, 85);
+      doc.text(`Zona: ${config.zonaTexto || ''}   |   Período: ${config.periodoTexto || ''}`, margin + 4, 42.5);
+
+      let cursorY = 52;
+
+      // Tarjetas KPI opcionales
+      if (config.kpis && config.kpis.length > 0) {
+        const gap = 3;
+        const cardW = (pageWidth - margin * 2 - gap * (config.kpis.length - 1)) / config.kpis.length;
+        config.kpis.forEach((kpi, idx) => {
+          const x = margin + idx * (cardW + gap);
+          doc.setFillColor(248, 250, 252);
+          doc.setDrawColor(203, 213, 225);
+          doc.roundedRect(x, cursorY, cardW, 15, 2, 2, 'FD');
+
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(7);
+          doc.setTextColor(100, 116, 139);
+          doc.text(String(kpi.label).toUpperCase(), x + 3, cursorY + 5.5);
+
+          doc.setFontSize(10);
+          doc.setTextColor(kpi.color ? kpi.color[0] : 15, kpi.color ? kpi.color[1] : 23, kpi.color ? kpi.color[2] : 42);
+          doc.text(String(kpi.valor), x + 3, cursorY + 12);
+        });
+        cursorY += 20;
+      }
+
+      // Bloques de tablas
+      (config.bloques || []).forEach(bloque => {
+        if (cursorY > pageHeight - 30) {
+          doc.addPage();
+          cursorY = 18;
+        }
+        if (bloque.subtitulo) {
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(9.5);
+          doc.setTextColor(30, 58, 138);
+          doc.text(String(bloque.subtitulo).toUpperCase(), margin, cursorY);
+          cursorY += 3;
+        }
+
+        doc.autoTable({
+          startY: cursorY,
+          head: [bloque.columnas],
+          body: bloque.filas,
+          foot: bloque.pie ? [bloque.pie] : undefined,
+          margin: { left: margin, right: margin },
+          theme: 'grid',
+          styles: {
+            font: 'helvetica',
+            fontSize: bloque.fontSize || 8,
+            cellPadding: 2.2,
+            textColor: [30, 41, 59],
+            lineColor: [203, 213, 225],
+            lineWidth: 0.2,
+            overflow: 'linebreak'
+          },
+          headStyles: {
+            fillColor: [30, 58, 138],
+            textColor: [255, 255, 255],
+            fontStyle: 'bold'
+          },
+          footStyles: {
+            fillColor: [226, 232, 240],
+            textColor: [15, 23, 42],
+            fontStyle: 'bold'
+          },
+          alternateRowStyles: {
+            fillColor: [248, 250, 252]
+          },
+          columnStyles: bloque.columnStyles || {}
+        });
+
+        cursorY = doc.lastAutoTable.finalY + 8;
+      });
+
+      // Pie de página con numeración
+      const totalPages = doc.internal.getNumberOfPages();
+      for (let p = 1; p <= totalPages; p++) {
+        doc.setPage(p);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7.5);
+        doc.setTextColor(148, 163, 184);
+        doc.text(
+          `Planet Brands SRL — Documento generado automáticamente | Página ${p} de ${totalPages}`,
+          pageWidth / 2,
+          pageHeight - 8,
+          { align: 'center' }
+        );
+      }
+
+      const finalName = nombreArchivo.endsWith('.pdf') ? nombreArchivo : `${nombreArchivo}.pdf`;
+      doc.save(finalName);
+      return true;
+    }
+
+    // Controlador central de exportaciones por sección y formato
+    function exportarSeccion(seccion, formato, zonaParam = null) {
+      registrarActividad();
+      const zonaObjetivo = zonaParam || zonaActiva;
+
+      if (!pbPuedeExportarSeccion(seccion, zonaObjetivo)) {
+        mostrarMensaje("No tienes permiso para exportar esta sección.", "⛔", 3500);
+        return;
+      }
+
+      // 1. HISTORIAL Y DETALLES DE LIQUIDACIONES
+      if (seccion === 'historial') {
+        const lista = pbDeduplicarRegistros(filtrarLiquidaciones());
+        if (lista.length === 0) {
+          mostrarMensaje("No hay liquidaciones bajo los filtros actuales para exportar.", "⚠️");
+          return;
+        }
+        const rango = pbObtenerRangoHistorial();
+        const zonaTxt = pbEtiquetaZona(zonaActiva);
+        const nombreBase = `Historial_Liquidaciones_${pbSanitizarArchivo(zonaActiva)}_${pbSanitizarArchivo(rango.slug)}`;
+
+        let totMon = 0, totBruto = 0, totCom = 0, totGan = 0;
+        const filasTabla = lista.map(item => {
+          const b = Number(item.bruto) || 0;
+          const c = Number(item.comision) || 0;
+          const g = Number(item.gananciaEmpresa) || 0;
+          const m = Number(item.totalMonedas) || 0;
+          totMon += m; totBruto += b; totCom += c; totGan += g;
+          return [
+            formatearFechaDMY(item.fecha),
+            String(item.zona_id || '').toUpperCase(),
+            item.ruta,
+            item.cliente,
+            item.concepto,
+            `${item.porcentaje}%`,
+            `${item.cant25}/${item.cant10}/${item.cant5}`,
+            m,
+            b,
+            c,
+            g,
+            item.creadoPorEmail || ''
+          ];
+        });
+
+        if (formato === 'csv') {
+          pbDescargarCSV(
+            nombreBase,
+            ['Fecha', 'Zona', 'Ruta', 'Cliente', 'Maquina', 'Comision_%', 'Monedas_25_10_5', 'Total_Monedas', 'Bruto_RD$', 'Comision_RD$', 'Ganancia_Empresa_RD$', 'Registrado_Por'],
+            filasTabla
+          );
+          mostrarMensaje("Archivo CSV de historial descargado.", "✅");
+          return;
+        }
+
+        if (formato === 'xlsx') {
+          const filasXlsx = [
+            ...filasTabla,
+            ['TOTAL GENERAL', '', '', `${lista.length} registros`, '', '', '', totMon, totBruto, totCom, totGan, '']
+          ];
+          const ok = pbDescargarXLSX(nombreBase, [{
+            nombre: 'Historial Liquidaciones',
+            encabezadoEmpresa: true,
+            titulo: 'HISTORIAL Y DETALLE DE LIQUIDACIONES',
+            zonaTexto: zonaTxt,
+            periodoTexto: rango.texto,
+            columnas: ['Fecha', 'Zona', 'Ruta', 'Cliente', 'Máquina', '% Com.', 'Monedas (25/10/5)', 'Total Monedas', 'Bruto (RD$)', 'Comisión (RD$)', 'Ganancia Empresa (RD$)', 'Usuario'],
+            filas: filasXlsx,
+            colsMoneda: [8, 9, 10]
+          }]);
+          if (ok) mostrarMensaje("Excel (.xlsx) de historial descargado.", "✅");
+          return;
+        }
+
+        if (formato === 'pdf') {
+          const filasPdf = lista.map(item => [
+            formatearFechaDMY(item.fecha),
+            item.ruta,
+            `${item.cliente}
+(${item.concepto} - ${item.porcentaje}%)`,
+            `${item.cant25}/${item.cant10}/${item.cant5}`,
+            formatearMontoLimpio(item.bruto),
+            formatearMontoLimpio(item.comision),
+            formatearMontoLimpio(item.gananciaEmpresa)
+          ]);
+          const ok = pbDescargarPDF(nombreBase, {
+            orientacion: 'landscape',
+            titulo: 'Historial y Detalle de Liquidaciones',
+            zonaTexto: zonaTxt,
+            periodoTexto: rango.texto,
+            kpis: [
+              { label: 'Registros', valor: String(lista.length) },
+              { label: 'Total Monedas', valor: String(totMon) },
+              { label: 'Total Bruto', valor: formatearMontoLimpio(totBruto) },
+              { label: 'Comisión Clientes', valor: formatearMontoLimpio(totCom), color: [3, 105, 161] },
+              { label: 'Recolección Neta', valor: formatearMontoLimpio(totGan), color: [4, 120, 87] }
+            ],
+            bloques: [{
+              columnas: ['Fecha', 'Ruta', 'Cliente / Máquina', '25/10/5', 'Bruto', 'Comisión', 'Ganancia'],
+              filas: filasPdf,
+              pie: ['TOTAL', `${lista.length} reg.`, '', String(totMon), formatearMontoLimpio(totBruto), formatearMontoLimpio(totCom), formatearMontoLimpio(totGan)],
+              columnStyles: {
+                4: { halign: 'right' },
+                5: { halign: 'right' },
+                6: { halign: 'right' }
+              }
+            }]
+          });
+          if (ok) mostrarMensaje("PDF de historial generado correctamente.", "✅");
+          return;
+        }
+      }
+
+      // 2. LIQUIDACIONES DE RUTAS (SECCIÓN 1 DE DEPÓSITO SEMANAL)
+      if (seccion === 'liquidaciones_rutas') {
+        const rango = pbObtenerRangoDeposito();
+        const liqs = pbDeduplicarRegistros(
+          liquidacionesGuardadas.filter(i =>
+            i.fecha >= rango.desde &&
+            i.fecha <= rango.hasta &&
+            (zonaActiva === 'todas' || String(i.zona_id || '').toLowerCase() === zonaActiva) &&
+            (esSuperAdmin || tienePermiso('leer', i.zona_id))
+          )
+        );
+        if (liqs.length === 0) {
+          mostrarMensaje("No hay liquidaciones de rutas en el rango seleccionado.", "⚠️");
+          return;
+        }
+        const zonaTxt = pbEtiquetaZona(zonaActiva);
+        const nombreBase = `Liquidaciones_Rutas_${pbSanitizarArchivo(zonaActiva)}_${pbSanitizarArchivo(rango.slug)}`;
+
+        const grupos = agruparPorRuta(liqs);
+        let granTotal = 0;
+        const filasResumen = [];
+        const filasDetalle = [];
+
+        Object.keys(grupos).sort().forEach(ruta => {
+          let subRuta = 0;
+          grupos[ruta].forEach(item => {
+            const g = Number(item.gananciaEmpresa) || 0;
+            subRuta += g;
+            granTotal += g;
+            filasDetalle.push([
+              ruta,
+              formatearFechaDMY(item.fecha),
+              item.cliente,
+              item.concepto,
+              Number(item.bruto) || 0,
+              Number(item.comision) || 0,
+              g,
+              item.creadoPorEmail || ''
+            ]);
+          });
+          filasResumen.push([ruta, grupos[ruta].length, subRuta]);
+        });
+
+        if (formato === 'xlsx') {
+          const ok = pbDescargarXLSX(nombreBase, [
+            {
+              nombre: 'Resumen por Ruta',
+              encabezadoEmpresa: true,
+              titulo: 'LIQUIDACIONES DE RUTAS - RESUMEN SEMANAL',
+              zonaTexto: zonaTxt,
+              periodoTexto: rango.texto,
+              columnas: ['Ruta', 'Cantidad Liquidaciones', 'Subtotal Recolectado (RD$)'],
+              filas: [...filasResumen, ['TOTAL RECOLECCIÓN', liqs.length, granTotal]],
+              colsMoneda: [2]
+            },
+            {
+              nombre: 'Detalle por Cliente',
+              encabezadoEmpresa: true,
+              titulo: 'DETALLE DE LIQUIDACIONES POR CLIENTE',
+              zonaTexto: zonaTxt,
+              periodoTexto: rango.texto,
+              columnas: ['Ruta', 'Fecha', 'Cliente', 'Máquina', 'Bruto (RD$)', 'Comisión (RD$)', 'Ganancia (RD$)', 'Colector'],
+              filas: [...filasDetalle, ['TOTAL GENERAL', '', `${liqs.length} registros`, '', '', '', granTotal, '']],
+              colsMoneda: [4, 5, 6]
+            }
+          ]);
+          if (ok) mostrarMensaje("Excel (.xlsx) de liquidaciones por ruta descargado.", "✅");
+          return;
+        }
+
+        if (formato === 'pdf') {
+          const ok = pbDescargarPDF(nombreBase, {
+            titulo: 'Liquidaciones de Rutas',
+            zonaTexto: zonaTxt,
+            periodoTexto: rango.texto,
+            kpis: [
+              { label: 'Rutas Trabajadas', valor: String(filasResumen.length) },
+              { label: 'Liquidaciones', valor: String(liqs.length) },
+              { label: 'Total Recolectado', valor: formatearMontoLimpio(granTotal), color: [4, 120, 87] }
+            ],
+            bloques: [
+              {
+                subtitulo: '1. Resumen por Ruta',
+                columnas: ['Ruta', 'Liquidaciones', 'Subtotal Recolectado'],
+                filas: filasResumen.map(r => [r[0], r[1], formatearMontoLimpio(r[2])]),
+                pie: ['TOTAL', String(liqs.length), formatearMontoLimpio(granTotal)],
+                columnStyles: { 1: { halign: 'center' }, 2: { halign: 'right' } }
+              },
+              {
+                subtitulo: '2. Detalle por Cliente',
+                columnas: ['Ruta', 'Fecha', 'Cliente', 'Máquina', 'Ganancia'],
+                filas: filasDetalle.map(d => [d[0], d[1], d[2], d[3], formatearMontoLimpio(d[6])]),
+                pie: ['TOTAL GENERAL', '', '', '', formatearMontoLimpio(granTotal)],
+                columnStyles: { 4: { halign: 'right' } }
+              }
+            ]
+          });
+          if (ok) mostrarMensaje("PDF de liquidaciones por ruta descargado.", "✅");
+          return;
+        }
+      }
+
+      // 3. GASTOS EN EFECTIVO
+      if (seccion === 'gastos') {
+        const rango = pbObtenerRangoDeposito();
+        const gastos = pbDeduplicarRegistros(
+          gastosGuardados.filter(g =>
+            g.fecha >= rango.desde &&
+            g.fecha <= rango.hasta &&
+            (zonaActiva === 'todas' || String(g.zona_id || '').toLowerCase() === zonaActiva) &&
+            (esSuperAdmin || tienePermiso('leer', g.zona_id))
+          )
+        );
+        if (gastos.length === 0) {
+          mostrarMensaje("No hay gastos registrados en el período seleccionado.", "⚠️");
+          return;
+        }
+        const zonaTxt = pbEtiquetaZona(zonaActiva);
+        const nombreBase = `Gastos_${pbSanitizarArchivo(zonaActiva)}_${pbSanitizarArchivo(rango.slug)}`;
+        const totalGastos = gastos.reduce((acc, g) => acc + (Number(g.monto) || 0), 0);
+
+        const filas = gastos.map(g => [
+          formatearFechaDMY(g.fecha),
+          String(g.zona_id || '').toUpperCase(),
+          g.concepto,
+          g.creadoPorEmail || '',
+          Number(g.monto) || 0
+        ]);
+
+        if (formato === 'csv') {
+          pbDescargarCSV(nombreBase, ['Fecha', 'Zona', 'Concepto', 'Colector', 'Monto_RD$'], filas);
+          mostrarMensaje("Archivo CSV de gastos descargado.", "✅");
+          return;
+        }
+
+        if (formato === 'xlsx') {
+          const ok = pbDescargarXLSX(nombreBase, [{
+            nombre: 'Gastos en Efectivo',
+            encabezadoEmpresa: true,
+            titulo: 'RELACIÓN DE GASTOS EN EFECTIVO',
+            zonaTexto: zonaTxt,
+            periodoTexto: rango.texto,
+            columnas: ['Fecha', 'Zona', 'Concepto del Gasto', 'Registrado Por', 'Monto (RD$)'],
+            filas: [...filas, ['TOTAL GASTOS', '', `${gastos.length} gastos`, '', totalGastos]],
+            colsMoneda: [4]
+          }]);
+          if (ok) mostrarMensaje("Excel (.xlsx) de gastos descargado.", "✅");
+          return;
+        }
+
+        if (formato === 'pdf') {
+          const ok = pbDescargarPDF(nombreBase, {
+            titulo: 'Relación de Gastos en Efectivo',
+            zonaTexto: zonaTxt,
+            periodoTexto: rango.texto,
+            kpis: [
+              { label: 'Cantidad de Gastos', valor: String(gastos.length) },
+              { label: 'Total Gastos Deducidos', valor: formatearMontoLimpio(totalGastos), color: [190, 18, 60] }
+            ],
+            bloques: [{
+              columnas: ['Fecha', 'Zona', 'Concepto', 'Registrado Por', 'Monto'],
+              filas: filas.map(f => [f[0], f[1], f[2], f[3], formatearMontoLimpio(f[4])]),
+              pie: ['TOTAL GASTOS', '', '', '', formatearMontoLimpio(totalGastos)],
+              columnStyles: { 4: { halign: 'right' } }
+            }]
+          });
+          if (ok) mostrarMensaje("PDF de gastos descargado.", "✅");
+          return;
+        }
+      }
+
+      // 4. CONTEO DE EFECTIVO (ARQUEO FÍSICO)
+      if (seccion === 'conteo_efectivo') {
+        const rango = pbObtenerRangoDeposito();
+        const zonaTxt = pbEtiquetaZona(zonaActiva);
+        const arqueo = pbLeerArqueoZona(zonaActiva, rango.desde, rango.hasta);
+        const nombreBase = `Conteo_Efectivo_${pbSanitizarArchivo(zonaActiva)}_${pbSanitizarArchivo(rango.slug)}`;
+        const diferencia = arqueo.totalFisico - totalNetoDepositoCalculado;
+
+        if (formato === 'xlsx') {
+          const filasArq = arqueo.filas.map(f => [f.tipo, f.denominacion, f.cantidad, f.subtotal]);
+          filasArq.push(['SUBTOTAL BILLETES', '', '', arqueo.totalBilletes]);
+          filasArq.push(['SUBTOTAL MONEDAS', '', '', arqueo.totalMonedas]);
+          filasArq.push(['TOTAL EFECTIVO CONTADO', '', '', arqueo.totalFisico]);
+          filasArq.push(['TOTAL ESPERADO DEPÓSITO', '', '', totalNetoDepositoCalculado]);
+          filasArq.push(['DIFERENCIA DE CUADRE', '', '', diferencia]);
+
+          const ok = pbDescargarXLSX(nombreBase, [{
+            nombre: 'Conteo Efectivo',
+            encabezadoEmpresa: true,
+            titulo: 'ARQUEO Y CONTEO FÍSICO DE EFECTIVO',
+            zonaTexto: zonaTxt,
+            periodoTexto: rango.texto,
+            columnas: ['Tipo', 'Denominación (RD$)', 'Cantidad', 'Subtotal (RD$)'],
+            filas: filasArq,
+            colsMoneda: [1, 3]
+          }]);
+          if (ok) mostrarMensaje("Excel (.xlsx) de conteo de efectivo descargado.", "✅");
+          return;
+        }
+
+        if (formato === 'pdf') {
+          const ok = pbDescargarPDF(nombreBase, {
+            titulo: 'Arqueo y Conteo Físico de Efectivo',
+            zonaTexto: zonaTxt,
+            periodoTexto: rango.texto,
+            kpis: [
+              { label: 'Total Billetes', valor: formatearMontoLimpio(arqueo.totalBilletes) },
+              { label: 'Total Monedas', valor: formatearMontoLimpio(arqueo.totalMonedas) },
+              { label: 'Efectivo Contado', valor: formatearMontoLimpio(arqueo.totalFisico), color: [30, 58, 138] },
+              { label: 'Diferencia Cuadre', valor: formatearMontoLimpio(diferencia), color: diferencia === 0 ? [4, 120, 87] : [190, 18, 60] }
+            ],
+            bloques: [{
+              subtitulo: 'Desglose por Denominación',
+              columnas: ['Tipo', 'Denominación', 'Cantidad', 'Subtotal'],
+              filas: arqueo.filas.map(f => [f.tipo, formatearMontoLimpio(f.denominacion), f.cantidad, formatearMontoLimpio(f.subtotal)]),
+              pie: ['TOTAL EFECTIVO CONTADO', '', '', formatearMontoLimpio(arqueo.totalFisico)],
+              columnStyles: { 2: { halign: 'center' }, 3: { halign: 'right' } }
+            }]
+          });
+          if (ok) mostrarMensaje("PDF de conteo de efectivo descargado.", "✅");
+          return;
+        }
+      }
+
+      // 5. DEPÓSITOS Y RESUMEN DEL DEPÓSITO (ZONA ACTIVA)
+      if (seccion === 'resumen_deposito' || seccion === 'depositos') {
+        const rango = pbObtenerRangoDeposito();
+        const zonaTxt = pbEtiquetaZona(zonaActiva);
+        const nombreBase = `Resumen_Deposito_${pbSanitizarArchivo(zonaActiva)}_${pbSanitizarArchivo(rango.slug)}`;
+
+        const liqs = pbDeduplicarRegistros(
+          liquidacionesGuardadas.filter(i =>
+            i.fecha >= rango.desde &&
+            i.fecha <= rango.hasta &&
+            (zonaActiva === 'todas' || String(i.zona_id || '').toLowerCase() === zonaActiva) &&
+            (esSuperAdmin || tienePermiso('leer', i.zona_id))
+          )
+        );
+        const gastos = pbDeduplicarRegistros(
+          gastosGuardados.filter(g =>
+            g.fecha >= rango.desde &&
+            g.fecha <= rango.hasta &&
+            (zonaActiva === 'todas' || String(g.zona_id || '').toLowerCase() === zonaActiva) &&
+            (esSuperAdmin || tienePermiso('leer', g.zona_id))
+          )
+        );
+        const arqueo = pbLeerArqueoZona(zonaActiva, rango.desde, rango.hasta);
+
+        const totalRec = liqs.reduce((acc, i) => acc + (Number(i.gananciaEmpresa) || 0), 0);
+        const totalGas = gastos.reduce((acc, g) => acc + (Number(g.monto) || 0), 0);
+        const netoDepositar = Math.max(0, totalRec - totalGas);
+        const diferencia = arqueo.totalFisico - netoDepositar;
+
+        const gruposRuta = agruparPorRuta(liqs);
+        const filasRutas = Object.keys(gruposRuta).sort().map(r => [
+          r,
+          gruposRuta[r].length,
+          gruposRuta[r].reduce((a, x) => a + (Number(x.gananciaEmpresa) || 0), 0)
+        ]);
+        const filasGastos = gastos.map(g => [
+          formatearFechaDMY(g.fecha),
+          g.concepto,
+          g.creadoPorEmail || '',
+          Number(g.monto) || 0
+        ]);
+
+        if (formato === 'xlsx') {
+          const ok = pbDescargarXLSX(nombreBase, [
+            {
+              nombre: 'Resumen Deposito',
+              encabezadoEmpresa: true,
+              titulo: 'RESUMEN SEMANAL DE DEPÓSITO Y ARQUEO',
+              zonaTexto: zonaTxt,
+              periodoTexto: rango.texto,
+              columnas: ['Concepto', 'Monto (RD$)'],
+              filas: [
+                ['Total Recolección Semanal', totalRec],
+                ['Total Gastos en Efectivo (-)', totalGas],
+                ['Total Neto a Depositar (Esperado)', netoDepositar],
+                ['Efectivo Físico Contado', arqueo.totalFisico],
+                ['Diferencia de Cuadre', diferencia]
+              ],
+              colsMoneda: [1]
+            },
+            {
+              nombre: 'Rutas Liquidadas',
+              encabezadoEmpresa: true,
+              titulo: 'RUTAS TRABAJADAS EN LA SEMANA',
+              zonaTexto: zonaTxt,
+              periodoTexto: rango.texto,
+              columnas: ['Ruta', 'Cantidad Liquidaciones', 'Subtotal Recolectado (RD$)'],
+              filas: [...filasRutas, ['TOTAL RECOLECCIÓN', liqs.length, totalRec]],
+              colsMoneda: [2]
+            },
+            {
+              nombre: 'Gastos Semana',
+              encabezadoEmpresa: true,
+              titulo: 'GASTOS EN EFECTIVO DE LA SEMANA',
+              zonaTexto: zonaTxt,
+              periodoTexto: rango.texto,
+              columnas: ['Fecha', 'Concepto', 'Colector', 'Monto (RD$)'],
+              filas: [...filasGastos, ['TOTAL GASTOS', '', '', totalGas]],
+              colsMoneda: [3]
+            },
+            {
+              nombre: 'Conteo Efectivo',
+              encabezadoEmpresa: true,
+              titulo: 'CONTEO FÍSICO DE EFECTIVO',
+              zonaTexto: zonaTxt,
+              periodoTexto: rango.texto,
+              columnas: ['Tipo', 'Denominación (RD$)', 'Cantidad', 'Subtotal (RD$)'],
+              filas: [
+                ...arqueo.filas.map(f => [f.tipo, f.denominacion, f.cantidad, f.subtotal]),
+                ['TOTAL EFECTIVO CONTADO', '', '', arqueo.totalFisico]
+              ],
+              colsMoneda: [1, 3]
+            }
+          ]);
+          if (ok) mostrarMensaje("Excel (.xlsx) de depósito descargado.", "✅");
+          return;
+        }
+
+        if (formato === 'pdf') {
+          const bloques = [
+            {
+              subtitulo: '1. Resumen Financiero del Depósito',
+              columnas: ['Concepto', 'Importe'],
+              filas: [
+                ['Subtotal Recolección Semanal', formatearMontoLimpio(totalRec)],
+                ['Total Gastos en Efectivo (-)', `- ${formatearMontoLimpio(totalGas)}`],
+                ['Total a Depositar (Esperado)', formatearMontoLimpio(netoDepositar)],
+                ['Efectivo Físico Contado', formatearMontoLimpio(arqueo.totalFisico)],
+                ['Diferencia de Cuadre', formatearMontoLimpio(diferencia)]
+              ],
+              columnStyles: { 1: { halign: 'right' } }
+            },
+            {
+              subtitulo: '2. Desglose por Rutas Trabajadas',
+              columnas: ['Ruta', 'Registros', 'Subtotal'],
+              filas: filasRutas.length > 0
+                ? filasRutas.map(r => [r[0], r[1], formatearMontoLimpio(r[2])])
+                : [['Sin liquidaciones en este rango', '0', '$ 0']],
+              pie: ['TOTAL RECOLECCIÓN', String(liqs.length), formatearMontoLimpio(totalRec)],
+              columnStyles: { 1: { halign: 'center' }, 2: { halign: 'right' } }
+            },
+            {
+              subtitulo: '3. Gastos en Efectivo Deducidos',
+              columnas: ['Fecha', 'Concepto', 'Colector', 'Monto'],
+              filas: filasGastos.length > 0
+                ? filasGastos.map(g => [g[0], g[1], g[2], formatearMontoLimpio(g[3])])
+                : [['--', 'Sin gastos registrados', '--', '$ 0']],
+              pie: ['TOTAL GASTOS', '', '', formatearMontoLimpio(totalGas)],
+              columnStyles: { 3: { halign: 'right' } }
+            }
+          ];
+
+          if (arqueo.totalFisico > 0) {
+            bloques.push({
+              subtitulo: '4. Conteo Físico de Efectivo',
+              columnas: ['Tipo', 'Denominación', 'Cantidad', 'Subtotal'],
+              filas: arqueo.filas.filter(f => f.cantidad > 0).map(f => [f.tipo, formatearMontoLimpio(f.denominacion), f.cantidad, formatearMontoLimpio(f.subtotal)]),
+              pie: ['TOTAL CONTADO', '', '', formatearMontoLimpio(arqueo.totalFisico)],
+              columnStyles: { 2: { halign: 'center' }, 3: { halign: 'right' } }
+            });
+          }
+
+          const ok = pbDescargarPDF(nombreBase, {
+            titulo: 'Comprobante y Resumen de Depósito',
+            zonaTexto: zonaTxt,
+            periodoTexto: rango.texto,
+            kpis: [
+              { label: 'Recolección', valor: formatearMontoLimpio(totalRec) },
+              { label: 'Gastos (-)', valor: formatearMontoLimpio(totalGas), color: [190, 18, 60] },
+              { label: 'A Depositar', valor: formatearMontoLimpio(netoDepositar), color: [4, 120, 87] },
+              { label: 'Contado / Dif.', valor: `${formatearMontoLimpio(arqueo.totalFisico)} (${formatearMontoLimpio(diferencia)})` }
+            ],
+            bloques
+          });
+          if (ok) mostrarMensaje("PDF de resumen del depósito descargado.", "✅");
+          return;
+        }
+      }
+
+      // 6. RESUMEN GENERAL CONSOLIDADO (CIBAO + SUR)
+      if (seccion === 'resumen_consolidado') {
+        const rango = pbObtenerRangoDeposito();
+        const normZ = (z) => String(z || '').trim().toLowerCase();
+
+        const liqsGen = pbDeduplicarRegistros(
+          liquidacionesGuardadas.filter(i => i.fecha >= rango.desde && i.fecha <= rango.hasta && (normZ(i.zona_id) === 'cibao' || normZ(i.zona_id) === 'sur'))
+        );
+        const gastosGen = pbDeduplicarRegistros(
+          gastosGuardados.filter(g => g.fecha >= rango.desde && g.fecha <= rango.hasta && (normZ(g.zona_id) === 'cibao' || normZ(g.zona_id) === 'sur'))
+        );
+
+        const liqsCibao = liqsGen.filter(i => normZ(i.zona_id) === 'cibao');
+        const gastosCibao = gastosGen.filter(g => normZ(g.zona_id) === 'cibao');
+
+        const liqsSur = liqsGen.filter(i => normZ(i.zona_id) === 'sur');
+        const gastosSur = gastosGen.filter(g => normZ(g.zona_id) === 'sur');
+
+        const recCibao = liqsCibao.reduce((a, i) => a + (Number(i.gananciaEmpresa) || 0), 0);
+        const gasCibao = gastosCibao.reduce((a, g) => a + (Number(g.monto) || 0), 0);
+        const depCibao = Math.max(0, recCibao - gasCibao);
+
+        const recSur = liqsSur.reduce((a, i) => a + (Number(i.gananciaEmpresa) || 0), 0);
+        const gasSur = gastosSur.reduce((a, g) => a + (Number(g.monto) || 0), 0);
+        const depSur = Math.max(0, recSur - gasSur);
+
+        const recGen = recCibao + recSur;
+        const gasGen = gasCibao + gasSur;
+        const depGen = Math.max(0, recGen - gasGen);
+
+        const arqCibao = pbLeerArqueoZona('cibao', rango.desde, rango.hasta);
+        const arqSur = pbLeerArqueoZona('sur', rango.desde, rango.hasta);
+        const arqGen = pbLeerArqueoZona('general', rango.desde, rango.hasta);
+        const totalContadoDisp = arqGen.totalFisico > 0 ? arqGen.totalFisico : (arqCibao.totalFisico + arqSur.totalFisico);
+        const difConsolidada = totalContadoDisp - depGen;
+
+        const tiposMaquina = ['Dulces', 'Peluches', 'Kiddie Rides', 'Boxing Machine'];
+        const extras = [...new Set(liqsGen.map(l => l.concepto).filter(c => c && !tiposMaquina.includes(c)))];
+        const todosConceptos = [...tiposMaquina, ...extras];
+
+        const filasMaquinas = todosConceptos.map(c => {
+          const mCibao = liqsCibao.filter(l => l.concepto === c).reduce((a, x) => a + (Number(x.gananciaEmpresa) || 0), 0);
+          const mSur = liqsSur.filter(l => l.concepto === c).reduce((a, x) => a + (Number(x.gananciaEmpresa) || 0), 0);
+          const mTot = mCibao + mSur;
+          const pct = recGen > 0 ? Number(((mTot / recGen) * 100).toFixed(2)) : 0;
+          return [c, mCibao, mSur, mTot, pct];
+        }).filter(r => r[3] > 0 || tiposMaquina.includes(r[0]));
+
+        const nombreBase = `Resumen_General_Consolidado_${pbSanitizarArchivo(rango.slug)}`;
+
+        if (formato === 'xlsx') {
+          const filasResumenGen = [
+            ['Ruta Cibao', liqsCibao.length, recCibao, gasCibao, depCibao, arqCibao.totalFisico, arqCibao.totalFisico - depCibao],
+            ['Ruta Sur', liqsSur.length, recSur, gasSur, depSur, arqSur.totalFisico, arqSur.totalFisico - depSur],
+            ['TOTAL GENERAL CONSOLIDADO', liqsGen.length, recGen, gasGen, depGen, totalContadoDisp, difConsolidada]
+          ];
+
+          const mapDetalleZona = (arr) => arr.map(l => [
+            formatearFechaDMY(l.fecha),
+            l.ruta,
+            l.cliente,
+            l.concepto,
+            Number(l.bruto) || 0,
+            Number(l.comision) || 0,
+            Number(l.gananciaEmpresa) || 0,
+            l.creadoPorEmail || ''
+          ]);
+
+          const ok = pbDescargarXLSX(nombreBase, [
+            {
+              nombre: 'Resumen General',
+              encabezadoEmpresa: true,
+              titulo: 'RESUMEN GENERAL CONSOLIDADO (CIBAO Y SUR)',
+              zonaTexto: 'CONSOLIDADO GENERAL (CIBAO Y SUR)',
+              periodoTexto: rango.texto,
+              columnas: ['Zona', 'Liquidaciones', 'Recaudación (RD$)', 'Gastos (RD$)', 'Depósito Esperado (RD$)', 'Efectivo Contado (RD$)', 'Diferencia (RD$)'],
+              filas: filasResumenGen,
+              colsMoneda: [2, 3, 4, 5, 6]
+            },
+            {
+              nombre: 'Cibao',
+              encabezadoEmpresa: true,
+              titulo: 'DETALLE DE RECAUDACIONES - RUTA CIBAO',
+              zonaTexto: 'RUTA CIBAO',
+              periodoTexto: rango.texto,
+              columnas: ['Fecha', 'Ruta', 'Cliente', 'Máquina', 'Bruto (RD$)', 'Comisión (RD$)', 'Ganancia (RD$)', 'Colector'],
+              filas: [...mapDetalleZona(liqsCibao), ['TOTAL CIBAO', '', `${liqsCibao.length} registros`, '', '', '', recCibao, '']],
+              colsMoneda: [4, 5, 6]
+            },
+            {
+              nombre: 'Sur',
+              encabezadoEmpresa: true,
+              titulo: 'DETALLE DE RECAUDACIONES - RUTA SUR',
+              zonaTexto: 'RUTA SUR',
+              periodoTexto: rango.texto,
+              columnas: ['Fecha', 'Ruta', 'Cliente', 'Máquina', 'Bruto (RD$)', 'Comisión (RD$)', 'Ganancia (RD$)', 'Colector'],
+              filas: [...mapDetalleZona(liqsSur), ['TOTAL SUR', '', `${liqsSur.length} registros`, '', '', '', recSur, '']],
+              colsMoneda: [4, 5, 6]
+            },
+            {
+              nombre: 'Gastos',
+              encabezadoEmpresa: true,
+              titulo: 'GASTOS CONSOLIDADOS (CIBAO Y SUR)',
+              zonaTexto: 'CIBAO Y SUR',
+              periodoTexto: rango.texto,
+              columnas: ['Fecha', 'Zona', 'Concepto', 'Colector', 'Monto (RD$)'],
+              filas: [
+                ...gastosGen.map(g => [formatearFechaDMY(g.fecha), String(g.zona_id || '').toUpperCase(), g.concepto, g.creadoPorEmail || '', Number(g.monto) || 0]),
+                ['TOTAL GASTOS GLOBALES', '', '', '', gasGen]
+              ],
+              colsMoneda: [4]
+            },
+            {
+              nombre: 'Recaudaciones por Maquina',
+              encabezadoEmpresa: true,
+              titulo: 'RECAUDACIONES POR TIPO DE MÁQUINA',
+              zonaTexto: 'CIBAO Y SUR',
+              periodoTexto: rango.texto,
+              columnas: ['Tipo de Máquina', 'Cibao (RD$)', 'Sur (RD$)', 'Total General (RD$)', 'Participación (%)'],
+              filas: [...filasMaquinas, ['TOTAL GENERAL', recCibao, recSur, recGen, 100]],
+              colsMoneda: [1, 2, 3]
+            }
+          ]);
+          if (ok) mostrarMensaje("Excel (.xlsx) Consolidado descargado con 5 hojas.", "✅");
+          return;
+        }
+
+        if (formato === 'pdf') {
+          const bloques = [
+            {
+              subtitulo: '1. Comparativo Financiero por Zona',
+              columnas: ['Zona', 'Reg.', 'Recolección', 'Gastos (-)', 'Depósito Esperado'],
+              filas: [
+                ['Ruta Cibao', String(liqsCibao.length), formatearMontoLimpio(recCibao), formatearMontoLimpio(gasCibao), formatearMontoLimpio(depCibao)],
+                ['Ruta Sur', String(liqsSur.length), formatearMontoLimpio(recSur), formatearMontoLimpio(gasSur), formatearMontoLimpio(depSur)]
+              ],
+              pie: ['TOTAL GENERAL', String(liqsGen.length), formatearMontoLimpio(recGen), formatearMontoLimpio(gasGen), formatearMontoLimpio(depGen)],
+              columnStyles: { 1: { halign: 'center' }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' } }
+            },
+            {
+              subtitulo: '2. Desglose por Tipo de Máquina (Cibao y Sur)',
+              columnas: ['Tipo de Máquina', 'Cibao', 'Sur', 'Total General', '%'],
+              filas: filasMaquinas.map(r => [r[0], formatearMontoLimpio(r[1]), formatearMontoLimpio(r[2]), formatearMontoLimpio(r[3]), `${r[4]}%`]),
+              pie: ['TOTAL MÁQUINAS', formatearMontoLimpio(recCibao), formatearMontoLimpio(recSur), formatearMontoLimpio(recGen), '100%'],
+              columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' } }
+            },
+            {
+              subtitulo: '3. Detalle de Gastos (Cibao y Sur)',
+              columnas: ['Fecha', 'Zona', 'Concepto', 'Colector', 'Monto'],
+              filas: gastosGen.length > 0
+                ? gastosGen.map(g => [formatearFechaDMY(g.fecha), String(g.zona_id || '').toUpperCase(), g.concepto, g.creadoPorEmail || '', formatearMontoLimpio(g.monto)])
+                : [['--', '--', 'Sin gastos registrados en el período', '--', '$ 0']],
+              pie: ['TOTAL GASTOS GLOBALES', '', '', '', formatearMontoLimpio(gasGen)],
+              columnStyles: { 4: { halign: 'right' } }
+            }
+          ];
+
+          if (totalContadoDisp > 0 || arqCibao.totalFisico > 0 || arqSur.totalFisico > 0) {
+            bloques.push({
+              subtitulo: '4. Conteo de Efectivo y Diferencias Disponibles',
+              columnas: ['Zona', 'Depósito Esperado', 'Efectivo Contado', 'Diferencia'],
+              filas: [
+                ['Ruta Cibao', formatearMontoLimpio(depCibao), formatearMontoLimpio(arqCibao.totalFisico), formatearMontoLimpio(arqCibao.totalFisico - depCibao)],
+                ['Ruta Sur', formatearMontoLimpio(depSur), formatearMontoLimpio(arqSur.totalFisico), formatearMontoLimpio(arqSur.totalFisico - depSur)]
+              ],
+              pie: ['TOTAL CONSOLIDADO', formatearMontoLimpio(depGen), formatearMontoLimpio(totalContadoDisp), formatearMontoLimpio(difConsolidada)],
+              columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' } }
+            });
+          }
+
+          const ok = pbDescargarPDF(nombreBase, {
+            titulo: 'Resumen General Consolidado Semanal',
+            zonaTexto: 'CONSOLIDADO GENERAL (CIBAO Y SUR)',
+            periodoTexto: rango.texto,
+            kpis: [
+              { label: 'Recolección Global', valor: formatearMontoLimpio(recGen) },
+              { label: 'Gastos Globales (-)', valor: formatearMontoLimpio(gasGen), color: [190, 18, 60] },
+              { label: 'Gran Total a Depositar', valor: formatearMontoLimpio(depGen), color: [4, 120, 87] },
+              { label: 'Contado / Dif.', valor: totalContadoDisp > 0 ? `${formatearMontoLimpio(totalContadoDisp)} (${formatearMontoLimpio(difConsolidada)})` : 'Sin arqueo cargado' }
+            ],
+            bloques
+          });
+          if (ok) mostrarMensaje("PDF Consolidado generado correctamente.", "✅");
+          return;
+        }
+      }
+
+      // 7. DESGLOSE DE RECAUDACIONES POR TIPO DE MÁQUINA
+      if (seccion === 'desglose_maquinas') {
+        const rango = pbObtenerRangoDeposito();
+        const zId = zonaObjetivo || 'todas';
+        const normZ = (z) => String(z || '').trim().toLowerCase();
+        const liqs = pbDeduplicarRegistros(
+          liquidacionesGuardadas.filter(i =>
+            i.fecha >= rango.desde &&
+            i.fecha <= rango.hasta &&
+            (zId === 'todas' ? (normZ(i.zona_id) === 'cibao' || normZ(i.zona_id) === 'sur') : normZ(i.zona_id) === normZ(zId))
+          )
+        );
+        if (liqs.length === 0) {
+          mostrarMensaje("No hay recaudaciones por máquina en el período seleccionado.", "⚠️");
+          return;
+        }
+        const zonaTxt = pbEtiquetaZona(zId);
+        const nombreBase = `Desglose_Maquinas_${pbSanitizarArchivo(zId)}_${pbSanitizarArchivo(rango.slug)}`;
+
+        const mapa = {};
+        let granTotal = 0;
+        liqs.forEach(l => {
+          const c = l.concepto || 'General';
+          if (!mapa[c]) mapa[c] = { total: 0, clientes: [] };
+          const val = Number(l.gananciaEmpresa) || 0;
+          mapa[c].total += val;
+          mapa[c].clientes.push(l);
+          granTotal += val;
+        });
+
+        const ordenados = Object.entries(mapa).sort((a, b) => b[1].total - a[1].total);
+        const filasResumen = ordenados.map(([nom, obj]) => [
+          nom,
+          obj.clientes.length,
+          obj.total,
+          granTotal > 0 ? Number(((obj.total / granTotal) * 100).toFixed(2)) : 0
+        ]);
+        const filasDetalle = [];
+        ordenados.forEach(([nom, obj]) => {
+          obj.clientes.forEach(c => {
+            filasDetalle.push([
+              nom,
+              formatearFechaDMY(c.fecha),
+              String(c.zona_id || '').toUpperCase(),
+              c.ruta,
+              c.cliente,
+              Number(c.gananciaEmpresa) || 0
+            ]);
+          });
+        });
+
+        if (formato === 'xlsx') {
+          const ok = pbDescargarXLSX(nombreBase, [
+            {
+              nombre: 'Resumen por Maquina',
+              encabezadoEmpresa: true,
+              titulo: 'RECAUDACIÓN POR TIPO DE MÁQUINA',
+              zonaTexto: zonaTxt,
+              periodoTexto: rango.texto,
+              columnas: ['Tipo de Máquina', 'Liquidaciones', 'Total Recaudado (RD$)', 'Participación (%)'],
+              filas: [...filasResumen, ['TOTAL GENERAL', liqs.length, granTotal, 100]],
+              colsMoneda: [2]
+            },
+            {
+              nombre: 'Detalle Clientes Maquina',
+              encabezadoEmpresa: true,
+              titulo: 'DETALLE POR MÁQUINA Y CLIENTE',
+              zonaTexto: zonaTxt,
+              periodoTexto: rango.texto,
+              columnas: ['Tipo de Máquina', 'Fecha', 'Zona', 'Ruta', 'Cliente', 'Ganancia (RD$)'],
+              filas: [...filasDetalle, ['TOTAL GENERAL', '', '', '', `${liqs.length} registros`, granTotal]],
+              colsMoneda: [5]
+            }
+          ]);
+          if (ok) mostrarMensaje("Excel (.xlsx) por tipo de máquina descargado.", "✅");
+          return;
+        }
+
+        if (formato === 'pdf') {
+          const ok = pbDescargarPDF(nombreBase, {
+            titulo: 'Desglose de Recaudación por Tipo de Máquina',
+            zonaTexto: zonaTxt,
+            periodoTexto: rango.texto,
+            kpis: [
+              { label: 'Tipos Activos', valor: String(ordenados.length) },
+              { label: 'Registros', valor: String(liqs.length) },
+              { label: 'Total Recaudado', valor: formatearMontoLimpio(granTotal), color: [4, 120, 87] }
+            ],
+            bloques: [
+              {
+                subtitulo: '1. Resumen Consolidado por Máquina',
+                columnas: ['Tipo de Máquina', 'Registros', 'Total Recaudado', 'Participación'],
+                filas: filasResumen.map(r => [r[0], r[1], formatearMontoLimpio(r[2]), `${r[3]}%`]),
+                pie: ['TOTAL GENERAL', String(liqs.length), formatearMontoLimpio(granTotal), '100%'],
+                columnStyles: { 1: { halign: 'center' }, 2: { halign: 'right' }, 3: { halign: 'right' } }
+              },
+              {
+                subtitulo: '2. Detalle por Negocio',
+                columnas: ['Máquina', 'Fecha', 'Ruta', 'Cliente', 'Ganancia'],
+                filas: filasDetalle.map(d => [d[0], d[1], d[3], d[4], formatearMontoLimpio(d[5])]),
+                pie: ['TOTAL', '', '', '', formatearMontoLimpio(granTotal)],
+                columnStyles: { 4: { halign: 'right' } }
+              }
+            ]
+          });
+          if (ok) mostrarMensaje("PDF por tipo de máquina descargado.", "✅");
+          return;
+        }
+      }
+
+      // 8. LISTA GENERAL DE CLIENTES
+      if (seccion === 'clientes') {
+        if (!catalogoClientes || catalogoClientes.length === 0) {
+          mostrarMensaje("No hay clientes registrados para exportar.", "⚠️");
+          return;
+        }
+        const hoySlug = new Date().toISOString().split('T')[0];
+        const nombreBase = `Base_Datos_Clientes_${hoySlug}`;
+        const filas = catalogoClientes.map(c => [
+          c.id,
+          c.nombre,
+          c.ruta,
+          c.concepto,
+          Number(c.porcentaje) || 0,
+          c.direccion || '',
+          c.sector || '',
+          c.provincia || '',
+          c.representante || '',
+          c.telefono || ''
+        ]);
+
+        if (formato === 'csv') {
+          pbDescargarCSV(nombreBase, ['ID', 'Cliente', 'Ruta', 'Maquina', 'Comision_%', 'Direccion', 'Sector', 'Provincia', 'Representante', 'Telefono'], filas);
+          mostrarMensaje("Archivo CSV de clientes descargado.", "✅");
+          return;
+        }
+        if (formato === 'xlsx') {
+          const ok = pbDescargarXLSX(nombreBase, [{
+            nombre: 'Base Datos Clientes',
+            encabezadoEmpresa: true,
+            titulo: 'BASE DE DATOS GENERAL DE CLIENTES',
+            zonaTexto: 'TODAS LAS ZONAS',
+            periodoTexto: `Al ${formatearFechaDMY(hoySlug)}`,
+            columnas: ['ID', 'Nombre del Cliente', 'Ruta', 'Máquina', '% Comisión', 'Dirección', 'Sector', 'Provincia', 'Representante', 'Teléfono'],
+            filas
+          }]);
+          if (ok) mostrarMensaje("Excel (.xlsx) de clientes descargado.", "✅");
+          return;
+        }
+        if (formato === 'pdf') {
+          const ok = pbDescargarPDF(nombreBase, {
+            orientacion: 'landscape',
+            titulo: 'Base de Datos General de Clientes',
+            zonaTexto: 'TODAS LAS ZONAS',
+            periodoTexto: `Al ${formatearFechaDMY(hoySlug)}`,
+            kpis: [{ label: 'Total Clientes', valor: String(catalogoClientes.length) }],
+            bloques: [{
+              columnas: ['ID', 'Cliente', 'Ruta', 'Máquina', '%', 'Sector / Provincia', 'Representante', 'Teléfono'],
+              filas: catalogoClientes.map(c => [
+                c.id,
+                c.nombre,
+                c.ruta,
+                c.concepto,
+                `${c.porcentaje}%`,
+                [c.sector, c.provincia].filter(Boolean).join(', ') || '-',
+                c.representante || '-',
+                c.telefono || '-'
+              ])
+            }]
+          });
+          if (ok) mostrarMensaje("PDF de clientes descargado.", "✅");
+          return;
+        }
+      }
+    }
+
   </script>
 </body>
 </html>
