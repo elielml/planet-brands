@@ -493,17 +493,17 @@
 
       <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div class="overflow-x-auto w-full">
-          <table class="w-full text-left text-xs border-collapse whitespace-nowrap min-w-[600px]">
+          <table class="w-full text-left text-xs border-collapse whitespace-nowrap md:whitespace-normal min-w-[600px] md:min-w-0">
             <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
               <tr>
-                <th class="p-3">Cliente / Máquina</th>
-                <th class="p-3 text-center">Ruta / Usuario</th>
-                <th class="p-3 text-center">Fecha</th>
-                <th class="p-3 text-center">Monedas (25/10/5)</th>
-                <th class="p-3 text-right">Bruto</th>
-                <th class="p-3 text-right">Ganancia</th>
-                <th class="p-3 text-center">Imprimir</th>
-                <th class="p-3 text-center accion-eliminar-col">Acciones</th>
+                <th class="p-3 md:px-2.5 md:py-3">Cliente / Máquina</th>
+                <th class="p-3 md:px-2 md:py-3 text-center">Ruta / Usuario</th>
+                <th class="p-3 md:px-2 md:py-3 text-center whitespace-nowrap">Fecha</th>
+                <th class="p-3 md:px-2 md:py-3 text-center whitespace-nowrap">Monedas (25/10/5)</th>
+                <th class="p-3 md:px-2 md:py-3 text-right whitespace-nowrap">Bruto</th>
+                <th class="p-3 md:px-2 md:py-3 text-right whitespace-nowrap">Ganancia</th>
+                <th class="p-3 md:px-2 md:py-3 text-center whitespace-nowrap">Imprimir</th>
+                <th class="p-3 md:px-2 md:py-3 text-center whitespace-nowrap accion-eliminar-col">Acciones</th>
               </tr>
             </thead>
             <tbody id="cuerpoHistorial" class="divide-y divide-slate-100 text-slate-700">
@@ -3463,27 +3463,27 @@ const porc = porcVal === '' ? 25 : Number(porcVal);
           const fila = document.createElement('tr');
           fila.className = "hover:bg-slate-50 transition border-b border-slate-100 text-xs sm:text-sm text-slate-700";
           fila.innerHTML = `
-            <td class="p-3">
-              <span class="font-bold text-slate-800 block text-sm sm:text-base">${item.cliente}</span>
+            <td class="p-3 md:px-2.5 md:py-2.5 md:max-w-[215px] md:whitespace-normal break-words">
+              <span class="font-bold text-slate-800 block text-sm sm:text-base md:text-sm leading-snug">${item.cliente}</span>
               <span class="text-[11px] sm:text-xs text-slate-500 font-semibold uppercase">${item.concepto} (${item.porcentaje}%)</span>
             </td>
-            <td class="p-3 text-center text-slate-600 font-semibold text-[11px] sm:text-xs uppercase">
+            <td class="p-3 md:px-2 md:py-2.5 text-center text-slate-600 font-semibold text-[11px] sm:text-xs uppercase md:max-w-[130px] md:whitespace-normal break-words">
               ${item.ruta} <br/> <div class="mt-1">${badgeColector}</div>
             </td>
-            <td class="p-3 text-center text-slate-600 font-medium">${fechaFormateada}</td>
-            <td class="p-3 text-center font-mono font-bold text-slate-600">${item.cant25} / ${item.cant10} / ${item.cant5}</td>
-            <td class="p-3 text-right font-bold text-slate-600">$ ${item.bruto.toLocaleString('es-DO', { minimumFractionDigits: 2 })}</td>
-            <td class="p-3 text-right font-black text-emerald-700 text-sm sm:text-base">$ ${item.gananciaEmpresa.toLocaleString('es-DO', { minimumFractionDigits: 2 })}</td>
-            <td class="p-3 text-center">
-              <button onclick="reimprimirLiquidacion(${item.id})" title="Reimprimir Comprobante" class="bg-blue-50 text-blue-700 hover:bg-blue-100 p-2 rounded-lg border border-blue-200 font-bold transition text-sm">
+            <td class="p-3 md:px-2 md:py-2.5 text-center text-slate-600 font-medium whitespace-nowrap md:text-xs">${fechaFormateada}</td>
+            <td class="p-3 md:px-2 md:py-2.5 text-center font-mono font-bold text-slate-600 whitespace-nowrap md:text-xs">${item.cant25} / ${item.cant10} / ${item.cant5}</td>
+            <td class="p-3 md:px-2 md:py-2.5 text-right font-bold text-slate-600 whitespace-nowrap md:text-xs">$ ${item.bruto.toLocaleString('es-DO', { minimumFractionDigits: 2 })}</td>
+            <td class="p-3 md:px-2 md:py-2.5 text-right font-black text-emerald-700 text-sm sm:text-base md:text-sm whitespace-nowrap">$ ${item.gananciaEmpresa.toLocaleString('es-DO', { minimumFractionDigits: 2 })}</td>
+            <td class="p-3 md:px-2 md:py-2.5 text-center whitespace-nowrap">
+              <button onclick="reimprimirLiquidacion(${item.id})" title="Reimprimir Comprobante" class="bg-blue-50 text-blue-700 hover:bg-blue-100 p-2 md:p-1.5 rounded-lg border border-blue-200 font-bold transition text-sm">
                 🖨️
               </button>
             </td>
-           <td class="p-3 text-center accion-eliminar-col">
-              <div class="flex items-center justify-center gap-2">
-                ${tienePermiso('editar', item.zona_id) ? `<button onclick="editarRutaRegistro(${item.id}, '${item.ruta}')" title="Cambiar Ruta" class="text-indigo-600 hover:text-indigo-800 font-bold text-sm bg-indigo-50 px-2.5 py-1.5 rounded">📍</button>` : ''}
-                ${tienePermiso('editar', item.zona_id) ? `<button onclick="editarFechaRegistro(${item.id}, '${item.fecha}')" title="Editar Fecha" class="text-blue-500 hover:text-blue-700 font-bold text-sm bg-blue-50 px-2.5 py-1.5 rounded">📅</button>` : ''}
-                ${tienePermiso('eliminar', item.zona_id) ? `<button onclick="eliminarRegistro(${item.id})" title="Eliminar" class="text-rose-500 hover:text-rose-700 font-bold text-sm bg-rose-50 px-2.5 py-1.5 rounded">✕</button>` : ''}
+           <td class="p-3 md:px-2 md:py-2.5 text-center whitespace-nowrap accion-eliminar-col">
+              <div class="flex items-center justify-center gap-2 md:gap-1">
+                ${tienePermiso('editar', item.zona_id) ? `<button onclick="editarRutaRegistro(${item.id}, '${item.ruta}')" title="Cambiar Ruta" class="text-indigo-600 hover:text-indigo-800 font-bold text-sm bg-indigo-50 px-2.5 md:px-2 py-1.5 md:py-1 rounded">📍</button>` : ''}
+                ${tienePermiso('editar', item.zona_id) ? `<button onclick="editarFechaRegistro(${item.id}, '${item.fecha}')" title="Editar Fecha" class="text-blue-500 hover:text-blue-700 font-bold text-sm bg-blue-50 px-2.5 md:px-2 py-1.5 md:py-1 rounded">📅</button>` : ''}
+                ${tienePermiso('eliminar', item.zona_id) ? `<button onclick="eliminarRegistro(${item.id})" title="Eliminar" class="text-rose-500 hover:text-rose-700 font-bold text-sm bg-rose-50 px-2.5 md:px-2 py-1.5 md:py-1 rounded">✕</button>` : ''}
               </div>
             </td>
           `;
